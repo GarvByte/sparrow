@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/media_item.dart';
+import '../../../shared/media_item.dart';
 import '../data/mock_home_data.dart';
 
 /// Abstract repository contract for fetching featured movies/anime.

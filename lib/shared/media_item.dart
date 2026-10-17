@@ -13,6 +13,9 @@ class MediaItem {
   final double? progress; // 0.0 to 1.0
   final double aspectRatio;
   final bool isOriginal;
+  final String? overview;
+  final String? releaseDate;
+  final String? backdropUrl;
 
   const MediaItem({
     required this.id,
@@ -29,5 +32,8 @@ class MediaItem {
     this.progress,
     this.aspectRatio = 2 / 3,
     this.isOriginal = false,
+    this.overview,
+    this.releaseDate,
+    this.backdropUrl,
   });
 }

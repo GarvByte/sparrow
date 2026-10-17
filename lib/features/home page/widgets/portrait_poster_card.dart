@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
-import '../data/media_item.dart';
+import '../../../shared/media_item.dart';
 import 'network_media_image.dart';
 
 class PortraitPosterCard extends StatelessWidget {
