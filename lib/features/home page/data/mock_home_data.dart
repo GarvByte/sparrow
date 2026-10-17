@@ -1,4 +1,4 @@
-import 'media_item.dart';
+import '../../../shared/media_item.dart';
 
 class MockHomeData {
   static const MediaItem heroMovie = MediaItem(

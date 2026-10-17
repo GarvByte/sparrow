@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
+import 'package:go_router/go_router.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 
@@ -95,7 +95,7 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
                     icon: Icons.search_rounded,
                     size: buttonSize,
                     onTap: () {
-                      ref.read(movieProviderNotifier.notifier).getNowShowing();
+                      context.go('/search');
                     },
                   ),
                   const SizedBox(width: 8),

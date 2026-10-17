@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/features/home%20page/data/media_item.dart';
+import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import '../../../shared/responsive_utils.dart';
@@ -8,7 +8,6 @@ import '../../../theme/color_palette.dart';
 import '../data/mock_home_data.dart';
 import '../widgets/continue_watching_card.dart';
 import '../widgets/featured_hero_card.dart';
-import '../widgets/floating_bottom_nav.dart';
 import '../widgets/horizontal_media_carousel.dart';
 import '../widgets/landscape_media_card.dart';
 import '../widgets/portrait_poster_card.dart';
@@ -23,8 +22,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  int _currentNavIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
@@ -244,16 +241,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
             // Pinned Frosted Sparrow Header at Top
             const Positioned(top: 0, left: 0, right: 0, child: SparrowHeader()),
-
-            // Floating Frosted Bottom Navigation Bar
-            FloatingBottomNav(
-              currentIndex: _currentNavIndex,
-              onTabSelected: (index) {
-                setState(() {
-                  _currentNavIndex = index;
-                });
-              },
-            ),
           ],
         ),
       ),

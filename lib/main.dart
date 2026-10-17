@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/home page/screen/home_page.dart';
+import 'navigation/app_router.dart';
 import 'theme/color_palette.dart';
 
 void main() {
@@ -15,11 +15,7 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  runApp(
-    const ProviderScope(
-      child: SparrowApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: SparrowApp()));
 }
 
 class SparrowApp extends StatelessWidget {
@@ -28,26 +24,26 @@ class SparrowApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Sparrow',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: ColorPalette.backgroundBlack,
-        colorScheme: const ColorScheme.dark(
-          primary: ColorPalette.primaryGreen,
-          secondary: ColorPalette.primaryGreen,
-          surface: ColorPalette.surface,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: ColorPalette.backgroundBlack,
+          colorScheme: const ColorScheme.dark(
+            primary: ColorPalette.primaryGreen,
+            secondary: ColorPalette.primaryGreen,
+            surface: ColorPalette.surface,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: ColorPalette.backgroundBlack,
+            elevation: 0,
+          ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: ColorPalette.backgroundBlack,
-          elevation: 0,
-        ),
+        routerConfig: appRouter,
+        scrollBehavior: const CustomScrollBehavior(),
       ),
-      home: const HomePage(),
-      scrollBehavior: const CustomScrollBehavior(),
-    ),
-  );
+    );
   }
 }
 
@@ -56,7 +52,7 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.touch,
-      };
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.touch,
+  };
 }
