@@ -9,6 +9,8 @@ import 'package:sparrow/features/search/widgets/explore_categories_grid.dart';
 import 'package:sparrow/features/search/widgets/search_bar_deck.dart';
 import 'package:sparrow/features/search/widgets/search_header.dart';
 import 'package:sparrow/features/search/widgets/search_results_view.dart';
+import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
+import 'package:sparrow/features/search/providers/search_results_provider.dart';
 import 'package:sparrow/main.dart';
 import 'package:sparrow/navigation/app_router.dart';
 
@@ -195,7 +197,7 @@ void main() {
           ProviderScope(
             overrides: [
               searchQueryProvider.overrideWith(_TestQueryNotifier.new),
-              searchResultsProvider.overrideWith((ref) => Future.value([])),
+              searchResultsNotifier.overrideWith(_TestResultsNotifier.new),
             ],
             child: MaterialApp(
               home: Scaffold(
@@ -278,4 +280,9 @@ void main() {
 class _TestQueryNotifier extends SearchQueryNotifier {
   @override
   String build() => 'UnknownXYZ';
+}
+
+class _TestResultsNotifier extends SearchResultsProvider {
+  @override
+  List<dynamic> build() => [];
 }

@@ -69,7 +69,7 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
         : (responsive.isTablet ? 0.40 : 0.66);
     return featuredmovies.when(
       data: (data) {
-        debugPrint("data is $data");
+        //debugPrintt("data is $data");
         return LayoutBuilder(
           builder: (context, constraints) {
             return SizedBox(

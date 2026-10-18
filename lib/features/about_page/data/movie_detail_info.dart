@@ -63,7 +63,7 @@ class MovieDetailInfo {
     }
 
     final genreList = item.genres.map((g) => g.toString()).toList();
-    debugPrint("isAdult2 = ${item.isAdult}");
+    //debugPrintt("isAdult2 = ${item.isAdult}");
     return MovieDetailInfo(
       id: item.id,
       title: item.title,
@@ -240,7 +240,7 @@ class MovieDetailInfo {
 
     final writers = writerList.take(3).join(', ');
     final tagline = json['tagline'] as String?;
-    debugPrint("isAdult 1 = $isAdult");
+    //debugPrintt("isAdult 1 = $isAdult");
 
     return MovieDetailInfo(
       id: id,

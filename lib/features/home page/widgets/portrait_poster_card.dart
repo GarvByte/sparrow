@@ -26,7 +26,7 @@ class PortraitPosterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final height = width * 1.5; // Strict 2:3 aspect ratio
-    debugPrint("iamge url is ${item.imageUrl}");
+    //debugPrintt("iamge url is ${item.imageUrl}");
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Material(

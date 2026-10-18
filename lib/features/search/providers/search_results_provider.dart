@@ -1,27 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/shared/tmdb_servicee.dart';
 
-class SearchResultsProvider extends AsyncNotifier<List> {
+class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
   @override
-  List build() {
+  List<dynamic> build() {
     return [];
   }
 
   final TmdbService _tmdbService = TmdbService();
 
-  Future<List> fetchSearchedMovies(query) async {
-    debugPrint("searching");
-    state = AsyncValue.loading();
-    final searchResults = await _tmdbService.fetchMovies(
-      "search/movie?query=$query&include_adult=True&language=en-US&page=1",
-    );
-    state = AsyncValue.data(searchResults);
-    return searchResults;
+  /// Search movies or TV shows based on the provided or active media type.
+  Future<List<dynamic>> search({
+    String? query,
+    SearchMediaType? mediaType,
+  }) async {
+    final cleanQuery = (query ?? '').trim();
+    if (cleanQuery.isEmpty) {
+      state = const AsyncValue.data([]);
+      return [];
+    }
+
+    final activeType = mediaType ?? ref.read(searchMediaTypeProvider);
+    state = const AsyncValue.loading();
+
+    try {
+      List<dynamic> searchResults;
+      if (activeType == SearchMediaType.tvShows) {
+        //debugPrintt('Searching TMDB TV shows for "$cleanQuery"');
+        searchResults = await _tmdbService.searchTvShows(cleanQuery);
+      } else {
+        //debugPrintt('Searching TMDB movies for "$cleanQuery"');
+        searchResults = await _tmdbService.searchMovies(cleanQuery);
+      }
+      state = AsyncValue.data(searchResults);
+      return searchResults;
+    } catch (e, st) {
+      //debugPrintt('TMDB search error in SearchResultsProvider: $e');
+      state = AsyncValue.error(e, st);
+      return [];
+    }
+  }
+
+  /// Backward-compatible alias for existing movie-search invocations.
+  Future<List<dynamic>> fetchSearchedMovies(dynamic query) async {
+    return search(query: query?.toString());
   }
 }
 
 final searchResultsNotifier =
-    AsyncNotifierProvider<SearchResultsProvider, List>(
+    AsyncNotifierProvider<SearchResultsProvider, List<dynamic>>(
       () => SearchResultsProvider(),
     );

@@ -6,6 +6,7 @@ import 'package:sparrow/features/search/providers/category_results_provider.dart
 import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
 import 'package:sparrow/features/search/providers/search_results_provider.dart';
 import 'package:sparrow/features/search/providers/selected_category_provider.dart';
+import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/features/search/widgets/curated_taste_grid.dart';
 import 'package:sparrow/features/search/widgets/explore_categories_grid.dart';
 import 'package:sparrow/features/search/widgets/search_bar_deck.dart';
@@ -14,6 +15,7 @@ import 'package:sparrow/features/search/widgets/search_results_view.dart';
 import 'package:sparrow/features/search/widgets/sparrow_masters_card.dart';
 import 'package:sparrow/features/search/widgets/top_trending_carousel.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
+import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -47,7 +49,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _debounceTimer = Timer(const Duration(milliseconds: 350), () {
       if (mounted) {
         ref.read(searchQueryProvider.notifier).setQuery(query);
-        ref.read(searchResultsNotifier.notifier).fetchSearchedMovies(query);
+        ref.read(searchResultsNotifier.notifier).search(query: query);
         ref.read(selectedCategoryProvider.notifier).clear();
       }
     });
@@ -56,8 +58,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
     ref.read(searchQueryProvider.notifier).setQuery(query);
-
-    ref.read(searchResultsNotifier.notifier).fetchSearchedMovies(query);
+    ref.read(searchResultsNotifier.notifier).search(query: query);
     FocusScope.of(context).unfocus();
   }
 
@@ -78,6 +79,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final query = ref.watch(searchQueryProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
     final isSearching = query.trim().isNotEmpty || selectedCategory != null;
+
+    // Reactively refresh search results when media type (Movies vs TV Shows) changes
+    ref.listen<SearchMediaType>(searchMediaTypeProvider, (prev, next) {
+      if (prev != null && prev != next) {
+        final currentQuery = ref.read(searchQueryProvider);
+        if (currentQuery.trim().isNotEmpty) {
+          ref.read(searchResultsNotifier.notifier).search(
+                query: currentQuery,
+                mediaType: next,
+              );
+        }
+      }
+    });
 
     return Scaffold(
       backgroundColor: ColorPalette.backgroundBlack,
@@ -119,7 +133,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   if (isSearching)
                     SearchResultsView(
                       onClear: _clearSearch,
-                      onMovieTap: (item) => openMovieDetails(context, item),
+                      onMovieTap: (item) {
+                        if (item.isTvShow) {
+                          openTvShowDetails(context, item);
+                        } else {
+                          openMovieDetails(context, item);
+                        }
+                      },
                     )
                   else ...[
                     // 1. Explore Categories

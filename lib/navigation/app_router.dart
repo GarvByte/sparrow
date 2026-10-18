@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/screens/movie_details_screen.dart';
+import 'package:sparrow/features/anime_hub/screens/anime_hub_page.dart';
 import 'package:sparrow/features/home%20page/screen/home_page.dart';
 import 'package:sparrow/features/search/screens/search_page.dart';
+import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -20,6 +22,15 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) {
         final movieData = state.extra;
         return MaterialPage(child: MovieDetailsScreen(movieData: movieData));
+      },
+    ),
+    GoRoute(
+      path: '/tv-show-details',
+      name: 'tv-show-details',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) {
+        final tvData = state.extra;
+        return MaterialPage(child: TvShowDetailsScreen(tvData: tvData));
       },
     ),
     StatefulShellRoute.indexedStack(
@@ -55,12 +66,8 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/anime',
               name: 'anime',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: TabPlaceholderPage(
-                  title: 'Anime Hub',
-                  icon: Icons.auto_awesome_rounded,
-                ),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: AnimeHubPage()),
             ),
           ],
         ),

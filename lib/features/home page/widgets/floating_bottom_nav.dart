@@ -60,7 +60,7 @@ class FloatingBottomNav extends StatelessWidget {
                 index: 2,
                 selectedIndex: currentIndex,
                 icon: Icons.auto_awesome_rounded,
-                label: 'Anime',
+                label: 'Tv Shows',
                 onTap: () => onTabSelected(2),
               ),
               _NavItem(
@@ -99,7 +99,7 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final color = isSelected
-        ? ColorPalette.primaryGreen
+        ? const Color.fromARGB(201, 9, 0, 1)
         : ColorPalette.textMuted;
 
     return Expanded(
@@ -107,38 +107,47 @@ class _NavItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: responsive.iconSize(21, min: 18, max: 24),
-                color: color,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
+          padding: const EdgeInsets.symmetric(vertical: 0),
+          child: Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected
+                  ? ColorPalette.primaryGreen
+                  : Colors.transparent,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: responsive.iconSize(21, min: 18, max: 24),
                   color: color,
-                  fontSize: responsive.sp(10, min: 8.5, max: 11),
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                 ),
-              ),
-              const SizedBox(height: 2),
-              // Active emerald dot indicator
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? ColorPalette.primaryGreen
-                      : Colors.transparent,
-                  shape: BoxShape.circle,
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: responsive.sp(10, min: 8.5, max: 11),
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+                // const SizedBox(height: 2),
+                // // Active emerald dot indicator
+                // Container(
+                //   width: 4,
+                //   height: 4,
+                //   decoration: BoxDecoration(
+                //     color: isSelected
+                //         ? ColorPalette.primaryGreen
+                //         : Colors.transparent,
+                //     shape: BoxShape.circle,
+                //   ),
+                // ),
+              ],
+            ),
           ),
         ),
       ),

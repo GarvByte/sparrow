@@ -54,7 +54,7 @@ class CuratedTasteGrid extends ConsumerWidget {
           // Responsive Adaptive Poster Grid
           curatedAsync.when(
             data: (movies) {
-              debugPrint("Data movies = $movies");
+              //debugPrintt("Data movies = $movies");
               if (movies.isEmpty) {
                 return const Center(
                   child: Padding(
@@ -101,7 +101,7 @@ class CuratedTasteGrid extends ConsumerWidget {
                         genres: movie['genre'],
                         isAdult: movie['adult'] as bool? ?? false,
                       );
-                      debugPrint("item i = $item");
+                      //debugPrintt("item i = $item");
                       return DiscoverPosterCard(
                         item: item,
                         showRank: false,

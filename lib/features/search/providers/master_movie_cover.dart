@@ -18,7 +18,7 @@ class MasterMovieCover extends AsyncNotifier<Map> {
 
     // Filter or take a high-rated movie with a valid backdrop
     final chosen = movieData[0];
-    debugPrint("chosen L: $chosen");
+    //debugPrintt("chosen L: $chosen");
     return chosen;
   }
 }

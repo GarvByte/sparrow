@@ -5,7 +5,8 @@ import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 
 class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
-  const SparrowHeader({super.key});
+  final String subtitle;
+  const SparrowHeader({super.key, this.subtitle = 'HOME'});
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -75,7 +76,7 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
                         ],
                       ),
                       Text(
-                        'HOME',
+                        subtitle,
                         style: TextStyle(
                           color: ColorPalette.textMuted,
                           fontSize: responsive.sp(10, min: 8.5, max: 11),

@@ -30,3 +30,25 @@ final searchFilterProvider =
     NotifierProvider<SearchFilterNotifier, SearchSortFilter>(
       SearchFilterNotifier.new,
     );
+
+/// Media type selector enum (Movies vs TV Shows)
+enum SearchMediaType {
+  movies('Movies'),
+  tvShows('TV Shows');
+
+  final String label;
+  const SearchMediaType(this.label);
+}
+
+class SearchMediaTypeNotifier extends Notifier<SearchMediaType> {
+  @override
+  SearchMediaType build() => SearchMediaType.movies;
+
+  void setType(SearchMediaType type) => state = type;
+  void reset() => state = SearchMediaType.movies;
+}
+
+final searchMediaTypeProvider =
+    NotifierProvider<SearchMediaTypeNotifier, SearchMediaType>(
+      SearchMediaTypeNotifier.new,
+    );

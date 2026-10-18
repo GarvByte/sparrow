@@ -119,14 +119,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SectionHeader(
                     overline: 'TOP PICKS TODAY',
                     title: 'Trending Now',
-                    trailing: Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: ColorPalette.primaryGreen,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    actionText: "View all",
                   ),
                   const SizedBox(height: 8),
                   trendingNowMovies.when(
@@ -178,7 +171,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SectionHeader(
                     leadingIcon: Icons.auto_awesome_rounded,
                     title: 'Popular Movies',
-                    actionText: 'Anime Hub',
+                    actionText: 'View all',
                     onTrailingTap: () {},
                   ),
                   const SizedBox(height: 8),
@@ -245,7 +238,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   topRatedMovies.when(
                     data: (data) {
                       return HorizontalMediaCarousel(
-                        height: responsive.blockbusterHeight,
+                        height: responsive.animePosterHeight,
                         itemCount: data.length,
                         itemBuilder: (context, index) {
                           final movie = data[index];
@@ -269,9 +262,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ? imageBaseUrl2 + backdrop
                                 : null,
                           );
-                          return LandscapeMediaCard(
+                          return PortraitPosterCard(
                             item: item,
-                            width: responsive.blockbusterWidth,
+                            width: responsive.animePosterWidth,
                             onTap: () => openMovieDetails(context, item),
                           );
                         },

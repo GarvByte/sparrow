@@ -17,6 +17,7 @@ class MediaItem {
   final String? releaseDate;
   final String? backdropUrl;
   final bool isAdult;
+  final String mediaType;
 
   const MediaItem({
     required this.id,
@@ -37,5 +38,8 @@ class MediaItem {
     this.releaseDate,
     this.backdropUrl,
     this.isAdult = false,
+    this.mediaType = 'movie',
   });
+
+  bool get isTvShow => mediaType == 'tv';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/shared/media_item.dart';
+import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 
 /// Centralized navigation helper to open the Movie Details ("About Movie") page.
@@ -10,7 +11,18 @@ import 'package:sparrow/shared/tmdb_base_url.dart';
 /// stack without resetting the previous page's scroll or navigation state.
 void openMovieDetails(BuildContext context, dynamic movieData) {
   if (movieData == null) {
-    debugPrint('Cannot navigate to Movie Details: movieData is null');
+    //debugPrintt('Cannot navigate to Movie Details: movieData is null');
+    return;
+  }
+
+  // Intercept TV shows and route cleanly to TV Show Details
+  if (movieData is MediaItem && movieData.isTvShow) {
+    openTvShowDetails(context, movieData);
+    return;
+  }
+  if (movieData is Map<String, dynamic> &&
+      (movieData['media_type'] == 'tv' || movieData['is_tv'] == true)) {
+    openTvShowDetails(context, movieData);
     return;
   }
 
@@ -21,7 +33,7 @@ void openMovieDetails(BuildContext context, dynamic movieData) {
   } else if (movieData is Map<String, dynamic>) {
     final rawId = movieData['id']?.toString() ?? '';
     if (rawId.isEmpty) {
-      debugPrint('Cannot navigate to Movie Details: movie ID is missing');
+      //debugPrintt('Cannot navigate to Movie Details: movie ID is missing');
       return;
     }
 
@@ -56,7 +68,7 @@ void openMovieDetails(BuildContext context, dynamic movieData) {
   }
 
   if (resolvedItem == null || resolvedItem.id.trim().isEmpty) {
-    debugPrint('Cannot navigate to Movie Details: invalid movie identifier');
+    //debugPrintt('Cannot navigate to Movie Details: invalid movie identifier');
     return;
   }
 
