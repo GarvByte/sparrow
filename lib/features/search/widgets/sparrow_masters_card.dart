@@ -69,16 +69,22 @@ class SparrowMastersCard extends ConsumerWidget {
           masterCover.when(
             data: (movie) {
               if (movie.isEmpty) return const SizedBox.shrink();
+              final item = MediaItem(
+                id: movie['id'].toString(),
+                title: movie['title'] ?? 'Untitled',
+                imageUrl: movie['backdrop_path'] ?? '',
+                genres: movie['genre'] ?? [],
+                isAdult: movie['adult'] as bool? ?? false,
+                overview: movie['overview'],
+                backdropUrl: movie['backdrop_path'] != null
+                    ? imageBaseUrl2 + movie['backdrop_path']
+                    : null,
+              );
               return _MasterShowcase(
-                movie: MediaItem(
-                  id: movie['id'].toString(),
-                  title: movie['title'],
-                  imageUrl: movie['backdrop_path'],
-                  genres: movie['genre'],
-                  overview: movie['overview'],
-                ),
-                onPlayTap: onPlayTap,
-                // onTap: () => onTap?.call(movie),
+                movie: item,
+                onPlayTap: () =>
+                    onTap != null ? onTap!(item) : onPlayTap?.call(),
+                onTap: () => onTap?.call(item),
               );
             },
             loading: () => Container(
@@ -125,234 +131,238 @@ class _MasterShowcase extends StatelessWidget {
     final overview = movie.overview ?? 'No overview';
     final rating = movie.rating ?? 9.4;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: ColorPalette.surfaceContainer,
-        borderRadius: BorderRadius.circular(responsive.radius(16)),
-        border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Banner Image with Play Button & Telemetry Chips
-          Stack(
-            children: [
-              SizedBox(
-                height: bannerHeight,
-                width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) =>
-                      const ErrorImagePlaceholder(),
-                ),
-              ),
-
-              // Gradient Scrim to Surface Container
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        ColorPalette.surfaceContainer.withValues(alpha: 0.3),
-                        ColorPalette.surfaceContainer,
-                      ],
-                    ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(responsive.radius(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: ColorPalette.surfaceContainer,
+          borderRadius: BorderRadius.circular(responsive.radius(16)),
+          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Banner Image with Play Button & Telemetry Chips
+            Stack(
+              children: [
+                SizedBox(
+                  height: bannerHeight,
+                  width: double.infinity,
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) =>
+                        const ErrorImagePlaceholder(),
                   ),
                 ),
-              ),
 
-              // Top-Left Chips: ORIGINAL & 4K UHD
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ColorPalette.backgroundBlack.withValues(
-                          alpha: 0.82,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: ColorPalette.ghostBorder,
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 5,
-                            height: 5,
-                            decoration: const BoxDecoration(
-                              color: ColorPalette.primaryGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Trending #1',
-                            style: TextStyle(
-                              color: ColorPalette.primaryGreen,
-                              fontSize: responsive.sp(9.5, min: 8.5, max: 11),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
+                // Gradient Scrim to Surface Container
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          ColorPalette.surfaceContainer.withValues(alpha: 0.3),
+                          ColorPalette.surfaceContainer,
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // Bottom-Right Glowing Circular Play Button
-              Positioned(
-                bottom: 12,
-                right: 12,
-                child: InkWell(
-                  onTap: onPlayTap ?? () {},
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: ColorPalette.primaryGreen,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorPalette.primaryGreen.withValues(
-                            alpha: 0.45,
-                          ),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      size: 28,
-                      color: Colors.black,
-                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
 
-          // Metadata & Narrative Content
-          Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title and Star Rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: ColorPalette.fontWhite,
-                          fontSize: responsive.sp(17, min: 14.5, max: 19),
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
+                // Top-Left Chips: ORIGINAL & 4K UHD
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 16,
-                          color: Color(0xFF84FFA8),
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: TextStyle(
-                            color: ColorPalette.fontWhite,
-                            fontSize: responsive.sp(13.5, min: 12, max: 15),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-
-                // Narrative Synopsis (2 lines clamped)
-                Text(
-                  overview,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ColorPalette.textMuted,
-                    fontSize: responsive.sp(12, min: 10.5, max: 13.5),
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Bottom Row: Quality Chips & Bookmark Button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: movie.genres
-                          .map<Widget>(
-                            (genre) => _MetaChip(text: genre.toString()),
-                          )
-                          .toList(),
-                    ),
-                    InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        width: 34,
-                        height: 34,
                         decoration: BoxDecoration(
-                          color: ColorPalette.surfaceContainerHigh,
-                          shape: BoxShape.circle,
+                          color: ColorPalette.backgroundBlack.withValues(
+                            alpha: 0.82,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: ColorPalette.ghostBorder,
                             width: 0.5,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.bookmark_add_outlined,
-                          size: 18,
-                          color: ColorPalette.textSecondary,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: ColorPalette.primaryGreen,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Trending #1',
+                              style: TextStyle(
+                                color: ColorPalette.primaryGreen,
+                                fontSize: responsive.sp(9.5, min: 8.5, max: 11),
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // Bottom-Right Glowing Circular Play Button
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: InkWell(
+                    onTap: onPlayTap ?? () {},
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: ColorPalette.primaryGreen,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorPalette.primaryGreen.withValues(
+                              alpha: 0.45,
+                            ),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        size: 28,
+                        color: Colors.black,
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            // Metadata & Narrative Content
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title and Star Rating
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: ColorPalette.fontWhite,
+                            fontSize: responsive.sp(17, min: 14.5, max: 19),
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: Color(0xFF84FFA8),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: TextStyle(
+                              color: ColorPalette.fontWhite,
+                              fontSize: responsive.sp(13.5, min: 12, max: 15),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Narrative Synopsis (2 lines clamped)
+                  Text(
+                    overview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: ColorPalette.textMuted,
+                      fontSize: responsive.sp(12, min: 10.5, max: 13.5),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Bottom Row: Quality Chips & Bookmark Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: movie.genres
+                            .map<Widget>(
+                              (genre) => _MetaChip(text: genre.toString()),
+                            )
+                            .toList(),
+                      ),
+                      InkWell(
+                        onTap: () {},
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: ColorPalette.surfaceContainerHigh,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: ColorPalette.ghostBorder,
+                              width: 0.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.bookmark_add_outlined,
+                            size: 18,
+                            color: ColorPalette.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

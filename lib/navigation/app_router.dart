@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sparrow/features/about_page/screens/movie_details_screen.dart';
 import 'package:sparrow/features/home%20page/screen/home_page.dart';
 import 'package:sparrow/features/search/screens/search_page.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
@@ -12,6 +13,15 @@ final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
+    GoRoute(
+      path: '/movie-details',
+      name: 'movie-details',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) {
+        final movieData = state.extra;
+        return MaterialPage(child: MovieDetailsScreen(movieData: movieData));
+      },
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainShellScaffold(navigationShell: navigationShell);

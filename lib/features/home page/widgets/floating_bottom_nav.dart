@@ -30,10 +30,7 @@ class FloatingBottomNav extends StatelessWidget {
           decoration: BoxDecoration(
             color: ColorPalette.surfaceContainerLow.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(responsive.radius(32)),
-            border: Border.all(
-              color: ColorPalette.ghostBorder,
-              width: 1,
-            ),
+            border: Border.all(color: ColorPalette.ghostBorder, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.65),
@@ -101,7 +98,9 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final color = isSelected ? ColorPalette.primaryGreen : ColorPalette.textMuted;
+    final color = isSelected
+        ? ColorPalette.primaryGreen
+        : ColorPalette.textMuted;
 
     return Expanded(
       child: InkWell(
@@ -133,7 +132,9 @@ class _NavItem extends StatelessWidget {
                 width: 4,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isSelected ? ColorPalette.primaryGreen : Colors.transparent,
+                  color: isSelected
+                      ? ColorPalette.primaryGreen
+                      : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
               ),

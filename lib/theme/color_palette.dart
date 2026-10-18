@@ -16,7 +16,7 @@ class ColorPalette {
   static const Color surfaceContainerHighest = Color(0xFF333534);
 
   // Cinematic Hero tones (Refined dark muted brown #281913 container)
-  static const Color heroContainer = Color(0xFF281913);
+  static const Color heroContainer = Color.fromARGB(255, 33, 33, 33);
   static const Color heroBorder = Color(0xFF3E2B22);
   static const Color heroChipBackground = Color(0xFF38231B);
 

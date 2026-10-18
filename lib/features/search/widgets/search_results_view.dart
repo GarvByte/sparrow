@@ -129,6 +129,7 @@ class SearchResultsView extends ConsumerWidget {
                             ? ""
                             : imageBaseUrl + movie['poster_path'],
                         genres: movie['genre'],
+                        isAdult: movie['adult'] as bool? ?? false,
                         releaseDate: movie['release_date'],
                       );
                       return DiscoverPosterCard(

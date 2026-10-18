@@ -1,5 +1,3 @@
-
-  final tokenAuth =
-      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNzAzNmViNTMyYzlhYjc1ZmZlZjE4YWQ2YWU4Yjg1OCIsIm5iZiI6MTc5MjA5MjI1Ni41ODMwMDAyLCJzdWIiOiI2YWQxMjg2MDYzMWRlOTkwOTZkMmEwOTQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.N4e4kZAfRKKp1XcyWefNmrY3sg1BLUl0gx77tekPwM0";
-  final apiKey = "f7036eb532c9ab75ffef18ad6ae8b858";
-
+final tokenAuth =
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNzAzNmViNTMyYzlhYjc1ZmZlZjE4YWQ2YWU4Yjg1OCIsIm5iZiI6MTc5MjA5MjI1Ni41ODMwMDAyLCJzdWIiOiI2YWQxMjg2MDYzMWRlOTkwOTZkMmEwOTQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.N4e4kZAfRKKp1XcyWefNmrY3sg1BLUl0gx77tekPwM0";
+final apiKey = "f7036eb532c9ab75ffef18ad6ae8b858";

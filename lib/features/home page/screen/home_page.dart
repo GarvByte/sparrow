@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/shared/media_item.dart';
+import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import '../../../shared/responsive_utils.dart';
@@ -57,7 +58,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 1. Layered Overlapping Featured Hero Carousel (17:16 poster, Riverpod-driven, TV DPAD support)
-                  FeaturedHeroSection(onWatchNow: (item) {}),
+                  FeaturedHeroSection(
+                    onWatchNow: (item) => openMovieDetails(context, item),
+                  ),
 
                   SizedBox(height: responsive.scale(14, min: 10, max: 20)),
 
@@ -76,18 +79,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                         itemCount: data.length,
                         itemBuilder: (context, index) {
                           final movie = data[index];
+                          final backdrop = movie['backdrop_path'] as String?;
+                          final poster = movie['poster_path'] as String?;
                           final item = MediaItem(
                             id: movie['id'].toString(),
                             title: movie['title'] ?? 'Untitled',
                             rating: (movie['vote_average'] as num?)?.toDouble(),
                             ratingCount: movie['vote_count']?.toString(),
-                            imageUrl: imageBaseUrl + movie['backdrop_path'],
-                            genres: movie['genre'],
+                            imageUrl: backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl + backdrop
+                                : (poster != null && poster.isNotEmpty
+                                      ? imageBaseUrl + poster
+                                      : ''),
+                            genres: movie['genre'] ?? [],
+                            isAdult: movie['adult'] as bool? ?? false,
+                            overview: movie['overview'] as String?,
+                            releaseDate: movie['release_date'] as String?,
+                            backdropUrl: backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl2 + backdrop
+                                : null,
                           );
                           return ContinueWatchingCard(
                             item: item,
                             width: responsive.continueWatchingWidth,
-                            onTap: () {},
+                            onTap: () => openMovieDetails(context, item),
                           );
                         },
                       );
@@ -121,20 +136,32 @@ class _HomePageState extends ConsumerState<HomePage> {
                         itemCount: data.length,
                         itemBuilder: (context, index) {
                           final movie = data[index];
+                          final backdrop = movie['backdrop_path'] as String?;
+                          final poster = movie['poster_path'] as String?;
                           final item = MediaItem(
                             id: movie['id'].toString(),
                             title: movie['title'] ?? 'Untitled',
                             rating: (movie['vote_average'] as num?)?.toDouble(),
                             ratingCount: movie['vote_count']?.toString(),
-                            imageUrl: imageBaseUrl + movie['poster_path'],
-                            genres: movie['genre'],
+                            imageUrl: poster != null && poster.isNotEmpty
+                                ? imageBaseUrl + poster
+                                : (backdrop != null && backdrop.isNotEmpty
+                                      ? imageBaseUrl + backdrop
+                                      : ''),
+                            genres: movie['genre'] ?? [],
+                            isAdult: movie['adult'] as bool? ?? false,
+                            overview: movie['overview'] as String?,
+                            releaseDate: movie['release_date'] as String?,
+                            backdropUrl: backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl2 + backdrop
+                                : null,
                           );
                           return PortraitPosterCard(
                             item: item,
                             width: responsive.trendingPosterWidth,
                             trending: true,
                             index: index,
-                            onTap: () {},
+                            onTap: () => openMovieDetails(context, item),
                           );
                         },
                       );
@@ -162,18 +189,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                         itemCount: data.length,
                         itemBuilder: (context, index) {
                           final movie = data[index];
+                          final backdrop = movie['backdrop_path'] as String?;
+                          final poster = movie['poster_path'] as String?;
                           final item = MediaItem(
                             id: movie['id'].toString(),
                             title: movie['title'] ?? 'Untitled',
                             rating: (movie['vote_average'] as num?)?.toDouble(),
                             ratingCount: movie['vote_count']?.toString(),
-                            imageUrl: imageBaseUrl + movie['poster_path'],
-                            genres: movie['genre'],
+                            imageUrl: poster != null && poster.isNotEmpty
+                                ? imageBaseUrl + poster
+                                : (backdrop != null && backdrop.isNotEmpty
+                                      ? imageBaseUrl + backdrop
+                                      : ''),
+                            genres: movie['genre'] ?? [],
+                            isAdult: movie['adult'] as bool? ?? false,
+                            overview: movie['overview'] as String?,
+                            releaseDate: movie['release_date'] as String?,
+                            backdropUrl: backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl2 + backdrop
+                                : null,
                           );
                           return PortraitPosterCard(
                             item: item,
                             width: responsive.animePosterWidth,
-                            onTap: () {},
+                            onTap: () => openMovieDetails(context, item),
                           );
                         },
                       );
@@ -210,18 +249,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                         itemCount: data.length,
                         itemBuilder: (context, index) {
                           final movie = data[index];
+                          final backdrop = movie['backdrop_path'] as String?;
+                          final poster = movie['poster_path'] as String?;
                           final item = MediaItem(
                             id: movie['id'].toString(),
                             title: movie['title'] ?? 'Untitled',
                             rating: (movie['vote_average'] as num?)?.toDouble(),
                             ratingCount: movie['vote_count']?.toString(),
-                            imageUrl: imageBaseUrl + movie['poster_path'],
-                            genres: movie['genre'],
+                            imageUrl: poster != null && poster.isNotEmpty
+                                ? imageBaseUrl + poster
+                                : (backdrop != null && backdrop.isNotEmpty
+                                      ? imageBaseUrl + backdrop
+                                      : ''),
+                            genres: movie['genre'] ?? [],
+                            isAdult: movie['adult'] as bool? ?? false,
+                            overview: movie['overview'] as String?,
+                            releaseDate: movie['release_date'] as String?,
+                            backdropUrl: backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl2 + backdrop
+                                : null,
                           );
                           return LandscapeMediaCard(
                             item: item,
                             width: responsive.blockbusterWidth,
-                            onTap: () {},
+                            onTap: () => openMovieDetails(context, item),
                           );
                         },
                       );

@@ -1,5 +1,4 @@
-
-
+// ignore: file_names
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SearchQueryNotifier extends Notifier<String> {

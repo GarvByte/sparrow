@@ -88,4 +88,91 @@ class TmdbService {
       rethrow;
     }
   }
+
+  /// Fetch full movie details by TMDB movie ID.
+  Future<Map<String, dynamic>?> fetchMovieDetails(String movieId) async {
+    final cleanId = movieId.trim();
+    if (cleanId.isEmpty) return null;
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (response.statusCode == 200) {
+        // debugPrint("movie detaisl = ${response.body}");
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        debugPrint('TMDB details error: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('TMDB details error: $e');
+      return null;
+    }
+  }
+
+  /// Fetch movie credits (cast and crew) by TMDB movie ID.
+  Future<Map<String, dynamic>?> fetchMovieCredits(String movieId) async {
+    final cleanId = movieId.trim();
+    if (cleanId.isEmpty) return null;
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://api.themoviedb.org/3/movie/$cleanId/credits?language=en-US',
+        ),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        debugPrint('TMDB credits error: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('TMDB credits error: $e');
+      return null;
+    }
+  }
+
+  /// Fetch similar movies or recommendations by TMDB movie ID.
+  Future<List<dynamic>> fetchSimilarMovies(String movieId) async {
+    final cleanId = movieId.trim();
+    if (cleanId.isEmpty) return [];
+    try {
+      // Recommendations usually provide higher quality curated similar titles
+      final recResponse = await http.get(
+        Uri.parse(
+          'https://api.themoviedb.org/3/movie/$cleanId/recommendations?language=en-US&page=1',
+        ),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (recResponse.statusCode == 200) {
+        final json = jsonDecode(recResponse.body);
+        final list = (json['results'] as List<dynamic>? ?? []);
+        if (list.isNotEmpty) {
+          return getGenre(list);
+        }
+      }
+
+      // Fallback to similar endpoint
+      final simResponse = await http.get(
+        Uri.parse(
+          'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
+        ),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (simResponse.statusCode == 200) {
+        final json = jsonDecode(simResponse.body);
+        return getGenre(json['results'] as List<dynamic>? ?? []);
+      }
+      return [];
+    } catch (e) {
+      debugPrint('TMDB similar movies error: $e');
+      return [];
+    }
+  }
 }

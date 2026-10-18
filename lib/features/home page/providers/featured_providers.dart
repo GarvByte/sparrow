@@ -43,8 +43,8 @@ class SelectedFeaturedIndexNotifier extends Notifier<int> {
 /// Updated only when the user settles on a new page (not on every animation frame).
 final selectedFeaturedIndexProvider =
     NotifierProvider<SelectedFeaturedIndexNotifier, int>(
-  SelectedFeaturedIndexNotifier.new,
-);
+      SelectedFeaturedIndexNotifier.new,
+    );
 
 /// Derived provider exposing the currently selected MediaItem.
 final selectedFeaturedMovieProvider = Provider<MediaItem?>((ref) {

@@ -16,6 +16,7 @@ class MediaItem {
   final String? overview;
   final String? releaseDate;
   final String? backdropUrl;
+  final bool isAdult;
 
   const MediaItem({
     required this.id,
@@ -35,5 +36,6 @@ class MediaItem {
     this.overview,
     this.releaseDate,
     this.backdropUrl,
+    this.isAdult = false,
   });
 }

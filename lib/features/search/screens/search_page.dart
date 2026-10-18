@@ -13,6 +13,7 @@ import 'package:sparrow/features/search/widgets/search_header.dart';
 import 'package:sparrow/features/search/widgets/search_results_view.dart';
 import 'package:sparrow/features/search/widgets/sparrow_masters_card.dart';
 import 'package:sparrow/features/search/widgets/top_trending_carousel.dart';
+import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -47,6 +48,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       if (mounted) {
         ref.read(searchQueryProvider.notifier).setQuery(query);
         ref.read(searchResultsNotifier.notifier).fetchSearchedMovies(query);
+        ref.read(selectedCategoryProvider.notifier).clear();
       }
     });
   }
@@ -117,7 +119,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   if (isSearching)
                     SearchResultsView(
                       onClear: _clearSearch,
-                      onMovieTap: (item) {},
+                      onMovieTap: (item) => openMovieDetails(context, item),
                     )
                   else ...[
                     // 1. Explore Categories
@@ -138,18 +140,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     // 2. Top Trending Today
                     TopTrendingCarousel(
                       onSeeAllTap: () {},
-                      onMovieTap: (item) {},
+                      onMovieTap: (item) => openMovieDetails(context, item),
                     ),
 
                     SizedBox(height: responsive.scale(24, min: 18, max: 30)),
 
                     // 3. Sparrow Masters Featured Showcase
-                    SparrowMastersCard(onPlayTap: () {}, onTap: (item) {}),
+                    SparrowMastersCard(
+                      onPlayTap: () {},
+                      onTap: (item) => openMovieDetails(context, item),
+                    ),
 
                     SizedBox(height: responsive.scale(24, min: 18, max: 30)),
 
                     // 4. Curated For Your Taste
-                    CuratedTasteGrid(onMovieTap: (item) {}),
+                    CuratedTasteGrid(
+                      onMovieTap: (item) => openMovieDetails(context, item),
+                    ),
                   ],
                 ],
               ),

@@ -99,6 +99,7 @@ class CuratedTasteGrid extends ConsumerWidget {
                         title: movie['title'].toString(),
                         imageUrl: imageBaseUrl + movie['poster_path'],
                         genres: movie['genre'],
+                        isAdult: movie['adult'] as bool? ?? false,
                       );
                       debugPrint("item i = $item");
                       return DiscoverPosterCard(

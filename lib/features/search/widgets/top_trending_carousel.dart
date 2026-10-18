@@ -119,6 +119,7 @@ class TopTrendingCarousel extends ConsumerWidget {
                         ? '$imageBaseUrl$posterPath'
                         : '',
                     genres: movie['genre'] ?? [],
+                    isAdult: movie['adult'] as bool? ?? false,
                     rating: (movie['vote_average'] as num?)?.toDouble(),
                     ratingCount: movie['vote_count']?.toString(),
                     bottomBadge: qualityBadges[index % qualityBadges.length],

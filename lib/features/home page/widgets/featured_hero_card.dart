@@ -96,13 +96,25 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
                   final isCurrent = index == selectedIndex;
                   final movieInfo = data[index];
 
+                  final backdrop = movieInfo['backdrop_path'] as String?;
+                  final poster = movieInfo['poster_path'] as String?;
                   final item = MediaItem(
                     id: movieInfo['id'].toString(),
                     title: movieInfo['title'] ?? 'Untitled',
                     rating: (movieInfo['vote_average'] as num?)?.toDouble(),
                     ratingCount: movieInfo['vote_count']?.toString(),
-                    imageUrl: imageBaseUrl + movieInfo['poster_path'],
-                    genres: movieInfo['genre'],
+                    imageUrl: poster != null && poster.isNotEmpty
+                        ? imageBaseUrl + poster
+                        : (backdrop != null && backdrop.isNotEmpty
+                              ? imageBaseUrl + backdrop
+                              : ''),
+                    genres: movieInfo['genre'] ?? [],
+                    isAdult: movieInfo['adult'] as bool? ?? false,
+                    overview: movieInfo['overview'] as String?,
+                    releaseDate: movieInfo['release_date'] as String?,
+                    backdropUrl: backdrop != null && backdrop.isNotEmpty
+                        ? imageBaseUrl2 + backdrop
+                        : null,
                   );
                   return _LayeredMovieCard(
                     item: item,
@@ -117,6 +129,8 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOutCubic,
                         );
+                      } else {
+                        widget.onWatchNow?.call(item);
                       }
                     },
                     onWatchNow: () => widget.onWatchNow?.call(item),
