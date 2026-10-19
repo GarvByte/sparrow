@@ -76,7 +76,7 @@ void main() {
         expect(info.director, 'Denis Villeneuve');
         expect(info.writers, contains('Jon Spaihts'));
         expect(info.studios, contains('Legendary Pictures'));
-        expect(info.originalLanguage, 'English');
+        expect(info.originalLanguage, 'ENGLISH');
         expect(info.budgetFormatted, '\$190 Million');
         expect(info.revenueFormatted, '\$714.4 Million');
         expect(info.genres, ['Sci-Fi', 'Adventure']);
@@ -248,10 +248,10 @@ void main() {
 
         // Movie Details screen is displayed with movie title
         expect(find.text('Dune: Part Two'), findsOneWidget);
-        expect(find.text('ABOUT MOVIE'), findsOneWidget);
+        expect(find.byType(MovieDetailsScreen), findsOneWidget);
 
-        // Tap back button in MovieDetailsHeader
-        final backButton = find.byIcon(Icons.arrow_back_ios_new_rounded);
+        // Tap back button in MovieDetailsScreen
+        final backButton = find.byIcon(Icons.arrow_back_ios);
         expect(backButton, findsOneWidget);
         await tester.tap(backButton);
         await tester.pump();

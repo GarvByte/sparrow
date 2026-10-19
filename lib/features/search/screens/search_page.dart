@@ -9,6 +9,7 @@ import 'package:sparrow/features/search/providers/selected_category_provider.dar
 import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/features/search/widgets/curated_taste_grid.dart';
 import 'package:sparrow/features/search/widgets/explore_categories_grid.dart';
+import 'package:sparrow/features/search/widgets/random_genre_hero_banners.dart';
 import 'package:sparrow/features/search/widgets/search_bar_deck.dart';
 import 'package:sparrow/features/search/widgets/search_header.dart';
 import 'package:sparrow/features/search/widgets/search_results_view.dart';
@@ -175,6 +176,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
                     // 4. Curated For Your Taste
                     CuratedTasteGrid(
+                      onMovieTap: (item) => openMovieDetails(context, item),
+                    ),
+
+                    // 5. Vertically stacked hero banner cards for randomly selected genres
+                    RandomGenreHeroBanners(
                       onMovieTap: (item) => openMovieDetails(context, item),
                     ),
                   ],

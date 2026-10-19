@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparrow/shared/api.dart';
 import 'package:sparrow/shared/genre_ids.dart';
@@ -113,6 +112,67 @@ class TmdbService {
     } catch (e) {
       //debugPrintt('TMDB genre error: $e');
       rethrow;
+    }
+  }
+
+  /// Discover TV shows by genre ID from TMDB.
+  Future<List<dynamic>> fetchTvByGenre(int genreId, {int page = 1}) async {
+    try {
+      final endpoint =
+          'discover/tv?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
+      final response = await http.get(
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return getGenre(json['results'] ?? []);
+      } else {
+        throw Exception(
+          'TV Genre request failed with status ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetch full list of official TMDB movie genres.
+  Future<List<Map<String, dynamic>>> fetchMovieGenres() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.themoviedb.org/3/genre/movie/list?language=en-US'),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final list = (json['genres'] as List<dynamic>? ?? []);
+        return list.map((g) => Map<String, dynamic>.from(g as Map)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Fetch full list of official TMDB TV genres.
+  Future<List<Map<String, dynamic>>> fetchTvGenres() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.themoviedb.org/3/genre/tv/list?language=en-US'),
+        headers: {'Authorization': tokenAuth},
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final list = (json['genres'] as List<dynamic>? ?? []);
+        return list.map((g) => Map<String, dynamic>.from(g as Map)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
     }
   }
 

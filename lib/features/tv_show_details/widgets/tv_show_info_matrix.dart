@@ -47,12 +47,16 @@ class TvShowInfoMatrix extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              'About ${info.name}',
-              style: TextStyle(
-                color: ColorPalette.fontWhite,
-                fontSize: responsive.sp(18, min: 15, max: 22),
-                fontWeight: FontWeight.w700,
+            Expanded(
+              child: Text(
+                'About ${info.name}',
+                style: TextStyle(
+                  color: ColorPalette.fontWhite,
+                  fontSize: responsive.sp(18, min: 15, max: 22),
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 8),

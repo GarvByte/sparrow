@@ -98,7 +98,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final color = isSelected
+    final targetColor = isSelected
         ? const Color.fromARGB(201, 9, 0, 1)
         : ColorPalette.textMuted;
 
@@ -108,45 +108,63 @@ class _NavItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 0),
-          child: Container(
-            padding: EdgeInsets.all(8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOutCubic,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isSelected
                   ? ColorPalette.primaryGreen
                   : Colors.transparent,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: ColorPalette.primaryGreen.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: responsive.iconSize(21, min: 18, max: 24),
-                  color: color,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: responsive.sp(10, min: 8.5, max: 11),
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  ),
-                ),
-                // const SizedBox(height: 2),
-                // // Active emerald dot indicator
-                // Container(
-                //   width: 4,
-                //   height: 4,
-                //   decoration: BoxDecoration(
-                //     color: isSelected
-                //         ? ColorPalette.primaryGreen
-                //         : Colors.transparent,
-                //     shape: BoxShape.circle,
-                //   ),
-                // ),
-              ],
+            child: TweenAnimationBuilder<Color?>(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOutCubic,
+              tween: ColorTween(
+                begin: isSelected ? ColorPalette.textMuted : const Color.fromARGB(201, 9, 0, 1),
+                end: targetColor,
+              ),
+              builder: (context, animatedColor, child) {
+                final activeColor = animatedColor ?? targetColor;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedScale(
+                      scale: isSelected ? 1.08 : 1.0,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      child: Icon(
+                        icon,
+                        size: responsive.iconSize(21, min: 18, max: 24),
+                        color: activeColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      style: TextStyle(
+                        color: activeColor,
+                        fontSize: responsive.sp(10, min: 8.5, max: 11),
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w500,
+                      ),
+                      child: Text(label),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

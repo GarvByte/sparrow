@@ -162,7 +162,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Cinematic Hero Backdrop with Overlaid Back Button & Telemetry
-        _buildHeroBackdrop(context, info, heroHeight),
+        _buildHeroBackdrop(context, info, item, heroHeight),
 
         Padding(
           padding: EdgeInsets.symmetric(
@@ -266,7 +266,6 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
   ) {
     final responsive = context.responsive;
     final horizontalPadding = responsive.scale(36.0, min: 28.0, max: 48.0);
-    final backdrop = info.backdropUrl ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,19 +273,13 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
         // TV Hero Backdrop Section
         Stack(
           children: [
-            // Full-width Wide Cinematic Background
-            SizedBox(
+            // Full-width Wide Cinematic Background with poster-to-backdrop smooth transition
+            _buildHeroArtwork(
+              posterUrl: info.posterUrl ?? item.imageUrl,
+              backdropUrl: info.backdropUrl,
               height: 560,
               width: double.infinity,
-              child: backdrop.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: backdrop,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      errorWidget: (context, url, error) =>
-                          const ErrorImagePlaceholder(),
-                    )
-                  : const ErrorImagePlaceholder(),
+              alignment: Alignment.topCenter,
             ),
 
             // Horizontal & Vertical Scrim Gradients
@@ -751,7 +744,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeroBackdrop(context, info, heroHeight),
+        _buildHeroBackdrop(context, info, item, heroHeight),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: paddingH),
           child: Column(
@@ -841,38 +834,70 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
   // SHARED SUB-WIDGET BUILDERS
   // ===========================================================================
 
+  Widget _buildHeroArtwork({
+    required String? posterUrl,
+    required String? backdropUrl,
+    required double height,
+    required double width,
+    Alignment alignment = Alignment.center,
+  }) {
+    final hasPoster = posterUrl != null && posterUrl.isNotEmpty;
+    final hasBackdrop = backdropUrl != null && backdropUrl.isNotEmpty;
+    final hasDistinctBackdrop =
+        hasBackdrop && (!hasPoster || backdropUrl != posterUrl);
+
+    return SizedBox(
+      height: height,
+      width: width,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Initial Poster Fallback Layer (displays immediately without flash/spinner)
+          if (hasPoster)
+            CachedNetworkImage(
+              imageUrl: posterUrl,
+              fit: BoxFit.cover,
+              alignment: alignment,
+              errorWidget: (context, url, error) =>
+                  const ErrorImagePlaceholder(),
+            )
+          else if (!hasBackdrop)
+            const ErrorImagePlaceholder(),
+
+          // 2. Full Backdrop Image Layer (smoothly crossfades in once loaded)
+          if (hasDistinctBackdrop)
+            CachedNetworkImage(
+              imageUrl: backdropUrl,
+              fit: BoxFit.cover,
+              alignment: alignment,
+              fadeInDuration: const Duration(milliseconds: 600),
+              fadeOutDuration: const Duration(milliseconds: 300),
+              placeholder: (context, url) => const SizedBox.shrink(),
+              errorWidget: (context, url, error) => const SizedBox.shrink(),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeroBackdrop(
     BuildContext context,
     TvShowDetailInfo info,
+    MediaItem item,
     double height,
   ) {
     final responsive = context.responsive;
     final topPadding = responsive.padding.top;
-    final backdrop = info.backdropUrl ?? '';
 
     return Stack(
       children: [
-        // Backdrop Image
-        SizedBox(
+        // Backdrop Image with smooth poster-to-backdrop transition
+        _buildHeroArtwork(
+          posterUrl: info.posterUrl ?? item.imageUrl,
+          backdropUrl: info.backdropUrl,
           height: height + topPadding,
           width: double.infinity,
-          child: backdrop.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: backdrop,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: ColorPalette.surfaceContainerLow,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: ColorPalette.primaryGreen,
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) =>
-                      const ErrorImagePlaceholder(),
-                )
-              : const ErrorImagePlaceholder(),
+          alignment: Alignment.center,
         ),
 
         // Obsidian Gradient Scrims
@@ -898,40 +923,17 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
         Positioned(
           bottom: 12,
           left: responsive.scale(16, min: 12, max: 20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-            decoration: BoxDecoration(
-              color: ColorPalette.backgroundBlack.withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: ColorPalette.primaryGreen.withValues(alpha: 0.35),
-                width: 0.8,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
+          child: info.tagline != null && info.tagline!.isNotEmpty
+              ? Text(
+                  info.tagline!.toUpperCase(),
+                  style: const TextStyle(
                     color: ColorPalette.primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  '4K ULTRA HD · DOLBY ATMOS',
-                  style: TextStyle(
-                    color: ColorPalette.primaryGreen,
-                    fontSize: 9.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
+                    letterSpacing: 2.0,
                   ),
-                ),
-              ],
-            ),
-          ),
+                )
+              : const SizedBox.shrink(),
         ),
 
         // Back button matching Movie Details convention

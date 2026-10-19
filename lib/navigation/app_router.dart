@@ -5,6 +5,8 @@ import 'package:sparrow/features/anime_hub/screens/anime_hub_page.dart';
 import 'package:sparrow/features/home%20page/screen/home_page.dart';
 import 'package:sparrow/features/search/screens/search_page.dart';
 import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
+import 'package:sparrow/features/view_all/view_all_args.dart';
+import 'package:sparrow/features/view_all/view_all_screen.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -46,6 +48,21 @@ final appRouter = GoRouter(
               name: 'home',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: HomePage()),
+              routes: [
+                GoRoute(
+                  path: 'view-all',
+                  name: 'home-view-all',
+                  pageBuilder: (context, state) {
+                    final args = state.extra as ViewAllArgs? ??
+                        const ViewAllArgs(
+                          mediaType: 'movie',
+                          categoryType: 'trending',
+                          title: 'Trending Movies',
+                        );
+                    return MaterialPage(child: ViewAllScreen(args: args));
+                  },
+                ),
+              ],
             ),
           ],
         ),
@@ -57,10 +74,25 @@ final appRouter = GoRouter(
               name: 'search',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: SearchPage()),
+              routes: [
+                GoRoute(
+                  path: 'view-all',
+                  name: 'search-view-all',
+                  pageBuilder: (context, state) {
+                    final args = state.extra as ViewAllArgs? ??
+                        const ViewAllArgs(
+                          mediaType: 'movie',
+                          categoryType: 'trending',
+                          title: 'Trending Movies',
+                        );
+                    return MaterialPage(child: ViewAllScreen(args: args));
+                  },
+                ),
+              ],
             ),
           ],
         ),
-        // Branch 2: Anime Hub
+        // Branch 2: Anime Hub / TV Shows
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -68,6 +100,21 @@ final appRouter = GoRouter(
               name: 'anime',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: AnimeHubPage()),
+              routes: [
+                GoRoute(
+                  path: 'view-all',
+                  name: 'tv-view-all',
+                  pageBuilder: (context, state) {
+                    final args = state.extra as ViewAllArgs? ??
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'trending',
+                          title: 'Trending TV Shows',
+                        );
+                    return MaterialPage(child: ViewAllScreen(args: args));
+                  },
+                ),
+              ],
             ),
           ],
         ),

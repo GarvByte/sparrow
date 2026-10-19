@@ -7,8 +7,11 @@ import 'package:sparrow/features/home%20page/widgets/landscape_media_card.dart';
 import 'package:sparrow/features/home%20page/widgets/portrait_poster_card.dart';
 import 'package:sparrow/features/home%20page/widgets/section_header.dart';
 import 'package:sparrow/features/home%20page/widgets/sparrow_header.dart';
+import 'package:sparrow/features/view_all/view_all_args.dart';
+import 'package:sparrow/shared/genre_providers.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
+import 'package:sparrow/shared/navigation/view_all_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -65,8 +68,18 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                   SectionHeader(
                     leadingIcon: Icons.auto_awesome_rounded,
                     title: 'Top Anime & Animation',
-                    actionText: 'See All',
-                    onTrailingTap: () {},
+                    actionText: 'View All',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'genre',
+                          genreId: 16,
+                          title: 'Top Anime & Animation',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _buildPosterCarousel(
@@ -82,14 +95,17 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                   SectionHeader(
                     overline: 'TOP PICKS TODAY',
                     title: 'Trending TV Shows',
-                    trailing: Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: ColorPalette.primaryGreen,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    actionText: 'View All',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'trending',
+                          title: 'Trending TV Shows',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _buildPosterCarousel(
@@ -107,6 +123,17 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                     leadingIcon: Icons.local_fire_department_rounded,
                     title: 'Popular TV Shows',
                     tag: 'HOT',
+                    actionText: 'View All',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'popular',
+                          title: 'Popular TV Shows',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _buildPosterCarousel(
@@ -122,14 +149,17 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                   SectionHeader(
                     title: 'Currently Airing Series',
                     subtitle: 'Catch the latest weekly broadcast episodes',
-                    trailing: Text(
-                      'Weekly Broadcast',
-                      style: TextStyle(
-                        color: ColorPalette.textMuted,
-                        fontSize: responsive.sp(11, min: 9.5, max: 12),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    actionText: 'View All',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'on_the_air',
+                          title: 'Currently Airing Series',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _buildPosterCarousel(
@@ -145,6 +175,17 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                   SectionHeader(
                     title: 'Critically Acclaimed Shows',
                     tag: 'TOP RATED',
+                    actionText: 'View All',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'tv',
+                          categoryType: 'top_rated',
+                          title: 'Critically Acclaimed Shows',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _buildPosterCarousel(
@@ -153,6 +194,9 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                     width: responsive.animePosterWidth,
                     responsive: responsive,
                   ),
+
+                  // 7. Genre-Based TV Sections
+                  ..._buildTvGenreSections(context, ref, responsive),
                 ],
               ),
             ),
@@ -268,6 +312,57 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
           ),
         ),
       ),
+    );
+  }
+
+  List<Widget> _buildTvGenreSections(
+    BuildContext context,
+    WidgetRef ref,
+    SparrowResponsive responsive,
+  ) {
+    final genresAsync = ref.watch(tvGenresProvider);
+    const selectedGenreIds = [10759, 18, 35, 80, 9648, 10765];
+
+    return genresAsync.when(
+      data: (allGenres) {
+        final genresToShow = allGenres
+            .where((g) => selectedGenreIds.contains(g.id))
+            .toList();
+
+        return genresToShow.map((genre) {
+          final tvAsync = ref.watch(tvByGenreProvider(genre.id));
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+              SectionHeader(
+                title: genre.name,
+                actionText: 'View All',
+                onTrailingTap: () {
+                  openViewAll(
+                    context,
+                    ViewAllArgs(
+                      mediaType: 'tv',
+                      categoryType: 'genre',
+                      genreId: genre.id,
+                      title: '${genre.name} Shows',
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              _buildPosterCarousel(
+                asyncValue: tvAsync,
+                height: responsive.animePosterHeight,
+                width: responsive.animePosterWidth,
+                responsive: responsive,
+              ),
+            ],
+          );
+        }).toList();
+      },
+      loading: () => const [SizedBox.shrink()],
+      error: (_, __) => const [SizedBox.shrink()],
     );
   }
 }

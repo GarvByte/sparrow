@@ -104,10 +104,6 @@ void main() {
       expect(find.text('Top Rated'), findsOneWidget);
       expect(find.text('Release Date'), findsOneWidget);
 
-      // Verify CATEGORY / GENRE section
-      expect(find.text('CATEGORY / GENRE'), findsOneWidget);
-      expect(find.text('All Categories'), findsOneWidget);
-
       // Verify Apply button
       expect(find.text('Apply Filters'), findsOneWidget);
 

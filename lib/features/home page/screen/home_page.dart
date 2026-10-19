@@ -12,6 +12,9 @@ import '../widgets/featured_hero_card.dart';
 import '../widgets/horizontal_media_carousel.dart';
 import '../widgets/landscape_media_card.dart';
 import '../widgets/portrait_poster_card.dart';
+import 'package:sparrow/features/view_all/view_all_args.dart';
+import 'package:sparrow/shared/genre_providers.dart';
+import 'package:sparrow/shared/navigation/view_all_navigation.dart';
 import '../widgets/section_header.dart';
 import '../widgets/sparrow_header.dart';
 
@@ -120,6 +123,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                     overline: 'TOP PICKS TODAY',
                     title: 'Trending Now',
                     actionText: "View all",
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'movie',
+                          categoryType: 'trending',
+                          title: 'Trending Movies',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   trendingNowMovies.when(
@@ -172,7 +185,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                     leadingIcon: Icons.auto_awesome_rounded,
                     title: 'Popular Movies',
                     actionText: 'View all',
-                    onTrailingTap: () {},
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'movie',
+                          categoryType: 'popular',
+                          title: 'Popular Movies',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   popularMovies.when(
@@ -225,14 +247,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                   // 6. Blockbusters & Classics Section
                   SectionHeader(
                     title: 'Blockbusters & Classics',
-                    trailing: Text(
-                      'Worldwide Hits',
-                      style: TextStyle(
-                        color: ColorPalette.textMuted,
-                        fontSize: responsive.sp(11, min: 9.5, max: 12),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    actionText: 'View all',
+                    onTrailingTap: () {
+                      openViewAll(
+                        context,
+                        const ViewAllArgs(
+                          mediaType: 'movie',
+                          categoryType: 'top_rated',
+                          title: 'Blockbusters & Classics',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   topRatedMovies.when(
@@ -279,6 +304,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       );
                     },
                   ),
+
+                  // 7. Genre-Based Movie Sections
+                  ..._buildGenreSections(context, ref, responsive),
                 ],
               ),
             ),
@@ -288,6 +316,77 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  List<Widget> _buildGenreSections(
+    BuildContext context,
+    WidgetRef ref,
+    SparrowResponsive responsive,
+  ) {
+    final genresAsync = ref.watch(movieGenresProvider);
+    const selectedGenreIds = [28, 35, 53, 878, 27]; // Action, Comedy, Thriller, Sci-Fi, Horror
+
+    return genresAsync.when(
+      data: (allGenres) {
+        final genresToShow = allGenres
+            .where((g) => selectedGenreIds.contains(g.id))
+            .toList();
+
+        return genresToShow.map((genre) {
+          final moviesAsync = ref.watch(movieByGenreProvider(genre.id));
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+              SectionHeader(
+                title: genre.name,
+                actionText: 'View all',
+                onTrailingTap: () {
+                  openViewAll(
+                    context,
+                    ViewAllArgs(
+                      mediaType: 'movie',
+                      categoryType: 'genre',
+                      genreId: genre.id,
+                      title: '${genre.name} Movies',
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              moviesAsync.when(
+                data: (items) {
+                  if (items.isEmpty) return const SizedBox.shrink();
+                  return HorizontalMediaCarousel(
+                    height: responsive.animePosterHeight,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return PortraitPosterCard(
+                        item: item,
+                        width: responsive.animePosterWidth,
+                        onTap: () => openMovieDetails(context, item),
+                      );
+                    },
+                  );
+                },
+                loading: () => SizedBox(
+                  height: responsive.animePosterHeight,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: ColorPalette.primaryGreen,
+                    ),
+                  ),
+                ),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
+            ],
+          );
+        }).toList();
+      },
+      loading: () => const [SizedBox.shrink()],
+      error: (_, __) => const [SizedBox.shrink()],
     );
   }
 }

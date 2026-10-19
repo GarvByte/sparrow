@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/search/providers/master_movie_cover.dart';
-import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
@@ -112,21 +111,35 @@ class SparrowMastersCard extends ConsumerWidget {
   }
 }
 
-class _MasterShowcase extends StatelessWidget {
+typedef _MasterShowcase = MasterShowcase;
+
+class MasterShowcase extends StatelessWidget {
   final MediaItem movie;
   final VoidCallback? onPlayTap;
   final VoidCallback? onTap;
+  final String? badgeText;
 
-  const _MasterShowcase({required this.movie, this.onPlayTap, this.onTap});
+  const MasterShowcase({
+    super.key,
+    required this.movie,
+    this.onPlayTap,
+    this.onTap,
+    this.badgeText,
+  });
 
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final bannerHeight = responsive.scale(190, min: 160, max: 240);
 
-    final imageUrl = responsive.isTvOrDesktop
-        ? imageBaseUrl2 + movie.imageUrl
-        : imageBaseUrl + movie.imageUrl;
+    final rawUrl = (movie.backdropUrl != null && movie.backdropUrl!.isNotEmpty)
+        ? movie.backdropUrl!
+        : movie.imageUrl;
+    final imageUrl = rawUrl.startsWith('http')
+        ? rawUrl
+        : (responsive.isTvOrDesktop
+            ? imageBaseUrl2 + rawUrl
+            : imageBaseUrl + rawUrl);
     final title = movie.title;
     final overview = movie.overview ?? 'No overview';
     final rating = movie.rating ?? 9.4;
@@ -215,7 +228,7 @@ class _MasterShowcase extends StatelessWidget {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                              'Trending #1',
+                              badgeText ?? 'Trending #1',
                               style: TextStyle(
                                 color: ColorPalette.primaryGreen,
                                 fontSize: responsive.sp(9.5, min: 8.5, max: 11),

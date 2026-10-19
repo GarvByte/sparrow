@@ -296,7 +296,7 @@ void main() {
       expect(find.text('Breaking Bad'), findsOneWidget);
       expect(find.text('Watch Now'), findsOneWidget);
       expect(find.text('HEVC 2160p · HDR10+ · DOLBY ATMOS'), findsOneWidget);
-      expect(find.text('SERIES DOSSIER'), findsOneWidget);
+      expect(find.text('PRODUCTION METADATA'), findsOneWidget);
       expect(find.byType(MovieAudioDropdown), findsOneWidget);
     });
   });

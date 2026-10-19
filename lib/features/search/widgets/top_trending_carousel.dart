@@ -51,34 +51,6 @@ class TopTrendingCarousel extends ConsumerWidget {
                   ),
                 ],
               ),
-              InkWell(
-                onTap: onSeeAllTap ?? () {},
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'See all',
-                        style: TextStyle(
-                          color: ColorPalette.primaryGreen,
-                          fontSize: responsive.sp(12, min: 10.5, max: 13),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: ColorPalette.primaryGreen,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),
