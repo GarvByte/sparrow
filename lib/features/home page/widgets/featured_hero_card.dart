@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
@@ -74,68 +75,73 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
           builder: (context, constraints) {
             return SizedBox(
               height: carouselHeight,
-              child: CarouselSlider.builder(
-                carouselController: _carouselController,
-                itemCount: data.length,
-                options: CarouselOptions(
-                  height: carouselHeight,
-                  viewportFraction: viewportFraction,
-                  initialPage: selectedIndex,
-                  enableInfiniteScroll: true,
-                  enlargeCenterPage:
-                      false, // Custom 3D layered transform inside _LayeredMovieCard
-                  padEnds: true,
-                  scrollPhysics: const BouncingScrollPhysics(),
-                  onPageChanged: (index, reason) {
-                    // Update Riverpod selection state cleanly on settle
-                    ref.read(selectedFeaturedIndexProvider.notifier).state =
-                        index;
+              child: DpadRegion(
+                memoryKey: 'home/featuredCarousel',
+                horizontalEdge: DpadEdgeBehavior.wrap,
+                verticalEdge: DpadEdgeBehavior.leave,
+                child: CarouselSlider.builder(
+                  carouselController: _carouselController,
+                  itemCount: data.length,
+                  options: CarouselOptions(
+                    height: carouselHeight,
+                    viewportFraction: viewportFraction,
+                    initialPage: selectedIndex,
+                    enableInfiniteScroll: true,
+                    enlargeCenterPage:
+                        false, // Custom 3D layered transform inside _LayeredMovieCard
+                    padEnds: true,
+                    scrollPhysics: const BouncingScrollPhysics(),
+                    onPageChanged: (index, reason) {
+                      // Update Riverpod selection state cleanly on settle
+                      ref.read(selectedFeaturedIndexProvider.notifier).state =
+                          index;
+                    },
+                  ),
+                  itemBuilder: (context, index, realIndex) {
+                    final isCurrent = index == selectedIndex;
+                    final movieInfo = data[index];
+
+                    final backdrop = movieInfo['backdrop_path'] as String?;
+                    final poster = movieInfo['poster_path'] as String?;
+                    final item = MediaItem(
+                      id: movieInfo['id'].toString(),
+                      title: movieInfo['title'] ?? 'Untitled',
+                      rating: (movieInfo['vote_average'] as num?)?.toDouble(),
+                      ratingCount: movieInfo['vote_count']?.toString(),
+                      imageUrl: poster != null && poster.isNotEmpty
+                          ? imageBaseUrl + poster
+                          : (backdrop != null && backdrop.isNotEmpty
+                                ? imageBaseUrl + backdrop
+                                : ''),
+                      genres: movieInfo['genre'] ?? [],
+                      isAdult: movieInfo['adult'] as bool? ?? false,
+                      overview: movieInfo['overview'] as String?,
+                      releaseDate: movieInfo['release_date'] as String?,
+                      backdropUrl: backdrop != null && backdrop.isNotEmpty
+                          ? imageBaseUrl2 + backdrop
+                          : null,
+                    );
+                    return _LayeredMovieCard(
+                      item: item,
+                      isCurrent: isCurrent,
+                      cardHeight: cardHeight,
+                      posterHeight: posterHeight,
+                      // movieInfo: data[index],
+                      onTap: () {
+                        if (!isCurrent) {
+                          _carouselController.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
+                        } else {
+                          widget.onWatchNow?.call(item);
+                        }
+                      },
+                      onWatchNow: () => widget.onWatchNow?.call(item),
+                    );
                   },
                 ),
-                itemBuilder: (context, index, realIndex) {
-                  final isCurrent = index == selectedIndex;
-                  final movieInfo = data[index];
-
-                  final backdrop = movieInfo['backdrop_path'] as String?;
-                  final poster = movieInfo['poster_path'] as String?;
-                  final item = MediaItem(
-                    id: movieInfo['id'].toString(),
-                    title: movieInfo['title'] ?? 'Untitled',
-                    rating: (movieInfo['vote_average'] as num?)?.toDouble(),
-                    ratingCount: movieInfo['vote_count']?.toString(),
-                    imageUrl: poster != null && poster.isNotEmpty
-                        ? imageBaseUrl + poster
-                        : (backdrop != null && backdrop.isNotEmpty
-                              ? imageBaseUrl + backdrop
-                              : ''),
-                    genres: movieInfo['genre'] ?? [],
-                    isAdult: movieInfo['adult'] as bool? ?? false,
-                    overview: movieInfo['overview'] as String?,
-                    releaseDate: movieInfo['release_date'] as String?,
-                    backdropUrl: backdrop != null && backdrop.isNotEmpty
-                        ? imageBaseUrl2 + backdrop
-                        : null,
-                  );
-                  return _LayeredMovieCard(
-                    item: item,
-                    isCurrent: isCurrent,
-                    cardHeight: cardHeight,
-                    posterHeight: posterHeight,
-                    // movieInfo: data[index],
-                    onTap: () {
-                      if (!isCurrent) {
-                        _carouselController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeOutCubic,
-                        );
-                      } else {
-                        widget.onWatchNow?.call(item);
-                      }
-                    },
-                    onWatchNow: () => widget.onWatchNow?.call(item),
-                  );
-                },
               ),
             );
           },

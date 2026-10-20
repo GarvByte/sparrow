@@ -1,5 +1,7 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
@@ -68,11 +70,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SizedBox(height: responsive.scale(14, min: 10, max: 20)),
 
                   // 2. Continue Watching Section
-                  SectionHeader(
-                    leadingIcon: Icons.history_rounded,
-                    title: 'Continue Watching',
-                    actionText: 'See All',
-                    onTrailingTap: () {},
+                  DpadRegion(
+                    memoryKey: 'home/continueWatching',
+                    child: SectionHeader(
+                      leadingIcon: Icons.history_rounded,
+                      title: 'Continue Watching',
+                      actionText: 'See All',
+                      onTrailingTap: () {},
+                    ),
                   ),
                   const SizedBox(height: 8),
                   trendingTvShows.when(
@@ -102,10 +107,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ? imageBaseUrl2 + backdrop
                                 : null,
                           );
-                          return ContinueWatchingCard(
-                            item: item,
-                            width: responsive.continueWatchingWidth,
-                            onTap: () => openMovieDetails(context, item),
+                          return FocusablePosterCard(
+                            onSelected: () => openMovieDetails(context, item),
+
+                            child: ContinueWatchingCard(
+                              item: item,
+                              width: responsive.continueWatchingWidth,
+                              onTap: () => openMovieDetails(context, item),
+                            ),
                           );
                         },
                       );
@@ -119,20 +128,24 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
                   // 3. Trending Now Section
-                  SectionHeader(
-                    overline: 'TOP PICKS TODAY',
-                    title: 'Trending Now',
-                    actionText: "View all",
-                    onTrailingTap: () {
-                      openViewAll(
-                        context,
-                        const ViewAllArgs(
-                          mediaType: 'movie',
-                          categoryType: 'trending',
-                          title: 'Trending Movies',
-                        ),
-                      );
-                    },
+                  DpadRegion(
+                    memoryKey: 'home/continueWatching',
+
+                    child: SectionHeader(
+                      overline: 'TOP PICKS TODAY',
+                      title: 'Trending Now',
+                      actionText: "View all",
+                      onTrailingTap: () {
+                        openViewAll(
+                          context,
+                          const ViewAllArgs(
+                            mediaType: 'movie',
+                            categoryType: 'trending',
+                            title: 'Trending Movies',
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   trendingNowMovies.when(
@@ -162,12 +175,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ? imageBaseUrl2 + backdrop
                                 : null,
                           );
-                          return PortraitPosterCard(
-                            item: item,
-                            width: responsive.trendingPosterWidth,
-                            trending: true,
-                            index: index,
-                            onTap: () => openMovieDetails(context, item),
+                          return Padding(
+                            padding: EdgeInsetsGeometry.all(8),
+                            child: FocusablePosterCard(
+                              onSelected: () => openMovieDetails(context, item),
+                              child: PortraitPosterCard(
+                                item: item,
+                                width: responsive.trendingPosterWidth,
+                                trending: true,
+                                index: index,
+                                onTap: () => openMovieDetails(context, item),
+                              ),
+                            ),
                           );
                         },
                       );
@@ -181,20 +200,24 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
                   // 5. Popular Movie Section
-                  SectionHeader(
-                    leadingIcon: Icons.auto_awesome_rounded,
-                    title: 'Popular Movies',
-                    actionText: 'View all',
-                    onTrailingTap: () {
-                      openViewAll(
-                        context,
-                        const ViewAllArgs(
-                          mediaType: 'movie',
-                          categoryType: 'popular',
-                          title: 'Popular Movies',
-                        ),
-                      );
-                    },
+                  DpadRegion(
+                    memoryKey: 'home/continueWatching',
+
+                    child: SectionHeader(
+                      leadingIcon: Icons.auto_awesome_rounded,
+                      title: 'Popular Movies',
+                      actionText: 'View all',
+                      onTrailingTap: () {
+                        openViewAll(
+                          context,
+                          const ViewAllArgs(
+                            mediaType: 'movie',
+                            categoryType: 'popular',
+                            title: 'Popular Movies',
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   popularMovies.when(
@@ -224,10 +247,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ? imageBaseUrl2 + backdrop
                                 : null,
                           );
-                          return PortraitPosterCard(
-                            item: item,
-                            width: responsive.animePosterWidth,
-                            onTap: () => openMovieDetails(context, item),
+                          return Padding(
+                            padding: EdgeInsetsGeometry.all(8),
+                            child: FocusablePosterCard(
+                              onSelected: () => openMovieDetails(context, item),
+                              child: PortraitPosterCard(
+                                item: item,
+                                width: responsive.animePosterWidth,
+                                onTap: () => openMovieDetails(context, item),
+                              ),
+                            ),
                           );
                         },
                       );
@@ -245,19 +274,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
                   // 6. Blockbusters & Classics Section
-                  SectionHeader(
-                    title: 'Blockbusters & Classics',
-                    actionText: 'View all',
-                    onTrailingTap: () {
-                      openViewAll(
-                        context,
-                        const ViewAllArgs(
-                          mediaType: 'movie',
-                          categoryType: 'top_rated',
-                          title: 'Blockbusters & Classics',
-                        ),
-                      );
-                    },
+                  DpadRegion(
+                    memoryKey: 'home/continueWatching',
+
+                    child: SectionHeader(
+                      title: 'Blockbusters & Classics',
+                      actionText: 'View all',
+                      onTrailingTap: () {
+                        openViewAll(
+                          context,
+                          const ViewAllArgs(
+                            mediaType: 'movie',
+                            categoryType: 'top_rated',
+                            title: 'Blockbusters & Classics',
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   topRatedMovies.when(
@@ -287,10 +320,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ? imageBaseUrl2 + backdrop
                                 : null,
                           );
-                          return PortraitPosterCard(
-                            item: item,
-                            width: responsive.animePosterWidth,
-                            onTap: () => openMovieDetails(context, item),
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: FocusablePosterCard(
+                              onSelected: () => openMovieDetails(context, item),
+
+                              child: PortraitPosterCard(
+                                item: item,
+                                width: responsive.animePosterWidth,
+                                onTap: () => openMovieDetails(context, item),
+                              ),
+                            ),
                           );
                         },
                       );
@@ -325,7 +365,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     SparrowResponsive responsive,
   ) {
     final genresAsync = ref.watch(movieGenresProvider);
-    const selectedGenreIds = [28, 35, 53, 878, 27]; // Action, Comedy, Thriller, Sci-Fi, Horror
+    const selectedGenreIds = [
+      28,
+      35,
+      53,
+      878,
+      27,
+    ]; // Action, Comedy, Thriller, Sci-Fi, Horror
 
     return genresAsync.when(
       data: (allGenres) {
@@ -339,20 +385,24 @@ class _HomePageState extends ConsumerState<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: responsive.scale(18, min: 12, max: 24)),
-              SectionHeader(
-                title: genre.name,
-                actionText: 'View all',
-                onTrailingTap: () {
-                  openViewAll(
-                    context,
-                    ViewAllArgs(
-                      mediaType: 'movie',
-                      categoryType: 'genre',
-                      genreId: genre.id,
-                      title: '${genre.name} Movies',
-                    ),
-                  );
-                },
+              DpadRegion(
+                memoryKey: 'home/${genre.name}',
+
+                child: SectionHeader(
+                  title: genre.name,
+                  actionText: 'View all',
+                  onTrailingTap: () {
+                    openViewAll(
+                      context,
+                      ViewAllArgs(
+                        mediaType: 'movie',
+                        categoryType: 'genre',
+                        genreId: genre.id,
+                        title: '${genre.name} Movies',
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 8),
               moviesAsync.when(
@@ -363,10 +413,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
-                      return PortraitPosterCard(
-                        item: item,
-                        width: responsive.animePosterWidth,
-                        onTap: () => openMovieDetails(context, item),
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FocusablePosterCard(
+                          onSelected: () => openMovieDetails(context, item),
+
+                          child: PortraitPosterCard(
+                            item: item,
+                            width: responsive.animePosterWidth,
+                            onTap: () => openMovieDetails(context, item),
+                          ),
+                        ),
                       );
                     },
                   );

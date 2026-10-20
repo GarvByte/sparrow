@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/about_page/providers/similar_movies_provider.dart';
 import 'package:sparrow/features/home%20page/widgets/portrait_poster_card.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -85,12 +86,19 @@ class SimilarMoviesSection extends ConsumerWidget {
                 itemCount: movies.length,
                 itemBuilder: (context, index) {
                   final movie = movies[index];
-                  return PortraitPosterCard(
-                    item: movie,
-                    width: posterWidth,
-                    trending: false,
-                    index: index,
-                    onTap: () => openMovieDetails(context, movie),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FocusablePosterCard(
+                      onSelected: () => openMovieDetails(context, movie),
+
+                      child: PortraitPosterCard(
+                        item: movie,
+                        width: posterWidth,
+                        trending: false,
+                        index: index,
+                        onTap: () => openMovieDetails(context, movie),
+                      ),
+                    ),
                   );
                 },
               ),

@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/screens/movie_details_screen.dart';
@@ -7,6 +8,7 @@ import 'package:sparrow/features/search/screens/search_page.dart';
 import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
 import 'package:sparrow/features/view_all/view_all_args.dart';
 import 'package:sparrow/features/view_all/view_all_screen.dart';
+import 'package:sparrow/features/watchlist/screen/watchlist_page.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -118,18 +120,14 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-        // Branch 3: Profile & Settings
+        // Branch 3: Watchlist
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/profile',
-              name: 'profile',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: TabPlaceholderPage(
-                  title: 'Profile & Settings',
-                  icon: Icons.person_rounded,
-                ),
-              ),
+              path: '/watchlist',
+              name: 'watchlist',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: WatchlistPage()),
             ),
           ],
         ),

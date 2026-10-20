@@ -1,9 +1,11 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
 import 'package:sparrow/features/view_all/view_all_args.dart';
 import 'package:sparrow/features/view_all/view_all_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
@@ -63,9 +65,7 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
             _buildAppBar(context, topPadding, responsive),
 
             // Main Content Area
-            Expanded(
-              child: _buildBody(context, state, notifier, responsive),
-            ),
+            Expanded(child: _buildBody(context, state, notifier, responsive)),
           ],
         ),
       ),
@@ -264,10 +264,26 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
                 itemCount: state.items.length,
                 itemBuilder: (context, index) {
                   final item = state.items[index];
-                  return DiscoverPosterCard(
-                    item: item,
-                    showRank: false,
-                    onTap: () => _onMediaTap(item),
+                  return DpadRegion(
+                    memoryKey: 'viewall/${widget.args.categoryType}',
+                    child: DpadFocusable(
+                      onSelect: () => _onMediaTap(item),
+                      effects: [
+                        DpadBorderEffect(
+                          width: 2,
+                          color: ColorPalette.primaryGreen,
+                        ),
+                        DpadTintEffect(
+                          color: ColorPalette.fontWhite,
+                          opacity: 0.2,
+                        ),
+                      ],
+                      child: DiscoverPosterCard(
+                        item: item,
+                        showRank: false,
+                        onTap: () => _onMediaTap(item),
+                      ),
+                    ),
                   );
                 },
               ),

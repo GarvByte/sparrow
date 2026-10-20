@@ -66,8 +66,8 @@ class FloatingBottomNav extends StatelessWidget {
               _NavItem(
                 index: 3,
                 selectedIndex: currentIndex,
-                icon: Icons.person_rounded,
-                label: 'Profile',
+                icon: Icons.bookmarks_rounded,
+                label: 'Watchlist',
                 onTap: () => onTabSelected(3),
               ),
             ],

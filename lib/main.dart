@@ -1,11 +1,14 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/navigation/dpad_shortcut.dart';
+import 'features/watchlist/data/watchlist_storage.dart';
 import 'navigation/app_router.dart';
 import 'theme/color_palette.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -15,6 +18,7 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
+  await WatchlistStorage.init();
   runApp(const ProviderScope(child: SparrowApp()));
 }
 
@@ -41,6 +45,12 @@ class SparrowApp extends StatelessWidget {
           ),
         ),
         routerConfig: appRouter,
+        builder: (context, child) {
+          return Dpad.wrap(debugOverlay: false)(
+            context,
+            AppBackShortcuts(child: child ?? const SizedBox.shrink()),
+          );
+        },
         scrollBehavior: const CustomScrollBehavior(),
       ),
     );

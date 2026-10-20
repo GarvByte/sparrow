@@ -11,6 +11,8 @@ import 'package:sparrow/features/tv_show_details/widgets/tv_cast_section.dart';
 import 'package:sparrow/features/tv_show_details/widgets/tv_episode_carousel.dart';
 import 'package:sparrow/features/tv_show_details/widgets/tv_episode_list.dart';
 import 'package:sparrow/features/tv_show_details/widgets/tv_show_info_matrix.dart';
+import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
+import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -43,7 +45,28 @@ class TvShowDetailsScreen extends ConsumerStatefulWidget {
 
 class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
   bool _isSynopsisExpanded = false;
-  bool _isBookmarked = false;
+
+  void _toggleWatchlist(TvShowDetailInfo info, MediaItem initialItem) {
+    final item = WatchlistItem(
+      id: initialItem.id,
+      mediaType: 'tv',
+      title: info.name.isNotEmpty ? info.name : initialItem.title,
+      imageUrl: (info.posterUrl != null && info.posterUrl!.isNotEmpty)
+          ? info.posterUrl!
+          : initialItem.imageUrl,
+      backdropUrl: info.backdropUrl ?? initialItem.backdropUrl,
+      rating: info.rating ?? initialItem.rating,
+      ratingCount: info.ratingCount ?? initialItem.ratingCount,
+      genres: info.genres.isNotEmpty
+          ? info.genres
+          : initialItem.genres.map((e) => e.toString()).toList(),
+      releaseDate: info.firstAirDate ?? initialItem.releaseDate,
+      overview: info.overview ?? initialItem.overview,
+      isAdult: info.isAdult,
+      addedAt: DateTime.now(),
+    );
+    ref.read(watchlistProvider.notifier).toggle(item);
+  }
 
   MediaItem? _resolveMediaItem() {
     final data = widget.tvData;
@@ -112,6 +135,10 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     final info =
         detailsAsync.value ?? TvShowDetailInfo.fromMediaItem(initialItem);
 
+    final isBookmarked = ref.watch(
+      isWatchlistedProvider((mediaType: 'tv', id: initialItem.id)),
+    );
+
     final isTv = responsive.isTvOrDesktop;
     final isTablet = responsive.isTablet;
 
@@ -135,10 +162,20 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 80),
               child: isTv
-                  ? _buildTvLayout(context, info, initialItem)
+                  ? _buildTvLayout(context, info, initialItem, isBookmarked)
                   : (isTablet
-                        ? _buildTabletLayout(context, info, initialItem)
-                        : _buildMobileLayout(context, info, initialItem)),
+                        ? _buildTabletLayout(
+                            context,
+                            info,
+                            initialItem,
+                            isBookmarked,
+                          )
+                        : _buildMobileLayout(
+                            context,
+                            info,
+                            initialItem,
+                            isBookmarked,
+                          )),
             ),
           ],
         ),
@@ -154,6 +191,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     BuildContext context,
     TvShowDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final heroHeight = (responsive.width * 10 / 16).clamp(240.0, 360.0);
@@ -196,8 +234,8 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                 const SizedBox(height: 14),
               ],
 
-              // Primary Actions: Watch Now + My List + Download
-              _buildPrimaryActionRow(context, info),
+              // Primary Actions: Watch Now + My List
+              _buildPrimaryActionRow(context, info, item, isBookmarked),
               const SizedBox(height: 16),
 
               // Audio Stream Dropdown
@@ -263,6 +301,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     BuildContext context,
     TvShowDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final horizontalPadding = responsive.scale(36.0, min: 28.0, max: 48.0);
@@ -462,21 +501,11 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
 
                       // TV Bookmark Button
                       _buildTvGhostIconButton(
-                        icon: _isBookmarked
+                        icon: isBookmarked
                             ? Icons.bookmark_added_rounded
                             : Icons.bookmark_add_outlined,
-                        onTap: () {
-                          setState(() {
-                            _isBookmarked = !_isBookmarked;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 10),
-
-                      // TV Download Button
-                      _buildTvGhostIconButton(
-                        icon: Icons.download_rounded,
-                        onTap: () {},
+                        isSelected: isBookmarked,
+                        onTap: () => _toggleWatchlist(info, item),
                       ),
                       const SizedBox(width: 16),
 
@@ -736,6 +765,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     BuildContext context,
     TvShowDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final paddingH = responsive.scale(24.0, min: 20.0, max: 32.0);
@@ -772,20 +802,12 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                   Expanded(flex: 3, child: _buildWatchNowButton(context, info)),
                   const SizedBox(width: 12),
                   _buildGhostButton(
-                    icon: _isBookmarked
+                    icon: isBookmarked
                         ? Icons.bookmark_added_rounded
                         : Icons.add_rounded,
-                    label: 'My List',
-                    onTap: () {
-                      setState(() {
-                        _isBookmarked = !_isBookmarked;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  _buildGhostIconButton(
-                    icon: Icons.download_rounded,
-                    onTap: () {},
+                    label: isBookmarked ? 'In My List' : 'My List',
+                    isBookmarked: isBookmarked,
+                    onTap: () => _toggleWatchlist(info, item),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
@@ -1142,24 +1164,24 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     );
   }
 
-  Widget _buildPrimaryActionRow(BuildContext context, TvShowDetailInfo info) {
+  Widget _buildPrimaryActionRow(
+    BuildContext context,
+    TvShowDetailInfo info,
+    MediaItem item,
+    bool isBookmarked,
+  ) {
     return Row(
       children: [
         Expanded(child: _buildWatchNowButton(context, info)),
         const SizedBox(width: 10),
         _buildGhostButton(
-          icon: _isBookmarked
+          icon: isBookmarked
               ? Icons.bookmark_added_rounded
               : Icons.add_rounded,
-          label: 'My List',
-          onTap: () {
-            setState(() {
-              _isBookmarked = !_isBookmarked;
-            });
-          },
+          label: isBookmarked ? 'In My List' : 'My List',
+          isBookmarked: isBookmarked,
+          onTap: () => _toggleWatchlist(info, item),
         ),
-        const SizedBox(width: 8),
-        _buildGhostIconButton(icon: Icons.download_rounded, onTap: () {}),
       ],
     );
   }
@@ -1190,6 +1212,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool isBookmarked = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1198,9 +1221,16 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainerHigh,
+          color: isBookmarked
+              ? ColorPalette.primaryGreen.withValues(alpha: 0.15)
+              : ColorPalette.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+          border: Border.all(
+            color: isBookmarked
+                ? ColorPalette.primaryGreen.withValues(alpha: 0.6)
+                : ColorPalette.ghostBorder,
+            width: 0.8,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1208,7 +1238,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
             Icon(
               icon,
               size: 20,
-              color: _isBookmarked
+              color: isBookmarked
                   ? ColorPalette.primaryGreen
                   : ColorPalette.fontWhite,
             ),
@@ -1216,7 +1246,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
             Text(
               label,
               style: TextStyle(
-                color: _isBookmarked
+                color: isBookmarked
                     ? ColorPalette.primaryGreen
                     : ColorPalette.fontWhite,
                 fontSize: 12.5,
@@ -1229,29 +1259,11 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     );
   }
 
-  Widget _buildGhostIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-        ),
-        child: Icon(icon, size: 20, color: ColorPalette.fontWhite),
-      ),
-    );
-  }
 
   Widget _buildTvGhostIconButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool isSelected = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1260,11 +1272,22 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainer.withValues(alpha: 0.9),
+          color: isSelected
+              ? ColorPalette.primaryGreen.withValues(alpha: 0.2)
+              : ColorPalette.surfaceContainer.withValues(alpha: 0.9),
           shape: BoxShape.circle,
-          border: Border.all(color: ColorPalette.ghostBorderLight, width: 1),
+          border: Border.all(
+            color: isSelected
+                ? ColorPalette.primaryGreen
+                : ColorPalette.ghostBorderLight,
+            width: 1,
+          ),
         ),
-        child: Icon(icon, size: 24, color: ColorPalette.fontWhite),
+        child: Icon(
+          icon,
+          size: 24,
+          color: isSelected ? ColorPalette.primaryGreen : ColorPalette.fontWhite,
+        ),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,9 +6,10 @@ import 'package:sparrow/features/about_page/data/movie_detail_info.dart';
 import 'package:sparrow/features/about_page/providers/movie_details_provider.dart';
 import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
 import 'package:sparrow/features/about_page/widgets/movie_cast_section.dart';
-import 'package:sparrow/features/about_page/widgets/movie_details_header.dart';
 import 'package:sparrow/features/about_page/widgets/movie_info_matrix.dart';
 import 'package:sparrow/features/about_page/widgets/similar_movies_section.dart';
+import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
+import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -38,7 +38,28 @@ class MovieDetailsScreen extends ConsumerStatefulWidget {
 
 class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
   bool _isSynopsisExpanded = false;
-  bool _isBookmarked = false;
+
+  void _toggleWatchlist(MovieDetailInfo info, MediaItem initialItem) {
+    final item = WatchlistItem(
+      id: initialItem.id,
+      mediaType: 'movie',
+      title: info.title.isNotEmpty ? info.title : initialItem.title,
+      imageUrl: (info.posterUrl != null && info.posterUrl!.isNotEmpty)
+          ? info.posterUrl!
+          : initialItem.imageUrl,
+      backdropUrl: info.backdropUrl ?? initialItem.backdropUrl,
+      rating: info.rating ?? initialItem.rating,
+      ratingCount: info.ratingCount ?? initialItem.ratingCount,
+      genres: info.genres.isNotEmpty
+          ? info.genres
+          : initialItem.genres.map((e) => e.toString()).toList(),
+      releaseDate: info.releaseDate ?? initialItem.releaseDate,
+      overview: info.overview ?? initialItem.overview,
+      isAdult: info.isAdult,
+      addedAt: DateTime.now(),
+    );
+    ref.read(watchlistProvider.notifier).toggle(item);
+  }
 
   MediaItem? _resolveMediaItem() {
     final data = widget.movieData;
@@ -77,6 +98,10 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     final info =
         detailsAsync.value ?? MovieDetailInfo.fromMediaItem(initialItem);
 
+    final isBookmarked = ref.watch(
+      isWatchlistedProvider((mediaType: 'movie', id: initialItem.id)),
+    );
+
     final isTv = responsive.isTvOrDesktop;
     final isTablet = responsive.isTablet;
 
@@ -104,10 +129,20 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                 bottom: 80,
               ),
               child: isTv
-                  ? _buildTvLayout(context, info, initialItem)
+                  ? _buildTvLayout(context, info, initialItem, isBookmarked)
                   : (isTablet
-                        ? _buildTabletLayout(context, info, initialItem)
-                        : _buildMobileLayout(context, info, initialItem)),
+                        ? _buildTabletLayout(
+                            context,
+                            info,
+                            initialItem,
+                            isBookmarked,
+                          )
+                        : _buildMobileLayout(
+                            context,
+                            info,
+                            initialItem,
+                            isBookmarked,
+                          )),
             ),
           ],
         ),
@@ -123,6 +158,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     BuildContext context,
     MovieDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final heroHeight = (responsive.width * 10 / 16).clamp(240.0, 360.0);
@@ -166,8 +202,8 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                 const SizedBox(height: 14),
               ],
 
-              // Primary Actions: Watch Now + My List + Download
-              _buildPrimaryActionRow(context, info),
+              // Primary Actions: Watch Now + My List
+              _buildPrimaryActionRow(context, info, item, isBookmarked),
               const SizedBox(height: 16),
 
               // Mandatory Audio Stream Dropdown
@@ -329,6 +365,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     BuildContext context,
     MovieDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final horizontalPadding = responsive.scale(32.0, min: 24.0, max: 48.0);
@@ -483,21 +520,11 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
 
                       // TV Bookmark Button
                       _buildTvGhostIconButton(
-                        icon: _isBookmarked
+                        icon: isBookmarked
                             ? Icons.bookmark_added_rounded
                             : Icons.bookmark_add_outlined,
-                        onTap: () {
-                          setState(() {
-                            _isBookmarked = !_isBookmarked;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 10),
-
-                      // TV Download Button
-                      _buildTvGhostIconButton(
-                        icon: Icons.download_rounded,
-                        onTap: () {},
+                        isSelected: isBookmarked,
+                        onTap: () => _toggleWatchlist(info, item),
                       ),
                       const SizedBox(width: 16),
 
@@ -655,6 +682,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     BuildContext context,
     MovieDetailInfo info,
     MediaItem item,
+    bool isBookmarked,
   ) {
     final responsive = context.responsive;
     final paddingH = responsive.scale(24.0, min: 20.0, max: 32.0);
@@ -691,20 +719,12 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                   Expanded(flex: 3, child: _buildWatchNowButton(context)),
                   const SizedBox(width: 12),
                   _buildGhostButton(
-                    icon: _isBookmarked
+                    icon: isBookmarked
                         ? Icons.bookmark_added_rounded
                         : Icons.add_rounded,
-                    label: 'My List',
-                    onTap: () {
-                      setState(() {
-                        _isBookmarked = !_isBookmarked;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  _buildGhostIconButton(
-                    icon: Icons.download_rounded,
-                    onTap: () {},
+                    label: isBookmarked ? 'In My List' : 'My List',
+                    isBookmarked: isBookmarked,
+                    onTap: () => _toggleWatchlist(info, item),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -928,7 +948,12 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-  Widget _buildPrimaryActionRow(BuildContext context, MovieDetailInfo info) {
+  Widget _buildPrimaryActionRow(
+    BuildContext context,
+    MovieDetailInfo info,
+    MediaItem item,
+    bool isBookmarked,
+  ) {
     return Row(
       children: [
         // Watch Now Action
@@ -937,20 +962,13 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
 
         // My List
         _buildGhostButton(
-          icon: _isBookmarked
+          icon: isBookmarked
               ? Icons.bookmark_added_rounded
               : Icons.add_rounded,
-          label: 'My List',
-          onTap: () {
-            setState(() {
-              _isBookmarked = !_isBookmarked;
-            });
-          },
+          label: isBookmarked ? 'In My List' : 'My List',
+          isBookmarked: isBookmarked,
+          onTap: () => _toggleWatchlist(info, item),
         ),
-        const SizedBox(width: 8),
-
-        // Download
-        _buildGhostIconButton(icon: Icons.download_rounded, onTap: () {}),
       ],
     );
   }
@@ -981,6 +999,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool isBookmarked = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -989,9 +1008,16 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainerHigh,
+          color: isBookmarked
+              ? ColorPalette.primaryGreen.withValues(alpha: 0.15)
+              : ColorPalette.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+          border: Border.all(
+            color: isBookmarked
+                ? ColorPalette.primaryGreen.withValues(alpha: 0.6)
+                : ColorPalette.ghostBorder,
+            width: 0.8,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -999,7 +1025,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             Icon(
               icon,
               size: 20,
-              color: _isBookmarked
+              color: isBookmarked
                   ? ColorPalette.primaryGreen
                   : ColorPalette.fontWhite,
             ),
@@ -1007,7 +1033,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             Text(
               label,
               style: TextStyle(
-                color: _isBookmarked
+                color: isBookmarked
                     ? ColorPalette.primaryGreen
                     : ColorPalette.fontWhite,
                 fontSize: 12.5,
@@ -1020,29 +1046,11 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-  Widget _buildGhostIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-        ),
-        child: Icon(icon, size: 20, color: ColorPalette.fontWhite),
-      ),
-    );
-  }
 
   Widget _buildTvGhostIconButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool isSelected = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1051,11 +1059,22 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainer.withValues(alpha: 0.9),
+          color: isSelected
+              ? ColorPalette.primaryGreen.withValues(alpha: 0.2)
+              : ColorPalette.surfaceContainer.withValues(alpha: 0.9),
           shape: BoxShape.circle,
-          border: Border.all(color: ColorPalette.ghostBorderLight, width: 1),
+          border: Border.all(
+            color: isSelected
+                ? ColorPalette.primaryGreen
+                : ColorPalette.ghostBorderLight,
+            width: 1,
+          ),
         ),
-        child: Icon(icon, size: 24, color: ColorPalette.fontWhite),
+        child: Icon(
+          icon,
+          size: 24,
+          color: isSelected ? ColorPalette.primaryGreen : ColorPalette.fontWhite,
+        ),
       ),
     );
   }
