@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -30,7 +31,7 @@ class DiscoverPosterCard extends StatelessWidget {
     final responsive = context.responsive;
     final cardWidth = width;
 
-    return InkWell(
+    final card = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(responsive.radius(16)),
       child: SizedBox(
@@ -291,6 +292,12 @@ class DiscoverPosterCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    return FocusablePosterCard(
+      onSelected: onTap ?? () {},
+      borderRadius: BorderRadius.circular(responsive.radius(16)),
+      child: card,
     );
   }
 

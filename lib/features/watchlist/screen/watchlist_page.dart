@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:sparrow/features/home%20page/widgets/sparrow_header.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
 import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
 import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -21,6 +23,7 @@ enum WatchlistFilter { all, movies, tvShows }
 /// - Fast category filtering (All, Movies, TV Shows).
 /// - Preserves scroll position across tab navigation via [PageStorageKey].
 /// - Responsive grid scaling across phone, tablet, and TV displays.
+/// - Complete D-pad & keyboard navigation in TV layout.
 class WatchlistPage extends ConsumerStatefulWidget {
   const WatchlistPage({super.key});
 
@@ -225,27 +228,34 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
                   ),
                 )
               else
-                // Responsive Grid of Saved Posters
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing + 8,
-                    childAspectRatio: 2 / 3.75,
+                // Responsive Grid of Saved Posters wrapped in TV DpadRegion
+                DpadRegion(
+                  memoryKey: 'watchlist/grid',
+                  leftEdge: DpadEdgeBehavior.leave,
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing + 8,
+                      childAspectRatio: 2 / 3.75,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return FocusablePosterCard(
+                        onSelected: () => _onMediaTap(item),
+                        child: DiscoverPosterCard(
+                          item: item.toMediaItem(),
+                          showRank: false,
+                          showBookmark: false,
+                          onTap: () => _onMediaTap(item),
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return DiscoverPosterCard(
-                      item: item.toMediaItem(),
-                      showRank: false,
-                      showBookmark: false,
-                      onTap: () => _onMediaTap(item),
-                    );
-                  },
                 ),
             ],
           ),
@@ -284,7 +294,7 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
     required WatchlistFilter filter,
   }) {
     final isSelected = _selectedFilter == filter;
-    return InkWell(
+    final chipContent = InkWell(
       onTap: () {
         if (_selectedFilter != filter) {
           setState(() {
@@ -318,6 +328,18 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
         ),
       ),
     );
+
+    return TvFocusable(
+      onSelect: () {
+        if (_selectedFilter != filter) {
+          setState(() {
+            _selectedFilter = filter;
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: chipContent,
+    );
   }
 
   Widget _buildEmptyState(BuildContext context, double topOffset) {
@@ -349,29 +371,21 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: ColorPalette.ghostBorder,
-                    width: 1,
+                    width: 0.8,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorPalette.primaryGreen.withValues(alpha: 0.1),
-                      blurRadius: 24,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Icon(
                   Icons.bookmarks_outlined,
                   size: iconSize,
-                  color: ColorPalette.primaryGreen,
+                  color: ColorPalette.primaryGreen.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 20),
               Text(
                 'Your Watchlist is Empty',
-                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: ColorPalette.fontWhite,
-                  fontSize: responsive.sp(20, min: 17, max: 24),
+                  fontSize: responsive.sp(20, min: 18, max: 24),
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
@@ -380,43 +394,36 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 320),
                 child: const Text(
-                  'Save movies and TV shows to keep track of what you want to stream later.',
+                  'Explore trending blockbusters and hit TV series, then tap "My List" to save them here for offline access.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: ColorPalette.textMuted,
-                    fontSize: 13.5,
-                    height: 1.5,
+                    fontSize: 13,
+                    height: 1.45,
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.go('/search');
-                },
-                icon: const Icon(
-                  Icons.explore_rounded,
-                  size: 20,
-                  color: Colors.black,
-                ),
-                label: const Text(
-                  'Explore Titles',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
+              TvFocusable(
+                onSelect: () => context.go('/'),
+                borderRadius: BorderRadius.circular(24),
+                child: ElevatedButton.icon(
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(Icons.explore_rounded, size: 18),
+                  label: const Text(
+                    'Explore Titles',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorPalette.primaryGreen,
-                  elevation: 6,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorPalette.primaryGreen,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
                 ),
               ),

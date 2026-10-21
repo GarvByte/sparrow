@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -87,9 +89,7 @@ class TvEpisodeCard extends StatelessWidget {
                           const ErrorImagePlaceholder(),
 
                         // Gradient Scrim
-                        Container(
-                          color: Colors.black.withValues(alpha: 0.25),
-                        ),
+                        Container(color: Colors.black.withValues(alpha: 0.25)),
 
                         // Centered Play Button
                         Center(
@@ -139,34 +139,31 @@ class TvEpisodeCard extends StatelessWidget {
                           height: 1.25,
                         ),
                       ),
-                      if (episode.runtimeFormatted.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                      const SizedBox(height: 4),
+                      if (episode.runtimeFormatted.isNotEmpty)
                         Text(
                           episode.runtimeFormatted,
-                          style: const TextStyle(
-                            color: ColorPalette.primaryGreen,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
+                          style: TextStyle(
+                            color: ColorPalette.textMuted,
+                            fontSize: responsive.sp(11.5, min: 10, max: 13),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ),
               ],
             ),
-
-            // Overview text below
             if (episode.overview.isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 episode.overview,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: ColorPalette.textMuted,
-                  fontSize: responsive.sp(12, min: 11, max: 13.5),
-                  height: 1.45,
+                  fontSize: responsive.sp(12, min: 10.5, max: 13.5),
+                  height: 1.4,
                 ),
               ),
             ],
@@ -181,159 +178,213 @@ class TvEpisodeCard extends StatelessWidget {
     const cardWidth = 320.0;
     const thumbHeight = cardWidth * 9 / 16;
 
-    return Container(
-      width: cardWidth,
-      margin: const EdgeInsets.only(right: 18),
-      decoration: BoxDecoration(
-        color: ColorPalette.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: ColorPalette.ghostBorderLight,
-          width: 0.8,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPlay,
+    final card = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        // padding: EdgeInsets.all(8),
+        width: cardWidth,
+        decoration: BoxDecoration(
+          color: ColorPalette.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 16:9 Thumbnail Header
-              SizedBox(
-                width: cardWidth,
-                height: thumbHeight,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (episode.stillUrl.isNotEmpty)
-                        CachedNetworkImage(
-                          imageUrl: episode.stillUrl,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) =>
-                              const ErrorImagePlaceholder(),
-                        )
-                      else
-                        const ErrorImagePlaceholder(),
+          border: Border.all(color: ColorPalette.ghostBorderLight, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPlay,
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 16:9 Thumbnail Header
+                SizedBox(
+                  width: cardWidth,
+                  height: thumbHeight,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (episode.stillUrl.isNotEmpty)
+                          CachedNetworkImage(
+                            imageUrl: episode.stillUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) =>
+                                const ErrorImagePlaceholder(),
+                          )
+                        else
+                          const ErrorImagePlaceholder(),
 
-                      // Gradient Scrim
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              ColorPalette.backgroundBlack.withValues(alpha: 0.7),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Centered Play Button
-                      Center(
-                        child: Container(
-                          width: 46,
-                          height: 46,
+                        // Gradient Scrim
+                        Container(
                           decoration: BoxDecoration(
-                            color: ColorPalette.primaryGreen,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: ColorPalette.primaryGreen.withValues(alpha: 0.4),
-                                blurRadius: 14,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow_rounded,
-                            size: 28,
-                            color: Colors.black,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                ColorPalette.backgroundBlack.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      // Runtime Pill bottom right
-                      if (episode.runtimeFormatted.isNotEmpty)
+                        // Centered Play Button
+                        Center(
+                          child: Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: ColorPalette.primaryGreen,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ColorPalette.primaryGreen.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  blurRadius: 14,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 28,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+
+                        // Runtime Pill bottom right
+                        if (episode.runtimeFormatted.isNotEmpty)
+                          Positioned(
+                            bottom: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ColorPalette.backgroundBlack.withValues(
+                                  alpha: 0.85,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: ColorPalette.ghostBorder,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Text(
+                                episode.runtimeFormatted,
+                                style: const TextStyle(
+                                  color: ColorPalette.fontWhite,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // Episode Number Pill top left
                         Positioned(
-                          bottom: 8,
-                          right: 8,
+                          top: 8,
+                          left: 8,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 7,
                               vertical: 2.5,
                             ),
                             decoration: BoxDecoration(
-                              color: ColorPalette.backgroundBlack.withValues(alpha: 0.85),
+                              color: ColorPalette.backgroundBlack.withValues(
+                                alpha: 0.85,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(
-                                color: ColorPalette.ghostBorder,
-                                width: 0.5,
+                                color: ColorPalette.primaryGreen.withValues(
+                                  alpha: 0.5,
+                                ),
+                                width: 0.8,
                               ),
                             ),
                             child: Text(
-                              episode.runtimeFormatted,
+                              'EP ${episode.episodeNumber}',
                               style: const TextStyle(
-                                color: ColorPalette.fontWhite,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
+                                color: ColorPalette.primaryGreen,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Metadata Body
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        episode.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: ColorPalette.fontWhite,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        episode.overview.isNotEmpty
+                            ? episode.overview
+                            : 'No episode synopsis provided.',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: ColorPalette.textMuted,
+                          fontSize: 12.5,
+                          height: 1.45,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
-
-              // Title and Description body
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      episode.episodeLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: ColorPalette.fontWhite,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      episode.overview.isNotEmpty
-                          ? episode.overview
-                          : 'No episode synopsis provided.',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: ColorPalette.textMuted,
-                        fontSize: 12.5,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+
+    return DpadFocusable(
+      effects: [
+        DpadBorderEffect(
+          width: 3,
+          color: ColorPalette.primaryGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        DpadTintEffect(color: ColorPalette.fontWhite, opacity: 0.2),
+      ],
+      onSelect: () => onPlay?.call(),
+      child: card,
     );
   }
 }

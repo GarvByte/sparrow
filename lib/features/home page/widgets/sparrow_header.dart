@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 
@@ -16,7 +17,6 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
     final responsive = context.responsive;
     final headerHeight = responsive.headerHeight;
     final logoSize = responsive.scale(36, min: 30, max: 40);
-    final avatarSize = responsive.scale(34, min: 30, max: 38);
     final buttonSize = responsive.scale(38, min: 34, max: 42);
 
     return Container(
@@ -89,49 +89,17 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
                 ],
               ),
 
-              // Action Buttons: Search, Notifications, Profile
-              Row(
-                children: [
-                  _HeaderCircleButton(
-                    icon: Icons.search_rounded,
-                    size: buttonSize,
-                    onTap: () {
-                      context.go('/search');
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _HeaderCircleButton(
-                    icon: Icons.notifications_none_rounded,
-                    size: buttonSize,
-                    hasBadge: true,
-                    onTap: () {},
-                  ),
-                  const SizedBox(width: 10),
-                  // Profile avatar with neon green outline
-                  Container(
-                    width: avatarSize,
-                    height: avatarSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: ColorPalette.primaryGreen,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBzw6KngHnEuEUQZgpirQJpydvWlo7sYvciVj5v6folIX3wZ35CrwnANIQ9PpogR_GWkR9r_oxBwUjJePVluMVe7njr2Jy8-L9x9UfStxxHHazAL9kbHJwkn_o4WIm2TPvou8AdajUyQDwyE9M2o-EZ9KD5xI1LptNq1758npagA7jv3oTUOV7EzS094DweR3aXdMBIq6V5SPHZ_l4cRZSAH8mdyU8lC208plJ-7N2KUcYPfnlJaOILrw',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.person,
-                              size: 20,
-                              color: ColorPalette.fontWhite,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
+              // Action Button: Search (Notifications & Profile removed across all layouts)
+              TvFocusable(
+                onSelect: () => context.go('/search'),
+                borderRadius: BorderRadius.circular(buttonSize / 2),
+                child: _HeaderCircleButton(
+                  icon: Icons.search_rounded,
+                  size: buttonSize,
+                  onTap: () {
+                    context.go('/search');
+                  },
+                ),
               ),
             ],
           ),
@@ -144,13 +112,11 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
 class _HeaderCircleButton extends StatelessWidget {
   final IconData icon;
   final double size;
-  final bool hasBadge;
   final VoidCallback onTap;
 
   const _HeaderCircleButton({
     required this.icon,
     this.size = 38.0,
-    this.hasBadge = false,
     required this.onTap,
   });
 
@@ -167,28 +133,12 @@ class _HeaderCircleButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              icon,
-              size: (size * 0.52).clamp(16.0, 22.0),
-              color: ColorPalette.fontWhite,
-            ),
-            if (hasBadge)
-              Positioned(
-                top: 7,
-                right: 7,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: ColorPalette.primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-          ],
+        child: Center(
+          child: Icon(
+            icon,
+            size: (size * 0.52).clamp(16.0, 22.0),
+            color: ColorPalette.fontWhite,
+          ),
         ),
       ),
     );

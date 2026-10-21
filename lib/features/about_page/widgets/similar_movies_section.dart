@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/about_page/providers/similar_movies_provider.dart';
@@ -33,6 +34,35 @@ class SimilarMoviesSection extends ConsumerWidget {
     return similarAsync.when(
       data: (movies) {
         if (movies.isEmpty) return const SizedBox.shrink();
+
+        Widget list = ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.scale(12, min: 8, max: 16),
+          ),
+          itemCount: movies.length,
+          itemBuilder: (context, index) {
+            final movie = movies[index];
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FocusablePosterCard(
+                onSelected: () => openMovieDetails(context, movie),
+                child: PortraitPosterCard(
+                  item: movie,
+                  width: posterWidth,
+                  trending: false,
+                  index: index,
+                  onTap: () => openMovieDetails(context, movie),
+                ),
+              ),
+            );
+          },
+        );
+
+        if (isDesktop) {
+          list = DpadRegion(leftEdge: DpadEdgeBehavior.leave, child: list);
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,34 +105,7 @@ class SimilarMoviesSection extends ConsumerWidget {
             const SizedBox(height: 8),
 
             // Horizontal Carousel of Reused Poster Cards
-            SizedBox(
-              height: carouselHeight,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: responsive.scale(12, min: 8, max: 16),
-                ),
-                itemCount: movies.length,
-                itemBuilder: (context, index) {
-                  final movie = movies[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: FocusablePosterCard(
-                      onSelected: () => openMovieDetails(context, movie),
-
-                      child: PortraitPosterCard(
-                        item: movie,
-                        width: posterWidth,
-                        trending: false,
-                        index: index,
-                        onTap: () => openMovieDetails(context, movie),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            SizedBox(height: carouselHeight, child: list),
           ],
         );
       },

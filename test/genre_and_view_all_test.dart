@@ -143,7 +143,7 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
       expect(find.text('Search'), findsOneWidget);
       expect(find.text('Tv Shows'), findsOneWidget);
-      expect(find.text('Profile'), findsOneWidget);
+      expect(find.text('Watchlist'), findsOneWidget);
 
       // Tap on Search Tab
       await tester.tap(find.text('Search'));

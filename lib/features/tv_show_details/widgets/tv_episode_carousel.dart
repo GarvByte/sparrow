@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
@@ -99,19 +100,22 @@ class TvEpisodeCarousel extends ConsumerWidget {
             // Height to accommodate 16:9 thumbnail + title and 2 lines overview + padding (~290px)
             return SizedBox(
               height: 290,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: episodes.length,
-                itemBuilder: (context, index) {
-                  final episode = episodes[index];
-                  return TvEpisodeCard(
-                    episode: episode,
-                    seriesId: seriesId,
-                    isTvLayout: true,
-                    onPlay: () => onEpisodeSelected?.call(episode),
-                  );
-                },
+              child: DpadRegion(
+                leftEdge: DpadEdgeBehavior.leave,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: episodes.length,
+                  itemBuilder: (context, index) {
+                    final episode = episodes[index];
+                    return TvEpisodeCard(
+                      episode: episode,
+                      seriesId: seriesId,
+                      isTvLayout: true,
+                      onPlay: () => onEpisodeSelected?.call(episode),
+                    );
+                  },
+                ),
               ),
             );
           },

@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
-import 'network_media_image.dart';
 
 class PortraitPosterCard extends StatelessWidget {
   final MediaItem item;
@@ -27,7 +25,7 @@ class PortraitPosterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final height = width * 1.5; // Strict 2:3 aspect ratio
-    //debugPrintt("iamge url is ${item.imageUrl}");
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(responsive.radius(16)),
@@ -45,8 +43,8 @@ class PortraitPosterCard extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: item.imageUrl,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => ErrorImagePlaceholder(),
-              placeholder: (context, url) => Center(
+              errorWidget: (context, url, error) => const ErrorImagePlaceholder(),
+              placeholder: (context, url) => const Center(
                 child: SizedBox(
                   width: 28,
                   height: 28,
@@ -64,10 +62,10 @@ class PortraitPosterCard extends StatelessWidget {
                 top: 10,
                 left: 10,
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: const Color.fromARGB(173, 0, 0, 0),
+                        color: Color.fromARGB(173, 0, 0, 0),
                         blurRadius: 30,
                       ),
                     ],

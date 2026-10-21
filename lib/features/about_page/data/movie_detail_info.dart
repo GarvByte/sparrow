@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 

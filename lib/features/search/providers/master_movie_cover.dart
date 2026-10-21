@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/shared/tmdb_servicee.dart';
 
@@ -18,7 +17,6 @@ class MasterMovieCover extends AsyncNotifier<Map> {
 
     // Filter or take a high-rated movie with a valid backdrop
     final chosen = movieData[0];
-    //debugPrintt("chosen L: $chosen");
     return chosen;
   }
 }

@@ -4,7 +4,6 @@ import 'package:sparrow/shared/error_image_placeholder.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
-import 'network_media_image.dart';
 
 class ContinueWatchingCard extends StatelessWidget {
   final MediaItem item;
@@ -32,7 +31,6 @@ class ContinueWatchingCard extends StatelessWidget {
         child: Container(
           width: cardWidth,
           height: cardHeight,
-          // margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(responsive.radius(16)),
             border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
@@ -46,8 +44,8 @@ class ContinueWatchingCard extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: item.imageUrl,
                   fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => ErrorImagePlaceholder(),
-                  placeholder: (context, url) => Center(
+                  errorWidget: (context, url, error) => const ErrorImagePlaceholder(),
+                  placeholder: (context, url) => const Center(
                     child: SizedBox(
                       width: 28,
                       height: 28,

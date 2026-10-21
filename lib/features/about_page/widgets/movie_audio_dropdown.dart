@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -79,13 +80,15 @@ class MovieAudioDropdown extends ConsumerStatefulWidget {
 }
 
 class _MovieAudioDropdownState extends ConsumerState<MovieAudioDropdown> {
+  final GlobalKey<PopupMenuButtonState<String>> _popupKey =
+      GlobalKey<PopupMenuButtonState<String>>();
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final selectedAudio = ref.watch(selectedAudioTrackProvider);
     final isDesktop = widget.isTvOrDesktop || responsive.isTvOrDesktop;
 
-    return Theme(
+    final menuWidget = Theme(
       data: Theme.of(context).copyWith(
         popupMenuTheme: PopupMenuThemeData(
           color: ColorPalette.surfaceContainer,
@@ -100,6 +103,7 @@ class _MovieAudioDropdownState extends ConsumerState<MovieAudioDropdown> {
         ),
       ),
       child: PopupMenuButton<String>(
+        key: _popupKey,
         tooltip: 'Select Audio Stream',
         initialValue: selectedAudio,
         offset: const Offset(0, 56),
@@ -333,5 +337,15 @@ class _MovieAudioDropdownState extends ConsumerState<MovieAudioDropdown> {
         ),
       ),
     );
+
+    if (isDesktop) {
+      return TvFocusable(
+        borderRadius: BorderRadius.circular(25),
+        onSelect: () => _popupKey.currentState?.showButtonMenu(),
+        child: menuWidget,
+      );
+    }
+
+    return menuWidget;
   }
 }

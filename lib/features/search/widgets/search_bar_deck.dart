@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparrow/features/search/widgets/search_filter_sheet.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -23,12 +24,19 @@ class SearchBarDeck extends StatefulWidget {
 
 class _SearchBarDeckState extends State<SearchBarDeck> {
   late bool _hasText;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _hasText = widget.controller.text.isNotEmpty;
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
     widget.controller.addListener(_onTextChanged);
+  }
+
+  void _onFocusChange() {
+    if (mounted) setState(() {});
   }
 
   void _onTextChanged() {
@@ -42,6 +50,8 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     widget.controller.removeListener(_onTextChanged);
     super.dispose();
   }
@@ -49,6 +59,8 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
+    final isFocused = isTv && _focusNode.hasFocus;
 
     return Container(
       height: 48,
@@ -56,8 +68,17 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
       decoration: BoxDecoration(
         color: ColorPalette.surfaceContainerHigh.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+        border: Border.all(
+          color: isFocused ? ColorPalette.primaryGreen : ColorPalette.ghostBorder,
+          width: isFocused ? 2.0 : 0.8,
+        ),
         boxShadow: [
+          if (isFocused)
+            BoxShadow(
+              color: ColorPalette.primaryGreen.withValues(alpha: 0.35),
+              blurRadius: 14,
+              spreadRadius: 1.0,
+            ),
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 12,
@@ -78,6 +99,7 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
           // Search Text Input
           Expanded(
             child: TextField(
+              focusNode: _focusNode,
               controller: widget.controller,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmitted,
@@ -104,71 +126,58 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
 
           // Clear Button (only when text is not empty)
           if (_hasText) ...[
-            InkWell(
-              onTap: () {
+            TvFocusable(
+              borderRadius: BorderRadius.circular(14),
+              onSelect: () {
                 widget.controller.clear();
                 widget.onClear?.call();
               },
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: ColorPalette.surfaceContainerHighest.withValues(
-                    alpha: 0.8,
+              child: InkWell(
+                onTap: () {
+                  widget.controller.clear();
+                  widget.onClear?.call();
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: ColorPalette.surfaceContainerHighest.withValues(
+                      alpha: 0.8,
+                    ),
+                    shape: BoxShape.circle,
                   ),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.close_rounded,
-                  size: 15,
-                  color: ColorPalette.textMuted,
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 15,
+                    color: ColorPalette.textMuted,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
           ],
 
-          // Voice Search (Mic) Button
-          InkWell(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Voice search is not supported on this device.',
-                  ),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: const Padding(
-              padding: EdgeInsets.all(4.0),
-              child: Icon(
-                Icons.mic_none_rounded,
-                size: 20,
-                color: ColorPalette.textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
-
           // Filters / Tune Button
-          InkWell(
-            onTap: () => SearchFilterSheet.show(context),
+          TvFocusable(
             borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: ColorPalette.surfaceContainer,
-                shape: BoxShape.circle,
-                border: Border.all(color: ColorPalette.ghostBorder, width: 0.5),
-              ),
-              child: const Icon(
-                Icons.tune_rounded,
-                size: 17,
-                color: ColorPalette.textSecondary,
+            onSelect: () => SearchFilterSheet.show(context),
+            child: InkWell(
+              onTap: () => SearchFilterSheet.show(context),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: ColorPalette.surfaceContainer,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: ColorPalette.ghostBorder, width: 0.5),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  size: 17,
+                  color: ColorPalette.textSecondary,
+                ),
               ),
             ),
           ),

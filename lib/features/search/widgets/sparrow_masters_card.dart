@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/search/providers/master_movie_cover.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
+import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -144,7 +145,7 @@ class MasterShowcase extends StatelessWidget {
     final overview = movie.overview ?? 'No overview';
     final rating = movie.rating ?? 9.4;
 
-    return InkWell(
+    final card = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(responsive.radius(16)),
       child: Container(
@@ -378,6 +379,12 @@ class MasterShowcase extends StatelessWidget {
         ),
       ),
     );
+
+    return TvFocusable(
+      onSelect: () => (onTap != null ? onTap!() : onPlayTap?.call()),
+      borderRadius: BorderRadius.circular(responsive.radius(16)),
+      child: card,
+    );
   }
 }
 
@@ -390,7 +397,7 @@ class _MetaChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     return Container(
-      margin: EdgeInsets.only(right: 5),
+      margin: const EdgeInsets.only(right: 5),
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: ColorPalette.surfaceContainerHigh,

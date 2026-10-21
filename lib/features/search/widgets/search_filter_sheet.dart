@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/features/search/data/category_item.dart';
 import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
 import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/features/search/providers/search_results_provider.dart';
 import 'package:sparrow/features/search/providers/selected_category_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -25,7 +25,6 @@ class SearchFilterSheet extends ConsumerWidget {
     final responsive = context.responsive;
     final currentMediaType = ref.watch(searchMediaTypeProvider);
     final currentFilter = ref.watch(searchFilterProvider);
-    final selectedCategory = ref.watch(selectedCategoryProvider);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -100,8 +99,9 @@ class SearchFilterSheet extends ConsumerWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextButton(
-                          onPressed: () {
+                        TvFocusable(
+                          borderRadius: BorderRadius.circular(12),
+                          onSelect: () {
                             ref.read(searchMediaTypeProvider.notifier).reset();
                             ref.read(searchFilterProvider.notifier).reset();
                             ref.read(selectedCategoryProvider.notifier).clear();
@@ -115,29 +115,49 @@ class SearchFilterSheet extends ConsumerWidget {
                                   );
                             }
                           },
-                          child: Text(
-                            'Reset',
-                            style: TextStyle(
-                              color: ColorPalette.primaryGreen,
-                              fontSize: responsive.sp(13, min: 11, max: 14),
-                              fontWeight: FontWeight.w600,
+                          child: TextButton(
+                            onPressed: () {
+                              ref.read(searchMediaTypeProvider.notifier).reset();
+                              ref.read(searchFilterProvider.notifier).reset();
+                              ref.read(selectedCategoryProvider.notifier).clear();
+                              final query = ref.read(searchQueryProvider);
+                              if (query.trim().isNotEmpty) {
+                                ref
+                                    .read(searchResultsNotifier.notifier)
+                                    .search(
+                                      query: query,
+                                      mediaType: SearchMediaType.movies,
+                                    );
+                              }
+                            },
+                            child: Text(
+                              'Reset',
+                              style: TextStyle(
+                                color: ColorPalette.primaryGreen,
+                                fontSize: responsive.sp(13, min: 11, max: 14),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
-                        InkWell(
-                          onTap: () => Navigator.pop(context),
+                        TvFocusable(
                           borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: ColorPalette.surfaceContainerHighest
-                                  .withValues(alpha: 0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close_rounded,
-                              size: 18,
-                              color: ColorPalette.textSecondary,
+                          onSelect: () => Navigator.pop(context),
+                          child: InkWell(
+                            onTap: () => Navigator.pop(context),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: ColorPalette.surfaceContainerHighest
+                                    .withValues(alpha: 0.6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                size: 18,
+                                color: ColorPalette.textSecondary,
+                              ),
                             ),
                           ),
                         ),
@@ -183,60 +203,68 @@ class SearchFilterSheet extends ConsumerWidget {
                                       ? 8.0
                                       : 0.0,
                                 ),
-                                child: InkWell(
-                                  onTap: () {
+                                child: TvFocusable(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onSelect: () {
                                     ref
                                         .read(searchMediaTypeProvider.notifier)
                                         .setType(type);
                                   },
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 180),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? ColorPalette.primaryGreen
-                                                .withValues(alpha: 0.18)
-                                          : ColorPalette.surfaceContainer,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
+                                  child: InkWell(
+                                    onTap: () {
+                                      ref
+                                          .read(searchMediaTypeProvider.notifier)
+                                          .setType(type);
+                                    },
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: isSelected
                                             ? ColorPalette.primaryGreen
-                                            : ColorPalette.ghostBorder,
-                                        width: isSelected ? 1.5 : 0.8,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          icon,
-                                          size: 18,
+                                                  .withValues(alpha: 0.18)
+                                            : ColorPalette.surfaceContainer,
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
                                           color: isSelected
                                               ? ColorPalette.primaryGreen
-                                              : ColorPalette.textSecondary,
+                                              : ColorPalette.ghostBorder,
+                                          width: isSelected ? 1.5 : 0.8,
                                         ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          type.label,
-                                          style: TextStyle(
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            icon,
+                                            size: 18,
                                             color: isSelected
                                                 ? ColorPalette.primaryGreen
                                                 : ColorPalette.textSecondary,
-                                            fontSize: responsive.sp(
-                                              13,
-                                              min: 11.5,
-                                              max: 14,
-                                            ),
-                                            fontWeight: isSelected
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            type.label,
+                                            style: TextStyle(
+                                              color: isSelected
+                                                  ? ColorPalette.primaryGreen
+                                                  : ColorPalette.textSecondary,
+                                              fontSize: responsive.sp(
+                                                13,
+                                                min: 11.5,
+                                                max: 14,
+                                              ),
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -262,39 +290,46 @@ class SearchFilterSheet extends ConsumerWidget {
                           runSpacing: 8,
                           children: SearchSortFilter.values.map((filter) {
                             final isSelected = filter == currentFilter;
-                            return ChoiceChip(
-                              label: Text(filter.label),
-                              selected: isSelected,
-                              selectedColor: ColorPalette.primaryGreen
-                                  .withValues(alpha: 0.2),
-                              backgroundColor: ColorPalette.surfaceContainer,
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? ColorPalette.primaryGreen
-                                    : ColorPalette.textSecondary,
-                                fontSize: responsive.sp(12, min: 10.5, max: 13),
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                              ),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? ColorPalette.primaryGreen
-                                    : ColorPalette.ghostBorder,
-                                width: isSelected ? 1.2 : 0.8,
-                              ),
-                              onSelected: (selected) {
-                                if (selected) {
-                                  ref
-                                      .read(searchFilterProvider.notifier)
-                                      .setFilter(filter);
-                                }
+                            return TvFocusable(
+                              borderRadius: BorderRadius.circular(20),
+                              onSelect: () {
+                                ref
+                                    .read(searchFilterProvider.notifier)
+                                    .setFilter(filter);
                               },
+                              child: ChoiceChip(
+                                label: Text(filter.label),
+                                selected: isSelected,
+                                selectedColor: ColorPalette.primaryGreen
+                                    .withValues(alpha: 0.2),
+                                backgroundColor: ColorPalette.surfaceContainer,
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? ColorPalette.primaryGreen
+                                      : ColorPalette.textSecondary,
+                                  fontSize: responsive.sp(12, min: 10.5, max: 13),
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? ColorPalette.primaryGreen
+                                      : ColorPalette.ghostBorder,
+                                  width: isSelected ? 1.2 : 0.8,
+                                ),
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    ref
+                                        .read(searchFilterProvider.notifier)
+                                        .setFilter(filter);
+                                  }
+                                },
+                              ),
                             );
                           }).toList(),
                         ),
                         const SizedBox(height: 18),
-
                       ],
                     ),
                   ),
@@ -305,8 +340,9 @@ class SearchFilterSheet extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
+                  child: TvFocusable(
+                    borderRadius: BorderRadius.circular(24),
+                    onSelect: () {
                       final query = ref.read(searchQueryProvider);
                       if (query.trim().isNotEmpty) {
                         ref
@@ -315,19 +351,30 @@ class SearchFilterSheet extends ConsumerWidget {
                       }
                       Navigator.pop(context);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorPalette.primaryGreen,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final query = ref.read(searchQueryProvider);
+                        if (query.trim().isNotEmpty) {
+                          ref
+                              .read(searchResultsNotifier.notifier)
+                              .search(query: query);
+                        }
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorPalette.primaryGreen,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Apply Filters',
-                      style: TextStyle(
-                        fontSize: responsive.sp(14, min: 12, max: 16),
-                        fontWeight: FontWeight.w800,
+                      child: Text(
+                        'Apply Filters',
+                        style: TextStyle(
+                          fontSize: responsive.sp(14, min: 12, max: 16),
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),

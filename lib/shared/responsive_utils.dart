@@ -100,14 +100,14 @@ class SparrowResponsive {
   double get heroPosterHeight {
     // Reserve vertical space inside the card for padding, title, genres, rating, and watch button
     final reservedForMetadata = isSmallPhone
-        ? 142.0
+        ? 152.0
         : (isTvOrDesktop ? 165.0 : 152.0);
     final available = heroCardHeight - reservedForMetadata;
 
     if (isTvOrDesktop) {
       return available.clamp(250.0, 350.0);
     }
-    return available.clamp(160.0, 280.0);
+    return available.clamp(isSmallPhone ? 148.0 : 160.0, 280.0);
   }
 
   /// Active poster width derived strictly from the 17:16 aspect ratio.

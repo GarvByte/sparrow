@@ -4,7 +4,6 @@ import 'package:sparrow/shared/error_image_placeholder.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
-import 'network_media_image.dart';
 
 class LandscapeMediaCard extends StatelessWidget {
   final MediaItem item;
@@ -31,7 +30,6 @@ class LandscapeMediaCard extends StatelessWidget {
         child: Container(
           width: width,
           height: height,
-          // margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(responsive.radius(16)),
             border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
@@ -48,7 +46,7 @@ class LandscapeMediaCard extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error, color: ColorPalette.error),
+                        const Icon(Icons.error, color: ColorPalette.error),
                         Text(
                           "Poster unavailable",
                           style: TextStyle(
@@ -63,8 +61,8 @@ class LandscapeMediaCard extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: item.imageUrl,
                   fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => ErrorImagePlaceholder(),
-                  placeholder: (context, url) => Center(
+                  errorWidget: (context, url, error) => const ErrorImagePlaceholder(),
+                  placeholder: (context, url) => const Center(
                     child: SizedBox(
                       width: 28,
                       height: 28,
@@ -92,7 +90,6 @@ class LandscapeMediaCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Gradient Scrim
               ],
             ),
           ),

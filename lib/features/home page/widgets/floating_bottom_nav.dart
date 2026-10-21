@@ -111,7 +111,10 @@ class _NavItem extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOutCubic,
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.symmetric(
+              horizontal: responsive.scale(8, min: 4, max: 10),
+              vertical: responsive.scale(6, min: 3, max: 8),
+            ),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isSelected

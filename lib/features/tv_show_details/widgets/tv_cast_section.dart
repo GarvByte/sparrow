@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_cast_member.dart';
@@ -33,6 +34,34 @@ class TvCastSection extends ConsumerWidget {
     return creditsAsync.when(
       data: (castList) {
         if (castList.isEmpty) return const SizedBox.shrink();
+
+        Widget list = ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop
+                ? 0
+                : responsive.scale(16, min: 12, max: 20),
+          ),
+          itemCount: castList.length,
+          separatorBuilder: (context, index) =>
+              SizedBox(width: isDesktop ? 20 : 12),
+          itemBuilder: (context, index) {
+            final actor = castList[index];
+            return _TvCastCard(
+              actor: actor,
+              width: itemWidth,
+              avatarSize: avatarSize,
+            );
+          },
+        );
+
+        if (isDesktop) {
+          list = DpadRegion(
+            leftEdge: DpadEdgeBehavior.leave,
+            child: list,
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,26 +113,7 @@ class TvCastSection extends ConsumerWidget {
             // Horizontal Scrollable Avatars
             SizedBox(
               height: avatarSize + 52,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isDesktop
-                      ? 0
-                      : responsive.scale(16, min: 12, max: 20),
-                ),
-                itemCount: castList.length,
-                separatorBuilder: (context, index) =>
-                    SizedBox(width: isDesktop ? 20 : 12),
-                itemBuilder: (context, index) {
-                  final actor = castList[index];
-                  return _TvCastCard(
-                    actor: actor,
-                    width: itemWidth,
-                    avatarSize: avatarSize,
-                  );
-                },
-              ),
+              child: list,
             ),
           ],
         );
@@ -146,7 +156,6 @@ class _TvCastCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Circular Portrait with subtle emerald ring
           Container(
             width: avatarSize,
             height: avatarSize,
@@ -189,9 +198,7 @@ class _TvCastCard extends StatelessWidget {
                     ),
             ),
           ),
-          const SizedBox(height: 6),
-
-          // Actor Name
+          const SizedBox(height: 8),
           Text(
             actor.name,
             maxLines: 1,
@@ -199,12 +206,10 @@ class _TvCastCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: ColorPalette.fontWhite,
-              fontSize: responsive.sp(11.5, min: 10, max: 13),
+              fontSize: responsive.sp(12, min: 10.5, max: 13.5),
               fontWeight: FontWeight.w600,
             ),
           ),
-
-          // Character Name
           Text(
             actor.character.isNotEmpty ? actor.character : 'Cast',
             maxLines: 1,
@@ -212,7 +217,7 @@ class _TvCastCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: ColorPalette.textMuted,
-              fontSize: responsive.sp(10, min: 8.5, max: 11),
+              fontSize: responsive.sp(10.5, min: 9, max: 11.5),
             ),
           ),
         ],

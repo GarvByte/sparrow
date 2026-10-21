@@ -8,8 +8,6 @@ import 'package:sparrow/features/tv_show_details/data/tv_show_detail_info.dart';
 import 'package:sparrow/features/tv_show_details/providers/tv_seasons_provider.dart';
 import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
 import 'package:sparrow/shared/media_item.dart';
-import 'package:sparrow/shared/navigation/movie_navigation.dart';
-import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 
 void main() {
   group('TV Show Details Models & Formatting Tests', () {

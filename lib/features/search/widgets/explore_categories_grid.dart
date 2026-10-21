@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/search/data/category_item.dart';
 import 'package:sparrow/features/search/providers/selected_category_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
@@ -14,6 +16,7 @@ class ExploreCategoriesGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final selectedCategory = ref.watch(selectedCategoryProvider);
     final categories = CategoryItem.defaultCategories;
 
@@ -71,7 +74,7 @@ class ExploreCategoriesGrid extends ConsumerWidget {
               final spacing = responsive.scale(10, min: 8, max: 14);
               final itemHeight = responsive.scale(112, min: 100, max: 128);
 
-              return GridView.builder(
+              Widget grid = GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
@@ -102,6 +105,15 @@ class ExploreCategoriesGrid extends ConsumerWidget {
                   );
                 },
               );
+
+              if (isTv) {
+                grid = DpadRegion(
+                  leftEdge: DpadEdgeBehavior.leave,
+                  child: grid,
+                );
+              }
+
+              return grid;
             },
           ),
         ],
@@ -125,7 +137,7 @@ class _CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
 
-    return Material(
+    final card = Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(responsive.radius(16)),
       clipBehavior: Clip.antiAlias,
@@ -268,6 +280,12 @@ class _CategoryCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    return TvFocusable(
+      onSelect: onTap,
+      borderRadius: BorderRadius.circular(responsive.radius(16)),
+      child: card,
     );
   }
 }

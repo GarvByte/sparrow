@@ -13,8 +13,6 @@ class SearchHeader extends StatelessWidget implements PreferredSizeWidget {
     final responsive = context.responsive;
     final headerHeight = responsive.headerHeight;
     final logoSize = responsive.scale(32, min: 28, max: 36);
-    final avatarSize = responsive.scale(34, min: 30, max: 38);
-    final buttonSize = responsive.scale(38, min: 34, max: 42);
 
     return Container(
       decoration: BoxDecoration(
@@ -31,7 +29,6 @@ class SearchHeader extends StatelessWidget implements PreferredSizeWidget {
             horizontal: responsive.scale(16, min: 12, max: 20),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Logo & App Title
               Row(
@@ -78,93 +75,8 @@ class SearchHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ],
               ),
-
-              // Action Buttons: Cast & Profile Avatar
-              Row(
-                children: [
-                  _HeaderCircleButton(
-                    icon: Icons.cast_rounded,
-                    size: buttonSize,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Casting device scanner activated'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  // Profile avatar with neon green outline
-                  Container(
-                    width: avatarSize,
-                    height: avatarSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: ColorPalette.primaryGreen,
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorPalette.primaryGreen.withValues(
-                            alpha: 0.35,
-                          ),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBWAiGeH4w35HDOJUtw2KNp78Roc2pUP5ZebEI3EJMMkx3xO5rvB-r13yWMF8hgr2HDhaSfIazpRIfx6X_a7RGazLWhTPAVt56yNPljCWx0PbMzc9TmTSpKzMGQnKQllSZAOP4Z3qegFm3teCmt9AJgBFoQam3JGz9x7pNLAGrcFcHumJVZQKczIxulrgvqK3YvFdm8UA3Jw1j2r0pvjDc_UEV_jHObqIg5ILlpwPcpWd7fUIVdy17DMA',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.person,
-                              size: 20,
-                              color: ColorPalette.fontWhite,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeaderCircleButton extends StatelessWidget {
-  final IconData icon;
-  final double size;
-  final VoidCallback onTap;
-
-  const _HeaderCircleButton({
-    required this.icon,
-    this.size = 38.0,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(size / 2),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: ColorPalette.surfaceContainer.withValues(alpha: 0.6),
-          shape: BoxShape.circle,
-          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-        ),
-        child: Icon(
-          icon,
-          size: (size * 0.52).clamp(16.0, 22.0),
-          color: ColorPalette.fontWhite,
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/about_page/data/cast_member.dart';
@@ -34,6 +35,32 @@ class MovieCastSection extends ConsumerWidget {
     return creditsAsync.when(
       data: (castList) {
         if (castList.isEmpty) return const SizedBox.shrink();
+
+        Widget list = ListView.separated(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.scale(16, min: 12, max: 20),
+          ),
+          itemCount: castList.length,
+          separatorBuilder: (context, index) =>
+              SizedBox(width: isDesktop ? 16 : 12),
+          itemBuilder: (context, index) {
+            final actor = castList[index];
+            return _CastCard(
+              actor: actor,
+              width: itemWidth,
+              avatarSize: avatarSize,
+            );
+          },
+        );
+
+        if (isDesktop) {
+          list = DpadRegion(
+            leftEdge: DpadEdgeBehavior.leave,
+            child: list,
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,24 +105,7 @@ class MovieCastSection extends ConsumerWidget {
             // Horizontal Scrollable Strip
             SizedBox(
               height: avatarSize + 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: responsive.scale(16, min: 12, max: 20),
-                ),
-                itemCount: castList.length,
-                separatorBuilder: (context, index) =>
-                    SizedBox(width: isDesktop ? 16 : 12),
-                itemBuilder: (context, index) {
-                  final actor = castList[index];
-                  return _CastCard(
-                    actor: actor,
-                    width: itemWidth,
-                    avatarSize: avatarSize,
-                  );
-                },
-              ),
+              child: list,
             ),
           ],
         );

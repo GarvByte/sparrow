@@ -1,4 +1,7 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:sparrow/navigation/main_shell_scaffold.dart';
+import 'package:sparrow/shared/responsive_utils.dart';
 
 class HorizontalMediaCarousel extends StatelessWidget {
   final double height;
@@ -16,15 +19,29 @@ class HorizontalMediaCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget list = ListView.builder(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      padding: padding,
+      itemCount: itemCount,
+      itemBuilder: itemBuilder,
+    );
+
+    if (context.responsive.isTvOrDesktop) {
+      list = DpadRegion(
+        leftEdge: DpadEdgeBehavior.stop,
+        onEdge: (direction) {
+          if (direction == TraversalDirection.left) {
+            TvDrawerScope.openOf(context);
+          }
+        },
+        child: list,
+      );
+    }
+
     return SizedBox(
       height: height,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: padding,
-        itemCount: itemCount,
-        itemBuilder: itemBuilder,
-      ),
+      child: list,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'package:sparrow/features/about_page/widgets/movie_info_matrix.dart';
 import 'package:sparrow/features/about_page/widgets/similar_movies_section.dart';
 import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
 import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -424,17 +426,25 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             Positioned(
               left: horizontalPadding,
               top: 24,
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  padding: EdgeInsets.only(left: 8),
-                  backgroundColor: const Color.fromARGB(62, 255, 255, 255),
-                ),
-                onPressed: () {
+              child: TvFocusable(
+                borderRadius: BorderRadius.circular(24),
+                onSelect: () {
                   if (context.canPop()) {
                     context.pop();
                   }
                 },
-                icon: Icon(Icons.arrow_back_ios),
+                child: IconButton(
+                  style: IconButton.styleFrom(
+                    padding: const EdgeInsets.only(left: 8),
+                    backgroundColor: const Color.fromARGB(62, 255, 255, 255),
+                  ),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_back_ios),
+                ),
               ),
             ),
 
@@ -488,31 +498,44 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                   Row(
                     children: [
                       // Large TV Watch Now Button
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.play_arrow_rounded,
-                          size: 28,
-                          color: Colors.black,
-                        ),
-                        label: const Text(
-                          'Watch Now',
-                          style: TextStyle(
+                      DpadFocusable(
+                        onSelect: () => context.push('/player', extra: item),
+                        effects: [
+                          DpadScaleEffect(scale: 1.05),
+                          DpadTintEffect(
+                            borderRadius: BorderRadius.circular(50),
+                            color: ColorPalette.fontWhite,
+                            opacity: 0.2,
+                          ),
+                        ],
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            context.push('/player', extra: item);
+                          },
+                          icon: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 28,
                             color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.2,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorPalette.primaryGreen,
-                          elevation: 8,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 28,
-                            vertical: 16,
+                          label: const Text(
+                            'Watch Now',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorPalette.primaryGreen,
+                            elevation: 8,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
                           ),
                         ),
                       ),
@@ -716,7 +739,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               ],
               Row(
                 children: [
-                  Expanded(flex: 3, child: _buildWatchNowButton(context)),
+                  Expanded(flex: 3, child: _buildWatchNowButton(context, item)),
                   const SizedBox(width: 12),
                   _buildGhostButton(
                     icon: isBookmarked
@@ -957,14 +980,12 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     return Row(
       children: [
         // Watch Now Action
-        Expanded(child: _buildWatchNowButton(context)),
+        Expanded(child: _buildWatchNowButton(context, item)),
         const SizedBox(width: 10),
 
         // My List
         _buildGhostButton(
-          icon: isBookmarked
-              ? Icons.bookmark_added_rounded
-              : Icons.add_rounded,
+          icon: isBookmarked ? Icons.bookmark_added_rounded : Icons.add_rounded,
           label: isBookmarked ? 'In My List' : 'My List',
           isBookmarked: isBookmarked,
           onTap: () => _toggleWatchlist(info, item),
@@ -973,9 +994,11 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-  Widget _buildWatchNowButton(BuildContext context) {
+  Widget _buildWatchNowButton(BuildContext context, MediaItem item) {
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: () {
+        context.push('/player', extra: item);
+      },
       icon: const Icon(Icons.play_arrow_rounded, size: 24, color: Colors.black),
       label: const Text(
         'Watch Now',
@@ -983,7 +1006,6 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
           color: Colors.black,
           fontSize: 15,
           fontWeight: FontWeight.w800,
-          letterSpacing: -0.2,
         ),
       ),
       style: ElevatedButton.styleFrom(
@@ -1046,34 +1068,39 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-
   Widget _buildTvGhostIconButton({
     required IconData icon,
     required VoidCallback onTap,
     bool isSelected = false,
   }) {
-    return InkWell(
-      onTap: onTap,
+    return TvFocusable(
       borderRadius: BorderRadius.circular(30),
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? ColorPalette.primaryGreen.withValues(alpha: 0.2)
-              : ColorPalette.surfaceContainer.withValues(alpha: 0.9),
-          shape: BoxShape.circle,
-          border: Border.all(
+      onSelect: onTap,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? ColorPalette.primaryGreen.withValues(alpha: 0.2)
+                : ColorPalette.surfaceContainer.withValues(alpha: 0.9),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected
+                  ? ColorPalette.primaryGreen
+                  : ColorPalette.ghostBorderLight,
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 24,
             color: isSelected
                 ? ColorPalette.primaryGreen
-                : ColorPalette.ghostBorderLight,
-            width: 1,
+                : ColorPalette.fontWhite,
           ),
-        ),
-        child: Icon(
-          icon,
-          size: 24,
-          color: isSelected ? ColorPalette.primaryGreen : ColorPalette.fontWhite,
         ),
       ),
     );

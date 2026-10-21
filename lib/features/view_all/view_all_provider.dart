@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/about_page/providers/movie_details_provider.dart';
-import 'package:sparrow/features/anime_hub/providers/anime_tv_providers.dart';
+import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
 import 'package:sparrow/features/view_all/view_all_args.dart';
 import 'package:sparrow/shared/genre_providers.dart';
 import 'package:sparrow/shared/media_item.dart';

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/shared/tmdb_servicee.dart';
@@ -28,16 +27,13 @@ class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
     try {
       List<dynamic> searchResults;
       if (activeType == SearchMediaType.tvShows) {
-        //debugPrintt('Searching TMDB TV shows for "$cleanQuery"');
         searchResults = await _tmdbService.searchTvShows(cleanQuery);
       } else {
-        //debugPrintt('Searching TMDB movies for "$cleanQuery"');
         searchResults = await _tmdbService.searchMovies(cleanQuery);
       }
       state = AsyncValue.data(searchResults);
       return searchResults;
     } catch (e, st) {
-      //debugPrintt('TMDB search error in SearchResultsProvider: $e');
       state = AsyncValue.error(e, st);
       return [];
     }

@@ -1,8 +1,9 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
+import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -16,6 +17,7 @@ class TopTrendingCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final trendingAsync = ref.watch(trendingNowProvider);
     final cardWidth = responsive.scale(136, min: 120, max: 160);
     // 2:3 aspect ratio height + text metadata buffer
@@ -72,11 +74,12 @@ class TopTrendingCarousel extends ConsumerWidget {
 
               final qualityBadges = ['4K HDR', 'IMAX 4K', 'REMUX', 'DOLBY'];
 
-              return ListView.separated(
+              Widget list = ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: responsive.scale(16, min: 12, max: 20),
+                  vertical: 6,
                 ),
                 itemCount: rawList.length,
                 separatorBuilder: (context, index) =>
@@ -107,6 +110,15 @@ class TopTrendingCarousel extends ConsumerWidget {
                   );
                 },
               );
+
+              if (isTv) {
+                list = DpadRegion(
+                  leftEdge: DpadEdgeBehavior.leave,
+                  child: list,
+                );
+              }
+
+              return list;
             },
             loading: () => const Center(
               child: SizedBox(

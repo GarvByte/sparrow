@@ -4,13 +4,13 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
+import 'package:sparrow/navigation/main_shell_scaffold.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
 import '../providers/featured_providers.dart';
-import 'network_media_image.dart';
 
 /// Complete Layered Featured Hero Section.
 ///
@@ -52,7 +52,6 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final featuredmovies = ref.watch(movieProviderNotifier);
-    // final featuredItems = ref.watch(featuredListProvider);
     final selectedIndex = ref.watch(selectedFeaturedIndexProvider);
 
     if (featuredmovies.isLoading) {
@@ -63,22 +62,29 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
     final cardHeight = responsive.heroCardHeight;
     final posterHeight = responsive.heroPosterHeight;
 
-    // Viewport fraction: on mobile ~0.76 centers active card while
-    // previous and next cards peek symmetrically from behind on left and right
     final viewportFraction = responsive.isTvOrDesktop
         ? 0.25
         : (responsive.isTablet ? 0.40 : 0.66);
     return featuredmovies.when(
       data: (data) {
-        //debugPrintt("data is $data");
         return LayoutBuilder(
           builder: (context, constraints) {
             return SizedBox(
               height: carouselHeight,
               child: DpadRegion(
                 memoryKey: 'home/featuredCarousel',
-                horizontalEdge: DpadEdgeBehavior.wrap,
+                horizontalEdge: responsive.isTvOrDesktop
+                    ? DpadEdgeBehavior.leave
+                    : DpadEdgeBehavior.wrap,
+                leftEdge: responsive.isTvOrDesktop
+                    ? DpadEdgeBehavior.stop
+                    : null,
                 verticalEdge: DpadEdgeBehavior.leave,
+                onEdge: (direction) {
+                  if (direction == TraversalDirection.left) {
+                    TvDrawerScope.openOf(context);
+                  }
+                },
                 child: CarouselSlider.builder(
                   carouselController: _carouselController,
                   itemCount: data.length,
@@ -86,13 +92,11 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
                     height: carouselHeight,
                     viewportFraction: viewportFraction,
                     initialPage: selectedIndex,
-                    enableInfiniteScroll: true,
-                    enlargeCenterPage:
-                        false, // Custom 3D layered transform inside _LayeredMovieCard
+                    enableInfiniteScroll: !responsive.isTvOrDesktop,
+                    enlargeCenterPage: false,
                     padEnds: true,
                     scrollPhysics: const BouncingScrollPhysics(),
                     onPageChanged: (index, reason) {
-                      // Update Riverpod selection state cleanly on settle
                       ref.read(selectedFeaturedIndexProvider.notifier).state =
                           index;
                     },
@@ -126,7 +130,6 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
                       isCurrent: isCurrent,
                       cardHeight: cardHeight,
                       posterHeight: posterHeight,
-                      // movieInfo: data[index],
                       onTap: () {
                         if (!isCurrent) {
                           _carouselController.animateToPage(
@@ -149,7 +152,9 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
       },
       error: (error, stack) => Text("error : $error"),
       loading: () {
-        return CircularProgressIndicator(color: ColorPalette.primaryGreen);
+        return const CircularProgressIndicator(
+          color: ColorPalette.primaryGreen,
+        );
       },
     );
   }
@@ -167,7 +172,6 @@ class _LayeredMovieCard extends StatelessWidget {
   final double posterHeight;
   final VoidCallback onTap;
   final VoidCallback onWatchNow;
-  // final Map? movieInfo;
 
   const _LayeredMovieCard({
     required this.item,
@@ -176,15 +180,12 @@ class _LayeredMovieCard extends StatelessWidget {
     required this.posterHeight,
     required this.onTap,
     required this.onWatchNow,
-    // this.movieInfo,
   });
 
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
 
-    // Active card: scale 1.0, translateY 0.
-    // Background card: scale ~0.86, dropped vertically ~16dp, atmospheric dimming.
     final scale = isCurrent ? 1.0 : 0.86;
     final translateY = isCurrent
         ? 0.0
@@ -192,11 +193,11 @@ class _LayeredMovieCard extends StatelessWidget {
     final cardRadius = responsive.heroContainerRadius;
     final posterRadius = responsive.radius(16.0);
 
-    final paddingH = responsive.scale(10.0, min: 8.0, max: 14.0);
-    final paddingTop = responsive.scale(10.0, min: 8.0, max: 14.0);
-    final paddingBottom = responsive.scale(12.0, min: 10.0, max: 16.0);
+    final paddingH = responsive.scale(10.0, min: 6.0, max: 14.0);
+    final paddingTop = responsive.scale(10.0, min: 6.0, max: 14.0);
+    final paddingBottom = responsive.scale(12.0, min: 8.0, max: 16.0);
 
-    return GestureDetector(
+    final cardContent = GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 320),
@@ -215,8 +216,7 @@ class _LayeredMovieCard extends StatelessWidget {
                 horizontal: responsive.scale(6.0, min: 4.0, max: 10.0),
               ),
               decoration: BoxDecoration(
-                color: ColorPalette
-                    .heroContainer, // Dark muted brown surface (#281913)
+                color: ColorPalette.heroContainer,
                 borderRadius: BorderRadius.circular(cardRadius),
                 border: Border.all(
                   color: isCurrent
@@ -224,15 +224,6 @@ class _LayeredMovieCard extends StatelessWidget {
                       : ColorPalette.heroBorder.withValues(alpha: 0.60),
                   width: isCurrent ? 1.5 : 1.0,
                 ),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: isCurrent
-                //         ? ColorPalette.primaryGreen.withValues(alpha: 0.20)
-                //         : Colors.black.withValues(alpha: 0.70),
-                //     blurRadius: isCurrent ? 20 : 10,
-                //     offset: Offset(0, isCurrent ? 8 : 4),
-                //   ),
-                // ],
               ),
               clipBehavior: Clip.antiAlias,
               padding: EdgeInsets.fromLTRB(
@@ -251,12 +242,12 @@ class _LayeredMovieCard extends StatelessWidget {
                       SizedBox(
                         height: posterHeight,
                         child: AspectRatio(
-                          aspectRatio: 16.0 / 17.0,
+                          aspectRatio: 17.0 / 16.0,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(posterRadius),
                             child: CachedNetworkImage(
                               imageUrl: item.imageUrl,
-                              placeholder: (context, url) => Center(
+                              placeholder: (context, url) => const Center(
                                 child: SizedBox(
                                   width: 28,
                                   height: 28,
@@ -267,7 +258,7 @@ class _LayeredMovieCard extends StatelessWidget {
                                 ),
                               ),
                               errorWidget: (context, url, error) =>
-                                  ErrorImagePlaceholder(),
+                                  const ErrorImagePlaceholder(),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -374,7 +365,6 @@ class _LayeredMovieCard extends StatelessWidget {
                       // 5. Watch Now Action Button (Inside this movie's brown container)
                       ElevatedButton.icon(
                         onPressed: onWatchNow,
-
                         icon: Icon(
                           Icons.play_arrow_rounded,
                           color: Colors.black,
@@ -398,7 +388,7 @@ class _LayeredMovieCard extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                         ),
                       ),
                     ],
@@ -421,6 +411,36 @@ class _LayeredMovieCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (responsive.isTvOrDesktop) {
+      return DpadFocusable(
+        onSelect: onWatchNow,
+        onFocusChange: (focused) {
+          if (focused && !isCurrent) {
+            onTap();
+          }
+        },
+        autoScroll: true,
+        effects: [
+          // const DpadScaleEffect(scale: 1.03),
+          // DpadBorderEffect(
+          //   width: 3.0,
+          //   color: ColorPalette.primaryGreen,
+          //   borderRadius: BorderRadius.circular(cardRadius),
+          // ),
+          // DpadGlowEffect(
+          // color: ColorPalette.primaryGreen,
+          // blurRadius: 18,
+          // spreadRadius: 1.5,
+          // opacity: 0.45,
+          // borderRadius: BorderRadius.circular(cardRadius),
+          // ),
+        ],
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
   }
 }
 

@@ -93,22 +93,32 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
       child: Row(
         children: [
           // Back Button
-          IconButton(
-            style: IconButton.styleFrom(
-              padding: const EdgeInsets.only(left: 6),
-              backgroundColor: const Color.fromARGB(45, 255, 255, 255),
-            ),
-            onPressed: () {
+          TvFocusable(
+            onSelect: () {
               if (context.canPop()) {
                 context.pop();
               } else {
                 context.go(widget.args.isTv ? '/anime' : '/');
               }
             },
-            icon: const Icon(
-              Icons.arrow_back_ios,
-              color: ColorPalette.fontWhite,
-              size: 20,
+            borderRadius: BorderRadius.circular(20),
+            child: IconButton(
+              style: IconButton.styleFrom(
+                padding: const EdgeInsets.only(left: 6),
+                backgroundColor: const Color.fromARGB(45, 255, 255, 255),
+              ),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(widget.args.isTv ? '/anime' : '/');
+                }
+              },
+              icon: const Icon(
+                Icons.arrow_back_ios,
+                color: ColorPalette.fontWhite,
+                size: 20,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -197,17 +207,21 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
                 style: const TextStyle(color: ColorPalette.textMuted),
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorPalette.primaryGreen,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              TvFocusable(
+                onSelect: () => notifier.retry(),
+                borderRadius: BorderRadius.circular(12),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorPalette.primaryGreen,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  onPressed: () => notifier.retry(),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Retry'),
                 ),
-                onPressed: () => notifier.retry(),
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Retry'),
               ),
             ],
           ),
@@ -250,42 +264,33 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
           ),
           child: Column(
             children: [
-              // Continuous Grid of Results (Page 1 + Page 2 + Paginated)
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: spacing,
-                  mainAxisSpacing: spacing + 8,
-                  childAspectRatio: 2 / 3.75, // 2:3 poster + title & metadata
-                ),
-                itemCount: state.items.length,
-                itemBuilder: (context, index) {
-                  final item = state.items[index];
-                  return DpadRegion(
-                    memoryKey: 'viewall/${widget.args.categoryType}',
-                    child: DpadFocusable(
-                      onSelect: () => _onMediaTap(item),
-                      effects: [
-                        DpadBorderEffect(
-                          width: 2,
-                          color: ColorPalette.primaryGreen,
-                        ),
-                        DpadTintEffect(
-                          color: ColorPalette.fontWhite,
-                          opacity: 0.2,
-                        ),
-                      ],
+              // Continuous Grid of Results wrapped in DpadRegion
+              DpadRegion(
+                memoryKey: 'viewall/${widget.args.categoryType}',
+                leftEdge: DpadEdgeBehavior.leave,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing + 8,
+                    childAspectRatio: 2 / 3.75, // 2:3 poster + title & metadata
+                  ),
+                  itemCount: state.items.length,
+                  itemBuilder: (context, index) {
+                    final item = state.items[index];
+                    return FocusablePosterCard(
+                      onSelected: () => _onMediaTap(item),
                       child: DiscoverPosterCard(
                         item: item,
                         showRank: false,
                         onTap: () => _onMediaTap(item),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -317,103 +322,38 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
                       ),
                     ),
                   ),
-                )
-              else if (state.hasMore)
-                _buildLoadMoreArrowButton(notifier, responsive)
-              else
+                ),
+
+              if (state.hasMore && !state.isLoadingMore)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: const BoxDecoration(
-                          color: ColorPalette.textMuted,
-                          shape: BoxShape.circle,
+                  child: TvFocusable(
+                    onSelect: () => notifier.loadMore(),
+                    borderRadius: BorderRadius.circular(24),
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: ColorPalette.primaryGreen,
+                        side: const BorderSide(
+                          color: ColorPalette.primaryGreen,
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'You have reached the end',
-                        style: TextStyle(
-                          color: ColorPalette.textMuted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: const BoxDecoration(
-                          color: ColorPalette.textMuted,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
+                      onPressed: () => notifier.loadMore(),
+                      child: const Text('Load More Titles'),
+                    ),
                   ),
                 ),
             ],
           ),
         );
       },
-    );
-  }
-
-  /// Bottom-centered downward arrow button to load additional pages.
-  Widget _buildLoadMoreArrowButton(
-    ViewAllNotifier notifier,
-    SparrowResponsive responsive,
-  ) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            InkWell(
-              onTap: () => notifier.loadMore(),
-              borderRadius: BorderRadius.circular(28),
-              child: Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: ColorPalette.surfaceContainerHighest,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ColorPalette.primaryGreen.withValues(alpha: 0.7),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorPalette.primaryGreen.withValues(alpha: 0.35),
-                      blurRadius: 18,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: ColorPalette.primaryGreen,
-                  size: 36,
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Load More',
-              style: TextStyle(
-                color: ColorPalette.primaryGreen,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

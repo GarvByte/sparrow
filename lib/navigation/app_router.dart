@@ -1,15 +1,16 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/screens/movie_details_screen.dart';
-import 'package:sparrow/features/anime_hub/screens/anime_hub_page.dart';
+import 'package:sparrow/features/anime%20hub/screens/anime_hub_page.dart';
 import 'package:sparrow/features/home%20page/screen/home_page.dart';
+import 'package:sparrow/features/player/screens/player_page.dart';
 import 'package:sparrow/features/search/screens/search_page.dart';
 import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
 import 'package:sparrow/features/view_all/view_all_args.dart';
 import 'package:sparrow/features/view_all/view_all_screen.dart';
 import 'package:sparrow/features/watchlist/screen/watchlist_page.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
+import 'package:sparrow/shared/media_item.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
@@ -26,6 +27,16 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) {
         final movieData = state.extra;
         return MaterialPage(child: MovieDetailsScreen(movieData: movieData));
+      },
+    ),
+    GoRoute(
+      path: '/player',
+      name: 'player',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) {
+        final item = state.extra as MediaItem;
+
+        return MaterialPage(child: PlayerPage(item: item));
       },
     ),
     GoRoute(
@@ -55,7 +66,8 @@ final appRouter = GoRouter(
                   path: 'view-all',
                   name: 'home-view-all',
                   pageBuilder: (context, state) {
-                    final args = state.extra as ViewAllArgs? ??
+                    final args =
+                        state.extra as ViewAllArgs? ??
                         const ViewAllArgs(
                           mediaType: 'movie',
                           categoryType: 'trending',
@@ -81,7 +93,8 @@ final appRouter = GoRouter(
                   path: 'view-all',
                   name: 'search-view-all',
                   pageBuilder: (context, state) {
-                    final args = state.extra as ViewAllArgs? ??
+                    final args =
+                        state.extra as ViewAllArgs? ??
                         const ViewAllArgs(
                           mediaType: 'movie',
                           categoryType: 'trending',
@@ -107,7 +120,8 @@ final appRouter = GoRouter(
                   path: 'view-all',
                   name: 'tv-view-all',
                   pageBuilder: (context, state) {
-                    final args = state.extra as ViewAllArgs? ??
+                    final args =
+                        state.extra as ViewAllArgs? ??
                         const ViewAllArgs(
                           mediaType: 'tv',
                           categoryType: 'trending',

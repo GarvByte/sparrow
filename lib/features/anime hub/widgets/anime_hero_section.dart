@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/features/anime_hub/providers/anime_tv_providers.dart';
+import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
+import 'package:sparrow/navigation/main_shell_scaffold.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -49,48 +51,62 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
 
         return SizedBox(
           height: carouselHeight,
-          child: CarouselSlider.builder(
-            carouselController: _carouselController,
-            itemCount: displayItems.length,
-            options: CarouselOptions(
-              height: carouselHeight,
-              viewportFraction: viewportFraction,
-              initialPage: selectedIndex,
-              enableInfiniteScroll: displayItems.length > 1,
-              enlargeCenterPage: false,
-              padEnds: true,
-              scrollPhysics: const BouncingScrollPhysics(),
-              onPageChanged: (index, reason) {
-                if (mounted) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                }
-              },
-            ),
-            itemBuilder: (context, index, realIndex) {
-              final isCurrent = index == selectedIndex;
-              final item = displayItems[index];
-
-              return _LayeredTvCard(
-                item: item,
-                isCurrent: isCurrent,
-                cardHeight: cardHeight,
-                posterHeight: posterHeight,
-                onTap: () {
-                  if (!isCurrent) {
-                    _carouselController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic,
-                    );
-                  } else {
-                    widget.onWatchNow?.call(item);
+          child: DpadRegion(
+            memoryKey: 'tv/animeHeroCarousel',
+            horizontalEdge: responsive.isTvOrDesktop
+                ? DpadEdgeBehavior.leave
+                : DpadEdgeBehavior.wrap,
+            leftEdge: responsive.isTvOrDesktop ? DpadEdgeBehavior.stop : null,
+            verticalEdge: DpadEdgeBehavior.leave,
+            onEdge: (direction) {
+              if (direction == TraversalDirection.left) {
+                TvDrawerScope.openOf(context);
+              }
+            },
+            child: CarouselSlider.builder(
+              carouselController: _carouselController,
+              itemCount: displayItems.length,
+              options: CarouselOptions(
+                height: carouselHeight,
+                viewportFraction: viewportFraction,
+                initialPage: selectedIndex,
+                enableInfiniteScroll:
+                    !responsive.isTvOrDesktop && (displayItems.length > 1),
+                enlargeCenterPage: false,
+                padEnds: true,
+                scrollPhysics: const BouncingScrollPhysics(),
+                onPageChanged: (index, reason) {
+                  if (mounted) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
                   }
                 },
-                onWatchNow: () => widget.onWatchNow?.call(item),
-              );
-            },
+              ),
+              itemBuilder: (context, index, realIndex) {
+                final isCurrent = index == selectedIndex;
+                final item = displayItems[index];
+
+                return _LayeredTvCard(
+                  item: item,
+                  isCurrent: isCurrent,
+                  cardHeight: cardHeight,
+                  posterHeight: posterHeight,
+                  onTap: () {
+                    if (!isCurrent) {
+                      _carouselController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
+                    } else {
+                      widget.onWatchNow?.call(item);
+                    }
+                  },
+                  onWatchNow: () => widget.onWatchNow?.call(item),
+                );
+              },
+            ),
           ),
         );
       },
@@ -140,7 +156,7 @@ class _LayeredTvCard extends StatelessWidget {
     final paddingTop = responsive.scale(10.0, min: 8.0, max: 14.0);
     final paddingBottom = responsive.scale(12.0, min: 10.0, max: 16.0);
 
-    return GestureDetector(
+    final cardWidget = GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 320),
@@ -210,65 +226,71 @@ class _LayeredTvCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(posterRadius),
                             child: Stack(
                               fit: StackFit.expand,
-                            children: [
-                              item.imageUrl.isNotEmpty
-                                  ? CachedNetworkImage(
-                                      imageUrl: item.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (context, url, error) =>
-                                          const ErrorImagePlaceholder(),
-                                      placeholder: (context, url) => Container(
-                                        color: ColorPalette.surfaceContainerLow,
-                                        child: const Center(
-                                          child: SizedBox(
-                                            width: 24,
-                                            height: 24,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: ColorPalette.primaryGreen,
+                              children: [
+                                item.imageUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: item.imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            const ErrorImagePlaceholder(),
+                                        placeholder: (context, url) =>
+                                            Container(
+                                              color: ColorPalette
+                                                  .surfaceContainerLow,
+                                              child: const Center(
+                                                child: SizedBox(
+                                                  width: 24,
+                                                  height: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: ColorPalette
+                                                            .primaryGreen,
+                                                      ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : const ErrorImagePlaceholder(),
-                              // Series Badge
-                              Positioned(
-                                top: 8,
-                                left: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.75),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: ColorPalette.primaryGreen
-                                          .withValues(alpha: 0.5),
-                                      width: 0.8,
+                                      )
+                                    : const ErrorImagePlaceholder(),
+                                // Series Badge
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 3,
                                     ),
-                                  ),
-                                  child: Text(
-                                    'TV SERIES',
-                                    style: TextStyle(
-                                      color: ColorPalette.primaryGreen,
-                                      fontSize: responsive.sp(
-                                        8.5,
-                                        min: 7.5,
-                                        max: 9.5,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.75,
                                       ),
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.8,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: ColorPalette.primaryGreen
+                                            .withValues(alpha: 0.5),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'TV SERIES',
+                                      style: TextStyle(
+                                        color: ColorPalette.primaryGreen,
+                                        fontSize: responsive.sp(
+                                          8.5,
+                                          min: 7.5,
+                                          max: 9.5,
+                                        ),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.8,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                       ),
                       SizedBox(height: responsive.scale(8, min: 6, max: 10)),
 
@@ -302,8 +324,11 @@ class _LayeredTvCard extends StatelessWidget {
                               item.rating!.toStringAsFixed(1),
                               style: TextStyle(
                                 color: ColorPalette.fontWhite,
-                                fontSize:
-                                    responsive.sp(11, min: 9.5, max: 12.5),
+                                fontSize: responsive.sp(
+                                  11,
+                                  min: 9.5,
+                                  max: 12.5,
+                                ),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -361,5 +386,35 @@ class _LayeredTvCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (responsive.isTvOrDesktop) {
+      return DpadFocusable(
+        onSelect: onWatchNow,
+        onFocusChange: (focused) {
+          if (focused && !isCurrent) {
+            onTap();
+          }
+        },
+        autoScroll: true,
+        effects: [
+          // const DpadScaleEffect(scale: 1.03),
+          // DpadBorderEffect(
+          //   width: 3.0,
+          //   color: ColorPalette.primaryGreen,
+          //   borderRadius: BorderRadius.circular(cardRadius),
+          // ),
+          // DpadGlowEffect(
+          //   color: ColorPalette.primaryGreen,
+          //   blurRadius: 18,
+          //   spreadRadius: 1.5,
+          //   opacity: 0.45,
+          //   borderRadius: BorderRadius.circular(cardRadius),
+          // ),
+        ],
+        child: cardWidget,
+      );
+    }
+
+    return cardWidget;
   }
 }

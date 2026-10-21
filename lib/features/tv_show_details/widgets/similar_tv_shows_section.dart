@@ -1,7 +1,9 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/home%20page/widgets/portrait_poster_card.dart';
 import 'package:sparrow/features/tv_show_details/providers/similar_tv_shows_provider.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -31,6 +33,35 @@ class SimilarTvShowsSection extends ConsumerWidget {
     return similarAsync.when(
       data: (shows) {
         if (shows.isEmpty) return const SizedBox.shrink();
+
+        Widget list = ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: responsive.scale(12, min: 8, max: 16),
+          ),
+          itemCount: shows.length,
+          itemBuilder: (context, index) {
+            final show = shows[index];
+            return Padding(
+              padding: const EdgeInsets.all(8),
+              child: FocusablePosterCard(
+                onSelected: () => openTvShowDetails(context, show),
+                child: PortraitPosterCard(
+                  item: show,
+                  width: posterWidth,
+                  trending: false,
+                  index: index,
+                  onTap: () => openTvShowDetails(context, show),
+                ),
+              ),
+            );
+          },
+        );
+
+        if (isDesktop) {
+          list = DpadRegion(leftEdge: DpadEdgeBehavior.leave, child: list);
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +102,9 @@ class SimilarTvShowsSection extends ConsumerWidget {
                     'Curated Picks',
                     style: TextStyle(
                       color: ColorPalette.textMuted,
-                      fontSize: isDesktop ? 12.5 : responsive.sp(11, min: 9.5, max: 12),
+                      fontSize: isDesktop
+                          ? 12.5
+                          : responsive.sp(11, min: 9.5, max: 12),
                     ),
                   ),
                 ],
@@ -80,29 +113,7 @@ class SimilarTvShowsSection extends ConsumerWidget {
             const SizedBox(height: 10),
 
             // Horizontal Carousel of Reused Poster Cards
-            SizedBox(
-              height: carouselHeight,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isDesktop
-                      ? 0
-                      : responsive.scale(12, min: 8, max: 16),
-                ),
-                itemCount: shows.length,
-                itemBuilder: (context, index) {
-                  final show = shows[index];
-                  return PortraitPosterCard(
-                    item: show,
-                    width: posterWidth,
-                    trending: false,
-                    index: index,
-                    onTap: () => openTvShowDetails(context, show),
-                  );
-                },
-              ),
-            ),
+            SizedBox(height: carouselHeight, child: list),
           ],
         );
       },
