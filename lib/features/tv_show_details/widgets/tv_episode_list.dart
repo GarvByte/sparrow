@@ -31,6 +31,83 @@ class TvEpisodeList extends ConsumerWidget {
     );
     final seasonDetailAsync = ref.watch(tvSeasonDetailProvider(query));
 
+    Widget content;
+    // 1. Render existing data whenever available (even during background refresh)
+    if (seasonDetailAsync.hasValue &&
+        seasonDetailAsync.value != null &&
+        seasonDetailAsync.value!.episodes.isNotEmpty) {
+      final episodes = seasonDetailAsync.value!.episodes;
+      content = ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: episodes.length,
+        separatorBuilder: (context, index) => const Divider(
+          color: ColorPalette.ghostBorder,
+          height: 16,
+          thickness: 0.8,
+        ),
+        itemBuilder: (context, index) {
+          final episode = episodes[index];
+          return TvEpisodeCard(
+            episode: episode,
+            seriesId: seriesId,
+            isTvLayout: false,
+            onPlay: () => onEpisodeSelected?.call(episode),
+          );
+        },
+      );
+    } else if (seasonDetailAsync.isLoading) {
+      // 2. Initial loading
+      content = Container(
+        padding: const EdgeInsets.symmetric(vertical: 36),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: ColorPalette.primaryGreen,
+        ),
+      );
+    } else if (seasonDetailAsync.hasError) {
+      // 3. Error with retry
+      content = Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        alignment: Alignment.center,
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            Text(
+              'Unable to load episodes',
+              style: TextStyle(
+                color: ColorPalette.textMuted,
+                fontSize: responsive.sp(13, min: 11, max: 15),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              onPressed: () => ref.refresh(tvSeasonDetailProvider(query)),
+              child: const Text('Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // 4. Genuinely empty
+      content = Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        alignment: Alignment.center,
+        child: Text(
+          'No episodes available for this season.',
+          style: TextStyle(
+            color: ColorPalette.textMuted,
+            fontSize: responsive.sp(13, min: 11, max: 15),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -68,65 +145,7 @@ class TvEpisodeList extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
 
-        // Episodes content
-        seasonDetailAsync.when(
-          data: (seasonDetail) {
-            final episodes = seasonDetail?.episodes ?? [];
-
-            if (episodes.isEmpty) {
-              return Container(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                alignment: Alignment.center,
-                child: Text(
-                  'No episodes available for this season.',
-                  style: TextStyle(
-                    color: ColorPalette.textMuted,
-                    fontSize: responsive.sp(13, min: 11, max: 15),
-                  ),
-                ),
-              );
-            }
-
-            return ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: episodes.length,
-              separatorBuilder: (context, index) => const Divider(
-                color: ColorPalette.ghostBorder,
-                height: 16,
-                thickness: 0.8,
-              ),
-              itemBuilder: (context, index) {
-                final episode = episodes[index];
-                return TvEpisodeCard(
-                  episode: episode,
-                  seriesId: seriesId,
-                  isTvLayout: false,
-                  onPlay: () => onEpisodeSelected?.call(episode),
-                );
-              },
-            );
-          },
-          loading: () => Container(
-            padding: const EdgeInsets.symmetric(vertical: 36),
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              color: ColorPalette.primaryGreen,
-            ),
-          ),
-          error: (error, _) => Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            alignment: Alignment.center,
-            child: Text(
-              'Unable to load episodes. Please try again.',
-              style: TextStyle(
-                color: ColorPalette.textMuted,
-                fontSize: responsive.sp(13, min: 11, max: 15),
-              ),
-            ),
-          ),
-        ),
+        content,
       ],
     );
   }

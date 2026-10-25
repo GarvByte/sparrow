@@ -1,4 +1,4 @@
-import 'package:sparrow/features/anime_hub/providers/anime_tv_providers.dart';
+import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
 import 'package:sparrow/features/watchlist/data/watchlist_repository.dart';

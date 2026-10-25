@@ -1,27 +1,81 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sparrow/shared/api.dart';
 import 'package:sparrow/shared/genre_ids.dart';
 
 class TmdbService {
-  Future<List<dynamic>> fetchMovies(String endpoint) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-        headers: {'Authorization': tokenAuth},
-      );
+  final http.Client _client;
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+  TmdbService({http.Client? client}) : _client = client ?? _defaultClient;
 
-        return getGenre(json['results'] ?? []);
-      } else {
-        //debugPrintt('TMDB error: ${response.statusCode}');
-        return [];
+  static final http.Client _defaultClient = http.Client();
+
+  /// Determines whether an error or HTTP status code is a temporary/transient failure
+  /// that warrants a bounded retry.
+  bool _isTransientError(Object e, [int? statusCode]) {
+    if (statusCode != null &&
+        (statusCode == 429 ||
+            statusCode == 502 ||
+            statusCode == 503 ||
+            statusCode == 504)) {
+      return true;
+    }
+    if (e is TimeoutException) return true;
+    final msg = e.toString().toLowerCase();
+    return msg.contains('socketexception') ||
+        msg.contains('connection reset') ||
+        msg.contains('connection refused') ||
+        msg.contains('connection closed') ||
+        msg.contains('network is unreachable') ||
+        msg.contains('timed out');
+  }
+
+  /// Sends an HTTP GET request with a bounded retry mechanism for transient network
+  /// failures (e.g., Connection reset by peer, rate limits, timeouts).
+  Future<http.Response> _getWithRetry(
+    Uri uri, {
+    Map<String, String>? headers,
+    Duration timeout = const Duration(seconds: 12),
+    int maxAttempts = 3,
+  }) async {
+    int attempt = 0;
+    while (true) {
+      attempt++;
+      try {
+        final response =
+            await _client.get(uri, headers: headers).timeout(timeout);
+        if (_isTransientError(response, response.statusCode) &&
+            attempt < maxAttempts) {
+          await Future.delayed(Duration(milliseconds: 300 * attempt));
+          continue;
+        }
+        return response;
+      } catch (e) {
+        if (_isTransientError(e) && attempt < maxAttempts) {
+          await Future.delayed(Duration(milliseconds: 300 * attempt));
+          continue;
+        }
+        rethrow;
       }
-    } catch (e) {
-      //debugPrintt('TMDB error: $e');
-      return [];
+    }
+  }
+
+  /// Fetches movies or shows from a TMDB endpoint with automatic transient retry.
+  Future<List<dynamic>> fetchMovies(String endpoint) async {
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return getGenre(json['results'] ?? []);
+    } else {
+      throw http.ClientException(
+        'TMDB fetch failed with status ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      );
     }
   }
 
@@ -40,26 +94,22 @@ class TmdbService {
   Future<List<dynamic>> searchMovies(String query, {int page = 1}) async {
     final clean = query.trim();
     if (clean.isEmpty) return [];
-    try {
-      final endpoint =
-          'search/movie?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-        headers: {'Authorization': tokenAuth},
-      );
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return getGenre(json['results'] ?? []);
-      } else {
-        //debugPrintt('TMDB search error: ${response.statusCode}');
-        throw Exception(
-          'Search request failed with status ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      //debugPrintt('TMDB search error: $e');
-      rethrow;
+    final endpoint =
+        'search/movie?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return getGenre(json['results'] ?? []);
+    } else {
+      throw http.ClientException(
+        'Search request failed with status ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      );
     }
   }
 
@@ -67,81 +117,69 @@ class TmdbService {
   Future<List<dynamic>> searchTvShows(String query, {int page = 1}) async {
     final clean = query.trim();
     if (clean.isEmpty) return [];
-    try {
-      final endpoint =
-          'search/tv?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-        headers: {'Authorization': tokenAuth},
-      );
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return getGenre(json['results'] ?? []);
-      } else {
-        //debugPrintt('TMDB TV search error: ${response.statusCode}');
-        throw Exception(
-          'TV Search request failed with status ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      //debugPrintt('TMDB TV search error: $e');
-      rethrow;
+    final endpoint =
+        'search/tv?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return getGenre(json['results'] ?? []);
+    } else {
+      throw http.ClientException(
+        'TV Search request failed with status ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      );
     }
   }
 
   /// Discover movies by genre ID from TMDB.
   Future<List<dynamic>> fetchByGenre(int genreId, {int page = 1}) async {
-    try {
-      final endpoint =
-          'discover/movie?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-        headers: {'Authorization': tokenAuth},
-      );
+    final endpoint =
+        'discover/movie?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      headers: {'Authorization': tokenAuth},
+    );
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return getGenre(json['results'] ?? []);
-      } else {
-        //debugPrintt('TMDB genre error: ${response.statusCode}');
-        throw Exception(
-          'Genre request failed with status ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      //debugPrintt('TMDB genre error: $e');
-      rethrow;
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return getGenre(json['results'] ?? []);
+    } else {
+      throw http.ClientException(
+        'Genre request failed with status ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      );
     }
   }
 
   /// Discover TV shows by genre ID from TMDB.
   Future<List<dynamic>> fetchTvByGenre(int genreId, {int page = 1}) async {
-    try {
-      final endpoint =
-          'discover/tv?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-        headers: {'Authorization': tokenAuth},
-      );
+    final endpoint =
+        'discover/tv?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      headers: {'Authorization': tokenAuth},
+    );
 
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return getGenre(json['results'] ?? []);
-      } else {
-        throw Exception(
-          'TV Genre request failed with status ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      rethrow;
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return getGenre(json['results'] ?? []);
+    } else {
+      throw http.ClientException(
+        'TV Genre request failed with status ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+      );
     }
   }
 
   /// Fetch full list of official TMDB movie genres.
   Future<List<Map<String, dynamic>>> fetchMovieGenres() async {
     try {
-      final response = await http.get(
+      final response = await _getWithRetry(
         Uri.parse('https://api.themoviedb.org/3/genre/movie/list?language=en-US'),
         headers: {'Authorization': tokenAuth},
       );
@@ -152,7 +190,7 @@ class TmdbService {
         return list.map((g) => Map<String, dynamic>.from(g as Map)).toList();
       }
       return [];
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   }
@@ -160,7 +198,7 @@ class TmdbService {
   /// Fetch full list of official TMDB TV genres.
   Future<List<Map<String, dynamic>>> fetchTvGenres() async {
     try {
-      final response = await http.get(
+      final response = await _getWithRetry(
         Uri.parse('https://api.themoviedb.org/3/genre/tv/list?language=en-US'),
         headers: {'Authorization': tokenAuth},
       );
@@ -171,7 +209,7 @@ class TmdbService {
         return list.map((g) => Map<String, dynamic>.from(g as Map)).toList();
       }
       return [];
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   }
@@ -180,22 +218,19 @@ class TmdbService {
   Future<Map<String, dynamic>?> fetchMovieDetails(String movieId) async {
     final cleanId = movieId.trim();
     if (cleanId.isEmpty) return null;
-    try {
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
-        headers: {'Authorization': tokenAuth},
-      );
 
-      if (response.statusCode == 200) {
-        // //debugPrintt("movie detaisl = ${response.body}");
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        //debugPrintt('TMDB details error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      //debugPrintt('TMDB details error: $e');
-      return null;
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB details error: ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
+      );
     }
   }
 
@@ -203,23 +238,23 @@ class TmdbService {
   Future<Map<String, dynamic>?> fetchMovieCredits(String movieId) async {
     final cleanId = movieId.trim();
     if (cleanId.isEmpty) return null;
-    try {
-      final response = await http.get(
+
+    final response = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/movie/$cleanId/credits?language=en-US',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB credits error: ${response.statusCode}',
         Uri.parse(
           'https://api.themoviedb.org/3/movie/$cleanId/credits?language=en-US',
         ),
-        headers: {'Authorization': tokenAuth},
       );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        //debugPrintt('TMDB credits error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      //debugPrintt('TMDB credits error: $e');
-      return null;
     }
   }
 
@@ -227,9 +262,10 @@ class TmdbService {
   Future<List<dynamic>> fetchSimilarMovies(String movieId) async {
     final cleanId = movieId.trim();
     if (cleanId.isEmpty) return [];
+
+    // Recommendations usually provide higher quality curated similar titles
     try {
-      // Recommendations usually provide higher quality curated similar titles
-      final recResponse = await http.get(
+      final recResponse = await _getWithRetry(
         Uri.parse(
           'https://api.themoviedb.org/3/movie/$cleanId/recommendations?language=en-US&page=1',
         ),
@@ -243,45 +279,48 @@ class TmdbService {
           return getGenre(list);
         }
       }
-
-      // Fallback to similar endpoint
-      final simResponse = await http.get(
-        Uri.parse(
-          'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
-        ),
-        headers: {'Authorization': tokenAuth},
-      );
-
-      if (simResponse.statusCode == 200) {
-        final json = jsonDecode(simResponse.body);
-        return getGenre(json['results'] as List<dynamic>? ?? []);
-      }
-      return [];
-    } catch (e) {
-      //debugPrintt('TMDB similar movies error: $e');
-      return [];
+    } catch (_) {
+      // Recommendations failed; proceed to similar endpoint fallback
     }
+
+    // Fallback to similar endpoint
+    final simResponse = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (simResponse.statusCode == 200) {
+      final json = jsonDecode(simResponse.body);
+      return getGenre(json['results'] as List<dynamic>? ?? []);
+    }
+
+    throw http.ClientException(
+      'TMDB similar movies error: ${simResponse.statusCode}',
+      Uri.parse(
+        'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
+      ),
+    );
   }
 
   /// Fetch full TV show details by TMDB series ID.
   Future<Map<String, dynamic>?> fetchTvShowDetails(String seriesId) async {
     final cleanId = seriesId.trim();
     if (cleanId.isEmpty) return null;
-    try {
-      final response = await http.get(
-        Uri.parse('https://api.themoviedb.org/3/tv/$cleanId?language=en-US'),
-        headers: {'Authorization': tokenAuth},
-      );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        //debugPrintt('TMDB TV details error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      //debugPrintt('TMDB TV details error: $e');
-      return null;
+    final response = await _getWithRetry(
+      Uri.parse('https://api.themoviedb.org/3/tv/$cleanId?language=en-US'),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB TV details error: ${response.statusCode}',
+        Uri.parse('https://api.themoviedb.org/3/tv/$cleanId?language=en-US'),
+      );
     }
   }
 
@@ -289,23 +328,23 @@ class TmdbService {
   Future<Map<String, dynamic>?> fetchTvShowCredits(String seriesId) async {
     final cleanId = seriesId.trim();
     if (cleanId.isEmpty) return null;
-    try {
-      final response = await http.get(
+
+    final response = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/tv/$cleanId/credits?language=en-US',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB TV credits error: ${response.statusCode}',
         Uri.parse(
           'https://api.themoviedb.org/3/tv/$cleanId/credits?language=en-US',
         ),
-        headers: {'Authorization': tokenAuth},
       );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        //debugPrintt('TMDB TV credits error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      //debugPrintt('TMDB TV credits error: $e');
-      return null;
     }
   }
 
@@ -316,23 +355,23 @@ class TmdbService {
   ) async {
     final cleanId = seriesId.trim();
     if (cleanId.isEmpty) return null;
-    try {
-      final response = await http.get(
+
+    final response = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB TV season error: ${response.statusCode}',
         Uri.parse(
           'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
         ),
-        headers: {'Authorization': tokenAuth},
       );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        //debugPrintt('TMDB TV season error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      //debugPrintt('TMDB TV season error: $e');
-      return null;
     }
   }
 
@@ -340,8 +379,9 @@ class TmdbService {
   Future<List<dynamic>> fetchSimilarTvShows(String seriesId) async {
     final cleanId = seriesId.trim();
     if (cleanId.isEmpty) return [];
+
     try {
-      final recResponse = await http.get(
+      final recResponse = await _getWithRetry(
         Uri.parse(
           'https://api.themoviedb.org/3/tv/$cleanId/recommendations?language=en-US&page=1',
         ),
@@ -355,22 +395,27 @@ class TmdbService {
           return getGenre(list);
         }
       }
-
-      final simResponse = await http.get(
-        Uri.parse(
-          'https://api.themoviedb.org/3/tv/$cleanId/similar?language=en-US&page=1',
-        ),
-        headers: {'Authorization': tokenAuth},
-      );
-
-      if (simResponse.statusCode == 200) {
-        final json = jsonDecode(simResponse.body);
-        return getGenre(json['results'] as List<dynamic>? ?? []);
-      }
-      return [];
-    } catch (e) {
-      //debugPrintt('TMDB similar TV shows error: $e');
-      return [];
+    } catch (_) {
+      // Recommendations failed; proceed to similar endpoint fallback
     }
+
+    final simResponse = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/tv/$cleanId/similar?language=en-US&page=1',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (simResponse.statusCode == 200) {
+      final json = jsonDecode(simResponse.body);
+      return getGenre(json['results'] as List<dynamic>? ?? []);
+    }
+
+    throw http.ClientException(
+      'TMDB similar TV shows error: ${simResponse.statusCode}',
+      Uri.parse(
+        'https://api.themoviedb.org/3/tv/$cleanId/similar?language=en-US&page=1',
+      ),
+    );
   }
 }

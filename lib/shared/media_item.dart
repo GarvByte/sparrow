@@ -42,4 +42,15 @@ class MediaItem {
   });
 
   bool get isTvShow => mediaType == 'tv';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MediaItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          mediaType == other.mediaType;
+
+  @override
+  int get hashCode => Object.hash(id, mediaType);
 }

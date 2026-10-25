@@ -18,9 +18,14 @@ final tvShowDetailsProvider =
     return TvShowDetailInfo.fromMediaItem(initialItem);
   }
 
-  final detailsJson = await service.fetchTvShowDetails(cleanId);
-  final creditsJson = await service.fetchTvShowCredits(cleanId);
+  Map<String, dynamic>? creditsJson;
+  try {
+    creditsJson = await service.fetchTvShowCredits(cleanId);
+  } catch (_) {
+    // Non-fatal if credits fail; details are the primary payload
+  }
 
+  final detailsJson = await service.fetchTvShowDetails(cleanId);
   if (detailsJson != null) {
     return TvShowDetailInfo.fromTmdbJson(
       json: detailsJson,

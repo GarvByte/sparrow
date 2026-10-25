@@ -94,6 +94,7 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                           height: responsive.animePosterHeight,
                           width: responsive.animePosterWidth,
                           responsive: responsive,
+                          onRetry: () => ref.refresh(topAnimeSeriesProvider),
                         ),
                       ],
                     ),
@@ -130,6 +131,7 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                           width: responsive.trendingPosterWidth,
                           responsive: responsive,
                           isTrending: true,
+                          onRetry: () => ref.refresh(trendingTvShowsProvider),
                         ),
                       ],
                     ),
@@ -166,6 +168,7 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                           height: responsive.animePosterHeight,
                           width: responsive.animePosterWidth,
                           responsive: responsive,
+                          onRetry: () => ref.refresh(popularTvShowsProvider),
                         ),
                       ],
                     ),
@@ -201,6 +204,7 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                           height: responsive.animePosterHeight,
                           width: responsive.animePosterWidth,
                           responsive: responsive,
+                          onRetry: () => ref.refresh(onTheAirTvShowsProvider),
                         ),
                       ],
                     ),
@@ -236,12 +240,13 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                           height: responsive.animePosterHeight,
                           width: responsive.animePosterWidth,
                           responsive: responsive,
+                          onRetry: () => ref.refresh(topRatedTvShowsProvider),
                         ),
                       ],
                     ),
                   ),
 
-                  // 7. Genre-Based TV Sections
+                  // 7. Genre-Based TV Sections (Self-contained to prevent full-page rebuilds)
                   ..._buildTvGenreSections(context, ref, responsive),
                 ],
               ),
@@ -265,36 +270,37 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
     required double height,
     required double width,
     required dynamic responsive,
+    required VoidCallback onRetry,
     bool isTrending = false,
   }) {
-    return asyncValue.when(
-      data: (items) {
-        if (items.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return HorizontalMediaCarousel(
-          height: height,
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FocusablePosterCard(
-                onSelected: () => openTvShowDetails(context, item),
-                child: PortraitPosterCard(
-                  item: item,
-                  width: width,
-                  trending: isTrending,
-                  index: index,
-                  onTap: () => openTvShowDetails(context, item),
-                ),
+    if (asyncValue.hasValue &&
+        asyncValue.value != null &&
+        asyncValue.value!.isNotEmpty) {
+      final items = asyncValue.value!;
+      return HorizontalMediaCarousel(
+        height: height,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FocusablePosterCard(
+              onSelected: () => openTvShowDetails(context, item),
+              child: PortraitPosterCard(
+                item: item,
+                width: width,
+                trending: isTrending,
+                index: index,
+                onTap: () => openTvShowDetails(context, item),
               ),
-            );
-          },
-        );
-      },
-      loading: () => SizedBox(
+            ),
+          );
+        },
+      );
+    }
+
+    if (asyncValue.isLoading) {
+      return SizedBox(
         height: height,
         child: const Center(
           child: CircularProgressIndicator(
@@ -302,20 +308,41 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
             color: ColorPalette.primaryGreen,
           ),
         ),
-      ),
-      error: (error, stack) => SizedBox(
-        height: 80,
+      );
+    }
+
+    if (asyncValue.hasError) {
+      return SizedBox(
+        height: 70,
         child: Center(
-          child: Text(
-            'Unable to load TV shows',
-            style: TextStyle(
-              color: ColorPalette.textMuted,
-              fontSize: responsive.sp(12, min: 10, max: 14),
-            ),
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  size: 18, color: ColorPalette.textMuted),
+              Text(
+                'Unable to load TV shows',
+                style: TextStyle(
+                  color: ColorPalette.textMuted,
+                  fontSize: responsive.sp(12, min: 10, max: 14),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: onRetry,
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
+              ),
+            ],
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   List<Widget> _buildTvGenreSections(
@@ -326,55 +353,120 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
     final genresAsync = ref.watch(tvGenresProvider);
     const selectedGenreIds = [10759, 18, 35, 80, 9648, 10765];
 
-    return genresAsync.when(
-      data: (allGenres) {
-        final genresToShow = allGenres
-            .where((g) => selectedGenreIds.contains(g.id))
-            .toList();
+    final allGenres = genresAsync.value ?? fallbackTvGenres;
+    final genresToShow =
+        allGenres.where((g) => selectedGenreIds.contains(g.id)).toList();
 
-        return genresToShow.map((genre) {
-          final tvAsync = ref.watch(tvByGenreProvider(genre.id));
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return genresToShow
+        .map((genre) => _TvGenreSection(genre: genre, responsive: responsive))
+        .toList();
+  }
+}
+
+/// Independent consumer section for TV genres to avoid rebuilding the entire page.
+class _TvGenreSection extends ConsumerWidget {
+  final TmdbGenre genre;
+  final SparrowResponsive responsive;
+
+  const _TvGenreSection({
+    required this.genre,
+    required this.responsive,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tvAsync = ref.watch(tvByGenreProvider(genre.id));
+
+    Widget content;
+    if (tvAsync.hasValue && tvAsync.value != null && tvAsync.value!.isNotEmpty) {
+      final items = tvAsync.value!;
+      content = HorizontalMediaCarousel(
+        height: responsive.animePosterHeight,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FocusablePosterCard(
+              onSelected: () => openTvShowDetails(context, item),
+              child: PortraitPosterCard(
+                item: item,
+                width: responsive.animePosterWidth,
+                onTap: () => openTvShowDetails(context, item),
+              ),
+            ),
+          );
+        },
+      );
+    } else if (tvAsync.isLoading) {
+      content = SizedBox(
+        height: responsive.animePosterHeight,
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: ColorPalette.primaryGreen,
+          ),
+        ),
+      );
+    } else if (tvAsync.hasError) {
+      content = SizedBox(
+        height: 60,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
             children: [
-              SizedBox(height: responsive.scale(18, min: 12, max: 24)),
-              DpadRegion(
-                memoryKey: 'tv/genre_${genre.id}',
-                leftEdge: DpadEdgeBehavior.leave,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SectionHeader(
-                      title: genre.name,
-                      actionText: 'View All',
-                      onTrailingTap: () {
-                        openViewAll(
-                          context,
-                          ViewAllArgs(
-                            mediaType: 'tv',
-                            categoryType: 'genre',
-                            genreId: genre.id,
-                            title: '${genre.name} Shows',
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    _buildPosterCarousel(
-                      asyncValue: tvAsync,
-                      height: responsive.animePosterHeight,
-                      width: responsive.animePosterWidth,
-                      responsive: responsive,
-                    ),
-                  ],
-                ),
+              Text(
+                'Could not load ${genre.name}',
+                style: const TextStyle(color: ColorPalette.textMuted, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: () => ref.refresh(tvByGenreProvider(genre.id)),
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
               ),
             ],
-          );
-        }).toList();
-      },
-      loading: () => const [SizedBox.shrink()],
-      error: (_, __) => const [SizedBox.shrink()],
+          ),
+        ),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+        DpadRegion(
+          memoryKey: 'tv/genre_${genre.id}',
+          leftEdge: DpadEdgeBehavior.leave,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeader(
+                title: genre.name,
+                actionText: 'View All',
+                onTrailingTap: () {
+                  openViewAll(
+                    context,
+                    ViewAllArgs(
+                      mediaType: 'tv',
+                      categoryType: 'genre',
+                      genreId: genre.id,
+                      title: '${genre.name} Shows',
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              content,
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

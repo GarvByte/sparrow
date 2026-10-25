@@ -15,6 +15,7 @@ class AppBackShortcuts extends StatelessWidget {
   Widget build(BuildContext context) {
     return Focus(
       autofocus: true,
+      skipTraversal: true,
       onKeyEvent: (node, event) {
         if (event is! KeyDownEvent) {
           return KeyEventResult.ignored;

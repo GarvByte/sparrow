@@ -8,6 +8,7 @@ Widget buildPlayerEmbedView(String url) {
     ),
     initialSettings: InAppWebViewSettings(
       javaScriptEnabled: true,
+      domStorageEnabled: true,
       mediaPlaybackRequiresUserGesture: false,
       allowsInlineMediaPlayback: true,
     ),

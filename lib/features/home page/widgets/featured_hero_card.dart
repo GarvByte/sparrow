@@ -52,11 +52,8 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final featuredmovies = ref.watch(movieProviderNotifier);
+    final fallbackItems = ref.watch(featuredListProvider);
     final selectedIndex = ref.watch(selectedFeaturedIndexProvider);
-
-    if (featuredmovies.isLoading) {
-      return const CircularProgressIndicator();
-    }
 
     final carouselHeight = responsive.layeredCarouselHeight;
     final cardHeight = responsive.heroCardHeight;
@@ -65,98 +62,145 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
     final viewportFraction = responsive.isTvOrDesktop
         ? 0.25
         : (responsive.isTablet ? 0.40 : 0.66);
-    return featuredmovies.when(
-      data: (data) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return SizedBox(
-              height: carouselHeight,
-              child: DpadRegion(
-                memoryKey: 'home/featuredCarousel',
-                horizontalEdge: responsive.isTvOrDesktop
-                    ? DpadEdgeBehavior.leave
-                    : DpadEdgeBehavior.wrap,
-                leftEdge: responsive.isTvOrDesktop
-                    ? DpadEdgeBehavior.stop
-                    : null,
-                verticalEdge: DpadEdgeBehavior.leave,
-                onEdge: (direction) {
-                  if (direction == TraversalDirection.left) {
-                    TvDrawerScope.openOf(context);
-                  }
-                },
-                child: CarouselSlider.builder(
-                  carouselController: _carouselController,
-                  itemCount: data.length,
-                  options: CarouselOptions(
-                    height: carouselHeight,
-                    viewportFraction: viewportFraction,
-                    initialPage: selectedIndex,
-                    enableInfiniteScroll: !responsive.isTvOrDesktop,
-                    enlargeCenterPage: false,
-                    padEnds: true,
-                    scrollPhysics: const BouncingScrollPhysics(),
-                    onPageChanged: (index, reason) {
-                      ref.read(selectedFeaturedIndexProvider.notifier).state =
-                          index;
-                    },
-                  ),
-                  itemBuilder: (context, index, realIndex) {
-                    final isCurrent = index == selectedIndex;
-                    final movieInfo = data[index];
 
-                    final backdrop = movieInfo['backdrop_path'] as String?;
-                    final poster = movieInfo['poster_path'] as String?;
-                    final item = MediaItem(
-                      id: movieInfo['id'].toString(),
-                      title: movieInfo['title'] ?? 'Untitled',
-                      rating: (movieInfo['vote_average'] as num?)?.toDouble(),
-                      ratingCount: movieInfo['vote_count']?.toString(),
-                      imageUrl: poster != null && poster.isNotEmpty
-                          ? imageBaseUrl + poster
-                          : (backdrop != null && backdrop.isNotEmpty
-                                ? imageBaseUrl + backdrop
-                                : ''),
-                      genres: movieInfo['genre'] ?? [],
-                      isAdult: movieInfo['adult'] as bool? ?? false,
-                      overview: movieInfo['overview'] as String?,
-                      releaseDate: movieInfo['release_date'] as String?,
-                      backdropUrl: backdrop != null && backdrop.isNotEmpty
-                          ? imageBaseUrl2 + backdrop
-                          : null,
-                    );
-                    return _LayeredMovieCard(
-                      item: item,
-                      isCurrent: isCurrent,
-                      cardHeight: cardHeight,
-                      posterHeight: posterHeight,
-                      onTap: () {
-                        if (!isCurrent) {
-                          _carouselController.animateToPage(
-                            index,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOutCubic,
-                          );
-                        } else {
-                          widget.onWatchNow?.call(item);
-                        }
-                      },
-                      onWatchNow: () => widget.onWatchNow?.call(item),
-                    );
+    // 1. Resolve items: live TMDB movies when available; otherwise fallback to curated mock heroes
+    final List<MediaItem> items;
+    if (featuredmovies.hasValue &&
+        featuredmovies.value != null &&
+        featuredmovies.value!.isNotEmpty) {
+      items = featuredmovies.value!.map((movieInfo) {
+        final backdrop = movieInfo['backdrop_path'] as String?;
+        final poster = movieInfo['poster_path'] as String?;
+        return MediaItem(
+          id: movieInfo['id'].toString(),
+          title: movieInfo['title'] ?? 'Untitled',
+          rating: (movieInfo['vote_average'] as num?)?.toDouble(),
+          ratingCount: movieInfo['vote_count']?.toString(),
+          imageUrl: poster != null && poster.isNotEmpty
+              ? imageBaseUrl + poster
+              : (backdrop != null && backdrop.isNotEmpty
+                    ? imageBaseUrl + backdrop
+                    : ''),
+          genres: movieInfo['genre'] ?? [],
+          isAdult: movieInfo['adult'] as bool? ?? false,
+          overview: movieInfo['overview'] as String?,
+          releaseDate: movieInfo['release_date'] as String?,
+          backdropUrl: backdrop != null && backdrop.isNotEmpty
+              ? imageBaseUrl2 + backdrop
+              : null,
+        );
+      }).toList();
+    } else if (fallbackItems.isNotEmpty) {
+      items = fallbackItems;
+    } else {
+      items = const [];
+    }
+
+    if (items.isNotEmpty) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            height: carouselHeight,
+            child: DpadRegion(
+              memoryKey: 'home/featuredCarousel',
+              horizontalEdge: responsive.isTvOrDesktop
+                  ? DpadEdgeBehavior.leave
+                  : DpadEdgeBehavior.wrap,
+              leftEdge: responsive.isTvOrDesktop ? DpadEdgeBehavior.stop : null,
+              verticalEdge: DpadEdgeBehavior.leave,
+              onEdge: (direction) {
+                if (direction == TraversalDirection.left) {
+                  TvDrawerScope.openOf(context);
+                }
+              },
+              child: CarouselSlider.builder(
+                carouselController: _carouselController,
+                itemCount: items.length,
+                options: CarouselOptions(
+                  height: carouselHeight,
+                  viewportFraction: viewportFraction,
+                  initialPage: selectedIndex,
+                  enableInfiniteScroll: !responsive.isTvOrDesktop,
+                  enlargeCenterPage: false,
+                  padEnds: true,
+                  scrollPhysics: const BouncingScrollPhysics(),
+                  onPageChanged: (index, reason) {
+                    ref.read(selectedFeaturedIndexProvider.notifier).state =
+                        index;
                   },
                 ),
+                itemBuilder: (context, index, realIndex) {
+                  final isCurrent = index == selectedIndex;
+                  final item = items[index];
+                  return _LayeredMovieCard(
+                    item: item,
+                    isCurrent: isCurrent,
+                    cardHeight: cardHeight,
+                    posterHeight: posterHeight,
+                    onTap: () {
+                      if (!isCurrent) {
+                        _carouselController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                        );
+                      } else {
+                        widget.onWatchNow?.call(item);
+                      }
+                    },
+                    onWatchNow: () => widget.onWatchNow?.call(item),
+                  );
+                },
               ),
-            );
-          },
-        );
-      },
-      error: (error, stack) => Text("error : $error"),
-      loading: () {
-        return const CircularProgressIndicator(
-          color: ColorPalette.primaryGreen,
-        );
-      },
-    );
+            ),
+          );
+        },
+      );
+    }
+
+    // 2. Initial loading state (no cached or fallback data available)
+    if (featuredmovies.isLoading) {
+      return SizedBox(
+        height: carouselHeight,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: ColorPalette.primaryGreen,
+            strokeWidth: 2.5,
+          ),
+        ),
+      );
+    }
+
+    // 3. Error state with retry
+    if (featuredmovies.hasError) {
+      return SizedBox(
+        height: carouselHeight,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  size: 20, color: ColorPalette.textMuted),
+              const Text(
+                'Unable to load featured movies',
+                style: TextStyle(color: ColorPalette.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: () => ref.refresh(movieProviderNotifier),
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 
@@ -234,36 +278,32 @@ class _LayeredMovieCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // 1. Movie Poster (Exact 17:16 aspect ratio, ZERO overlays)
-                      SizedBox(
-                        height: posterHeight,
-                        child: AspectRatio(
-                          aspectRatio: 17.0 / 16.0,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(posterRadius),
-                            child: CachedNetworkImage(
-                              imageUrl: item.imageUrl,
-                              placeholder: (context, url) => const Center(
-                                child: SizedBox(
-                                  width: 28,
-                                  height: 28,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: ColorPalette.primaryGreen,
-                                  ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // 1. Movie Poster (Exact 17:16 aspect ratio, ZERO overlays)
+                        SizedBox(
+                          height: posterHeight,
+                          child: AspectRatio(
+                            aspectRatio: 17.0 / 16.0,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(posterRadius),
+                              child: CachedNetworkImage(
+                                imageUrl: item.imageUrl,
+                                placeholder: (context, url) => Container(
+                                  color: ColorPalette.surfaceContainerLow,
                                 ),
+                                errorWidget: (context, url, error) =>
+                                    const ErrorImagePlaceholder(),
+                                fit: BoxFit.cover,
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const ErrorImagePlaceholder(),
-                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      ),
 
                       SizedBox(height: responsive.scale(7, min: 4, max: 9)),
 
@@ -393,6 +433,7 @@ class _LayeredMovieCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
 
                   // Atmospheric depth tint for background side cards
                   if (!isCurrent)
@@ -421,21 +462,7 @@ class _LayeredMovieCard extends StatelessWidget {
           }
         },
         autoScroll: true,
-        effects: [
-          // const DpadScaleEffect(scale: 1.03),
-          // DpadBorderEffect(
-          //   width: 3.0,
-          //   color: ColorPalette.primaryGreen,
-          //   borderRadius: BorderRadius.circular(cardRadius),
-          // ),
-          // DpadGlowEffect(
-          // color: ColorPalette.primaryGreen,
-          // blurRadius: 18,
-          // spreadRadius: 1.5,
-          // opacity: 0.45,
-          // borderRadius: BorderRadius.circular(cardRadius),
-          // ),
-        ],
+        effects: const [],
         child: cardContent,
       );
     }

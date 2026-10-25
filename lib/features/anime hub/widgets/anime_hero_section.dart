@@ -42,75 +42,79 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
         ? 0.25
         : (responsive.isTablet ? 0.40 : 0.66);
 
-    return animeListAsync.when(
-      data: (items) {
-        if (items.isEmpty) return const SizedBox.shrink();
+    // 1. Render existing data whenever available (even during background refresh)
+    if (animeListAsync.hasValue &&
+        animeListAsync.value != null &&
+        animeListAsync.value!.isNotEmpty) {
+      final items = animeListAsync.value!;
+      final displayItems = items.take(8).toList();
+      final selectedIndex = _selectedIndex.clamp(0, displayItems.length - 1);
 
-        final displayItems = items.take(8).toList();
-        final selectedIndex = _selectedIndex.clamp(0, displayItems.length - 1);
-
-        return SizedBox(
-          height: carouselHeight,
-          child: DpadRegion(
-            memoryKey: 'tv/animeHeroCarousel',
-            horizontalEdge: responsive.isTvOrDesktop
-                ? DpadEdgeBehavior.leave
-                : DpadEdgeBehavior.wrap,
-            leftEdge: responsive.isTvOrDesktop ? DpadEdgeBehavior.stop : null,
-            verticalEdge: DpadEdgeBehavior.leave,
-            onEdge: (direction) {
-              if (direction == TraversalDirection.left) {
-                TvDrawerScope.openOf(context);
-              }
-            },
-            child: CarouselSlider.builder(
-              carouselController: _carouselController,
-              itemCount: displayItems.length,
-              options: CarouselOptions(
-                height: carouselHeight,
-                viewportFraction: viewportFraction,
-                initialPage: selectedIndex,
-                enableInfiniteScroll:
-                    !responsive.isTvOrDesktop && (displayItems.length > 1),
-                enlargeCenterPage: false,
-                padEnds: true,
-                scrollPhysics: const BouncingScrollPhysics(),
-                onPageChanged: (index, reason) {
-                  if (mounted) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  }
-                },
-              ),
-              itemBuilder: (context, index, realIndex) {
-                final isCurrent = index == selectedIndex;
-                final item = displayItems[index];
-
-                return _LayeredTvCard(
-                  item: item,
-                  isCurrent: isCurrent,
-                  cardHeight: cardHeight,
-                  posterHeight: posterHeight,
-                  onTap: () {
-                    if (!isCurrent) {
-                      _carouselController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
-                      );
-                    } else {
-                      widget.onWatchNow?.call(item);
-                    }
-                  },
-                  onWatchNow: () => widget.onWatchNow?.call(item),
-                );
+      return SizedBox(
+        height: carouselHeight,
+        child: DpadRegion(
+          memoryKey: 'tv/animeHeroCarousel',
+          horizontalEdge: responsive.isTvOrDesktop
+              ? DpadEdgeBehavior.leave
+              : DpadEdgeBehavior.wrap,
+          leftEdge: responsive.isTvOrDesktop ? DpadEdgeBehavior.stop : null,
+          verticalEdge: DpadEdgeBehavior.leave,
+          onEdge: (direction) {
+            if (direction == TraversalDirection.left) {
+              TvDrawerScope.openOf(context);
+            }
+          },
+          child: CarouselSlider.builder(
+            carouselController: _carouselController,
+            itemCount: displayItems.length,
+            options: CarouselOptions(
+              height: carouselHeight,
+              viewportFraction: viewportFraction,
+              initialPage: selectedIndex,
+              enableInfiniteScroll:
+                  !responsive.isTvOrDesktop && (displayItems.length > 1),
+              enlargeCenterPage: false,
+              padEnds: true,
+              scrollPhysics: const BouncingScrollPhysics(),
+              onPageChanged: (index, reason) {
+                if (mounted) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                }
               },
             ),
+            itemBuilder: (context, index, realIndex) {
+              final isCurrent = index == selectedIndex;
+              final item = displayItems[index];
+
+              return _LayeredTvCard(
+                item: item,
+                isCurrent: isCurrent,
+                cardHeight: cardHeight,
+                posterHeight: posterHeight,
+                onTap: () {
+                  if (!isCurrent) {
+                    _carouselController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                    );
+                  } else {
+                    widget.onWatchNow?.call(item);
+                  }
+                },
+                onWatchNow: () => widget.onWatchNow?.call(item),
+              );
+            },
           ),
-        );
-      },
-      loading: () => SizedBox(
+        ),
+      );
+    }
+
+    // 2. Initial loading state
+    if (animeListAsync.isLoading) {
+      return SizedBox(
         height: carouselHeight,
         child: const Center(
           child: CircularProgressIndicator(
@@ -118,9 +122,39 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
             color: ColorPalette.primaryGreen,
           ),
         ),
-      ),
-      error: (err, stack) => const SizedBox.shrink(),
-    );
+      );
+    }
+
+    // 3. Error state with retry
+    if (animeListAsync.hasError) {
+      return SizedBox(
+        height: 100,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  size: 20, color: ColorPalette.textMuted),
+              const Text(
+                'Unable to load featured shows',
+                style: TextStyle(color: ColorPalette.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: () => ref.refresh(topAnimeSeriesProvider),
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 
@@ -396,21 +430,7 @@ class _LayeredTvCard extends StatelessWidget {
           }
         },
         autoScroll: true,
-        effects: [
-          // const DpadScaleEffect(scale: 1.03),
-          // DpadBorderEffect(
-          //   width: 3.0,
-          //   color: ColorPalette.primaryGreen,
-          //   borderRadius: BorderRadius.circular(cardRadius),
-          // ),
-          // DpadGlowEffect(
-          //   color: ColorPalette.primaryGreen,
-          //   blurRadius: 18,
-          //   spreadRadius: 1.5,
-          //   opacity: 0.45,
-          //   borderRadius: BorderRadius.circular(cardRadius),
-          // ),
-        ],
+        effects: const [],
         child: cardWidget,
       );
     }

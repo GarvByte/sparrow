@@ -26,6 +26,61 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  Widget _buildMediaCarouselSection({
+    required AsyncValue<List<dynamic>> asyncValue,
+    required double height,
+    required VoidCallback onRetry,
+    required Widget Function(List<dynamic> data) carouselBuilder,
+  }) {
+    if (asyncValue.hasValue &&
+        asyncValue.value != null &&
+        asyncValue.value!.isNotEmpty) {
+      return carouselBuilder(asyncValue.value!);
+    }
+
+    if (asyncValue.isLoading) {
+      return SizedBox(
+        height: height,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: ColorPalette.primaryGreen,
+            strokeWidth: 2.5,
+          ),
+        ),
+      );
+    }
+
+    if (asyncValue.hasError) {
+      return SizedBox(
+        height: 70,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  size: 18, color: ColorPalette.textMuted),
+              const Text(
+                'Failed to load section',
+                style: TextStyle(color: ColorPalette.textMuted, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: onRetry,
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
@@ -79,35 +134,43 @@ class _HomePageState extends ConsumerState<HomePage> {
                           onTrailingTap: () {},
                         ),
                         const SizedBox(height: 8),
-                        trendingTvShows.when(
-                          data: (data) {
+                        _buildMediaCarouselSection(
+                          asyncValue: trendingTvShows,
+                          height: responsive.continueWatchingHeight,
+                          onRetry: () => ref.refresh(trendingShowProvider),
+                          carouselBuilder: (data) {
                             return HorizontalMediaCarousel(
                               height: responsive.continueWatchingHeight,
                               itemCount: data.length,
                               itemBuilder: (context, index) {
                                 final movie = data[index];
-                                final backdrop = movie['backdrop_path'] as String?;
+                                final backdrop =
+                                    movie['backdrop_path'] as String?;
                                 final poster = movie['poster_path'] as String?;
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)?.toDouble(),
+                                  rating:
+                                      (movie['vote_average'] as num?)?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
-                                  imageUrl: backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl + backdrop
-                                      : (poster != null && poster.isNotEmpty
-                                            ? imageBaseUrl + poster
-                                            : ''),
+                                  imageUrl:
+                                      backdrop != null && backdrop.isNotEmpty
+                                          ? imageBaseUrl + backdrop
+                                          : (poster != null && poster.isNotEmpty
+                                              ? imageBaseUrl + poster
+                                              : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
-                                  backdropUrl: backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
+                                  backdropUrl:
+                                      backdrop != null && backdrop.isNotEmpty
+                                          ? imageBaseUrl2 + backdrop
+                                          : null,
                                 );
                                 return FocusablePosterCard(
-                                  onSelected: () => openMovieDetails(context, item),
+                                  onSelected: () =>
+                                      openMovieDetails(context, item),
                                   child: ContinueWatchingCard(
                                     item: item,
                                     width: responsive.continueWatchingWidth,
@@ -117,10 +180,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                               },
                             );
                           },
-                          error: (error, stackTrace) => Text("Error: $error"),
-                          loading: () => const CircularProgressIndicator(
-                            color: ColorPalette.primaryGreen,
-                          ),
                         ),
                       ],
                     ),
@@ -151,53 +210,57 @@ class _HomePageState extends ConsumerState<HomePage> {
                           },
                         ),
                         const SizedBox(height: 8),
-                        trendingNowMovies.when(
-                          data: (data) {
+                        _buildMediaCarouselSection(
+                          asyncValue: trendingNowMovies,
+                          height: responsive.trendingPosterHeight,
+                          onRetry: () => ref.refresh(trendingNowProvider),
+                          carouselBuilder: (data) {
                             return HorizontalMediaCarousel(
                               height: responsive.trendingPosterHeight,
                               itemCount: data.length,
                               itemBuilder: (context, index) {
                                 final movie = data[index];
-                                final backdrop = movie['backdrop_path'] as String?;
+                                final backdrop =
+                                    movie['backdrop_path'] as String?;
                                 final poster = movie['poster_path'] as String?;
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)?.toDouble(),
+                                  rating:
+                                      (movie['vote_average'] as num?)?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
+                                          ? imageBaseUrl + backdrop
+                                          : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
-                                  backdropUrl: backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
+                                  backdropUrl:
+                                      backdrop != null && backdrop.isNotEmpty
+                                          ? imageBaseUrl2 + backdrop
+                                          : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8),
                                   child: FocusablePosterCard(
-                                    onSelected: () => openMovieDetails(context, item),
+                                    onSelected: () =>
+                                        openMovieDetails(context, item),
                                     child: PortraitPosterCard(
                                       item: item,
                                       width: responsive.trendingPosterWidth,
                                       trending: true,
                                       index: index,
-                                      onTap: () => openMovieDetails(context, item),
+                                      onTap: () =>
+                                          openMovieDetails(context, item),
                                     ),
                                   ),
                                 );
                               },
                             );
                           },
-                          error: (error, stackTrace) => Text("Error $error"),
-                          loading: () => const CircularProgressIndicator(
-                            color: ColorPalette.primaryGreen,
-                          ),
                         ),
                       ],
                     ),
@@ -228,51 +291,55 @@ class _HomePageState extends ConsumerState<HomePage> {
                           },
                         ),
                         const SizedBox(height: 8),
-                        popularMovies.when(
-                          data: (data) {
+                        _buildMediaCarouselSection(
+                          asyncValue: popularMovies,
+                          height: responsive.animePosterHeight,
+                          onRetry: () => ref.refresh(popularMoviesProvider),
+                          carouselBuilder: (data) {
                             return HorizontalMediaCarousel(
                               height: responsive.animePosterHeight,
                               itemCount: data.length,
                               itemBuilder: (context, index) {
                                 final movie = data[index];
-                                final backdrop = movie['backdrop_path'] as String?;
+                                final backdrop =
+                                    movie['backdrop_path'] as String?;
                                 final poster = movie['poster_path'] as String?;
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)?.toDouble(),
+                                  rating:
+                                      (movie['vote_average'] as num?)?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
+                                          ? imageBaseUrl + backdrop
+                                          : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
-                                  backdropUrl: backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
+                                  backdropUrl:
+                                      backdrop != null && backdrop.isNotEmpty
+                                          ? imageBaseUrl2 + backdrop
+                                          : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8),
                                   child: FocusablePosterCard(
-                                    onSelected: () => openMovieDetails(context, item),
+                                    onSelected: () =>
+                                        openMovieDetails(context, item),
                                     child: PortraitPosterCard(
                                       item: item,
                                       width: responsive.animePosterWidth,
-                                      onTap: () => openMovieDetails(context, item),
+                                      onTap: () =>
+                                          openMovieDetails(context, item),
                                     ),
                                   ),
                                 );
                               },
                             );
                           },
-                          error: (error, stackTrace) => Text("Error $error"),
-                          loading: () => const CircularProgressIndicator(
-                            color: ColorPalette.primaryGreen,
-                          ),
                         ),
                       ],
                     ),
@@ -302,57 +369,61 @@ class _HomePageState extends ConsumerState<HomePage> {
                           },
                         ),
                         const SizedBox(height: 8),
-                        topRatedMovies.when(
-                          data: (data) {
+                        _buildMediaCarouselSection(
+                          asyncValue: topRatedMovies,
+                          height: responsive.animePosterHeight,
+                          onRetry: () => ref.refresh(topRatedMoviesProvider),
+                          carouselBuilder: (data) {
                             return HorizontalMediaCarousel(
                               height: responsive.animePosterHeight,
                               itemCount: data.length,
                               itemBuilder: (context, index) {
                                 final movie = data[index];
-                                final backdrop = movie['backdrop_path'] as String?;
+                                final backdrop =
+                                    movie['backdrop_path'] as String?;
                                 final poster = movie['poster_path'] as String?;
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)?.toDouble(),
+                                  rating:
+                                      (movie['vote_average'] as num?)?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
+                                          ? imageBaseUrl + backdrop
+                                          : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
-                                  backdropUrl: backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
+                                  backdropUrl:
+                                      backdrop != null && backdrop.isNotEmpty
+                                          ? imageBaseUrl2 + backdrop
+                                          : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: FocusablePosterCard(
-                                    onSelected: () => openMovieDetails(context, item),
+                                    onSelected: () =>
+                                        openMovieDetails(context, item),
                                     child: PortraitPosterCard(
                                       item: item,
                                       width: responsive.animePosterWidth,
-                                      onTap: () => openMovieDetails(context, item),
+                                      onTap: () =>
+                                          openMovieDetails(context, item),
                                     ),
                                   ),
                                 );
                               },
                             );
                           },
-                          error: (error, stackTrace) => Text("Error $error"),
-                          loading: () => const CircularProgressIndicator(
-                            color: ColorPalette.primaryGreen,
-                          ),
                         ),
                       ],
                     ),
                   ),
 
-                  // 6. Genre-Based Movie Sections
+                  // 6. Genre-Based Movie Sections (Self-contained ConsumerWidgets to prevent full-page rebuilds)
                   ..._buildGenreSections(context, ref, responsive),
                 ],
               ),
@@ -380,81 +451,99 @@ class _HomePageState extends ConsumerState<HomePage> {
       27,
     ]; // Action, Comedy, Thriller, Sci-Fi, Horror
 
-    return genresAsync.when(
-      data: (allGenres) {
-        final genresToShow = allGenres
-            .where((g) => selectedGenreIds.contains(g.id))
-            .toList();
+    final allGenres = genresAsync.value ?? fallbackMovieGenres;
+    final genresToShow =
+        allGenres.where((g) => selectedGenreIds.contains(g.id)).toList();
 
-        return genresToShow.map((genre) {
-          final moviesAsync = ref.watch(movieByGenreProvider(genre.id));
-          return Column(
+    return genresToShow
+        .map((genre) => _HomeGenreSection(genre: genre, responsive: responsive))
+        .toList();
+  }
+}
+
+/// Independent consumer section for each movie genre. Prevents full HomePage rebuilds
+/// when individual genre network requests complete or refresh.
+class _HomeGenreSection extends ConsumerWidget {
+  final TmdbGenre genre;
+  final SparrowResponsive responsive;
+
+  const _HomeGenreSection({
+    required this.genre,
+    required this.responsive,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final moviesAsync = ref.watch(movieByGenreProvider(genre.id));
+
+    Widget content;
+    if (moviesAsync.hasValue &&
+        moviesAsync.value != null &&
+        moviesAsync.value!.isNotEmpty) {
+      final items = moviesAsync.value!;
+      content = HorizontalMediaCarousel(
+        height: responsive.animePosterHeight,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FocusablePosterCard(
+              onSelected: () => openMovieDetails(context, item),
+              child: PortraitPosterCard(
+                item: item,
+                width: responsive.animePosterWidth,
+                onTap: () => openMovieDetails(context, item),
+              ),
+            ),
+          );
+        },
+      );
+    } else if (moviesAsync.isLoading) {
+      content = SizedBox(
+        height: responsive.animePosterHeight,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: ColorPalette.primaryGreen,
+            strokeWidth: 2.5,
+          ),
+        ),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+        DpadRegion(
+          memoryKey: 'home/genre_${genre.id}',
+          leftEdge: DpadEdgeBehavior.leave,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: responsive.scale(18, min: 12, max: 24)),
-              DpadRegion(
-                memoryKey: 'home/genre_${genre.id}',
-                leftEdge: DpadEdgeBehavior.leave,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SectionHeader(
-                      title: genre.name,
-                      actionText: 'View all',
-                      onTrailingTap: () {
-                        openViewAll(
-                          context,
-                          ViewAllArgs(
-                            mediaType: 'movie',
-                            categoryType: 'genre',
-                            genreId: genre.id,
-                            title: '${genre.name} Movies',
-                          ),
-                        );
-                      },
+              SectionHeader(
+                title: genre.name,
+                actionText: 'View all',
+                onTrailingTap: () {
+                  openViewAll(
+                    context,
+                    ViewAllArgs(
+                      mediaType: 'movie',
+                      categoryType: 'genre',
+                      genreId: genre.id,
+                      title: '${genre.name} Movies',
                     ),
-                    const SizedBox(height: 8),
-                    moviesAsync.when(
-                      data: (items) {
-                        if (items.isEmpty) return const SizedBox.shrink();
-                        return HorizontalMediaCarousel(
-                          height: responsive.animePosterHeight,
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: FocusablePosterCard(
-                                onSelected: () => openMovieDetails(context, item),
-                                child: PortraitPosterCard(
-                                  item: item,
-                                  width: responsive.animePosterWidth,
-                                  onTap: () => openMovieDetails(context, item),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      loading: () => SizedBox(
-                        height: responsive.animePosterHeight,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: ColorPalette.primaryGreen,
-                          ),
-                        ),
-                      ),
-                      error: (error, stack) => const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
+              const SizedBox(height: 8),
+              content,
             ],
-          );
-        }).toList();
-      },
-      loading: () => const [SizedBox.shrink()],
-      error: (_, __) => const [SizedBox.shrink()],
+          ),
+        ),
+      ],
     );
   }
 }

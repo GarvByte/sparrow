@@ -7,7 +7,7 @@ import 'package:sparrow/features/tv_show_details/providers/tv_credits_provider.d
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
-/// Horizontally scrollable Cast & Crew section for TV shows.
+/// Horizontally scrollable TV Show Cast & Crew section.
 class TvCastSection extends ConsumerWidget {
   final String seriesId;
   final bool isTvOrDesktop;
@@ -31,94 +31,98 @@ class TvCastSection extends ConsumerWidget {
         ? 120.0
         : responsive.scale(80.0, min: 70.0, max: 96.0);
 
-    return creditsAsync.when(
-      data: (castList) {
-        if (castList.isEmpty) return const SizedBox.shrink();
-
-        Widget list = ListView.separated(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: isDesktop
-                ? 0
-                : responsive.scale(16, min: 12, max: 20),
-          ),
-          itemCount: castList.length,
-          separatorBuilder: (context, index) =>
-              SizedBox(width: isDesktop ? 20 : 12),
-          itemBuilder: (context, index) {
-            final actor = castList[index];
-            return _TvCastCard(
-              actor: actor,
-              width: itemWidth,
-              avatarSize: avatarSize,
-            );
-          },
-        );
-
-        if (isDesktop) {
-          list = DpadRegion(
-            leftEdge: DpadEdgeBehavior.leave,
-            child: list,
+    // 1. Render existing data whenever available (even during background refresh)
+    if (creditsAsync.hasValue &&
+        creditsAsync.value != null &&
+        creditsAsync.value!.isNotEmpty) {
+      final castList = creditsAsync.value!;
+      Widget list = ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: isDesktop
+              ? 0
+              : responsive.scale(16, min: 12, max: 20),
+        ),
+        itemCount: castList.length,
+        separatorBuilder: (context, index) =>
+            SizedBox(width: isDesktop ? 20 : 12),
+        itemBuilder: (context, index) {
+          final actor = castList[index];
+          return _TvCastCard(
+            actor: actor,
+            width: itemWidth,
+            avatarSize: avatarSize,
           );
-        }
+        },
+      );
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Section Header
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isDesktop
-                    ? 0
-                    : responsive.scale(16, min: 12, max: 20),
-              ),
-              child: Row(
-                children: [
-                  if (!isDesktop) ...[
-                    Container(
-                      width: 3,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: ColorPalette.primaryGreen,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    'Cast & Crew',
-                    style: TextStyle(
-                      color: ColorPalette.fontWhite,
-                      fontSize: isDesktop
-                          ? 26
-                          : responsive.sp(18, min: 15, max: 22),
-                      fontWeight: isDesktop ? FontWeight.w800 : FontWeight.w700,
-                      letterSpacing: isDesktop ? -0.5 : 0,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${castList.length} Actors',
-                    style: TextStyle(
-                      color: ColorPalette.textMuted,
-                      fontSize: isDesktop ? 12.5 : responsive.sp(11, min: 9.5, max: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Horizontal Scrollable Avatars
-            SizedBox(
-              height: avatarSize + 52,
-              child: list,
-            ),
-          ],
+      if (isDesktop) {
+        list = DpadRegion(
+          leftEdge: DpadEdgeBehavior.leave,
+          child: list,
         );
-      },
-      loading: () => const Padding(
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop
+                  ? 0
+                  : responsive.scale(16, min: 12, max: 20),
+            ),
+            child: Row(
+              children: [
+                if (!isDesktop) ...[
+                  Container(
+                    width: 3,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: ColorPalette.primaryGreen,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  'Cast & Crew',
+                  style: TextStyle(
+                    color: ColorPalette.fontWhite,
+                    fontSize: isDesktop
+                        ? 26
+                        : responsive.sp(18, min: 15, max: 22),
+                    fontWeight: isDesktop ? FontWeight.w800 : FontWeight.w700,
+                    letterSpacing: isDesktop ? -0.5 : 0,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${castList.length} Actors',
+                  style: TextStyle(
+                    color: ColorPalette.textMuted,
+                    fontSize: isDesktop ? 12.5 : responsive.sp(11, min: 9.5, max: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Horizontal Scrollable Avatars
+          SizedBox(
+            height: avatarSize + 52,
+            child: list,
+          ),
+        ],
+      );
+    }
+
+    // 2. Initial loading state
+    if (creditsAsync.isLoading) {
+      return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Center(
           child: SizedBox(
@@ -130,9 +134,43 @@ class TvCastSection extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-      error: (_, __) => const SizedBox.shrink(),
-    );
+      );
+    }
+
+    // 3. Error state with retry
+    if (creditsAsync.hasError) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              Text(
+                'Could not load cast details',
+                style: TextStyle(
+                  color: ColorPalette.textMuted,
+                  fontSize: responsive.sp(12, min: 10, max: 14),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: () => ref.refresh(tvCreditsProvider(seriesId)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 4. Genuinely empty
+    return const SizedBox.shrink();
   }
 }
 

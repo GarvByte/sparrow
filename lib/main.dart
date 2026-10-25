@@ -22,6 +22,7 @@ void main() async {
   runApp(const ProviderScope(child: SparrowApp()));
 }
 
+
 class SparrowApp extends StatelessWidget {
   const SparrowApp({super.key});
 

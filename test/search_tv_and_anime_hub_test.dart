@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sparrow/features/anime_hub/providers/anime_tv_providers.dart';
-import 'package:sparrow/features/anime_hub/screens/anime_hub_page.dart';
+import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
+import 'package:sparrow/features/anime%20hub/screens/anime_hub_page.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
 import 'package:sparrow/features/search/providers/search_filter_provider.dart';

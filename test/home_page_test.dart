@@ -116,8 +116,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Explore in Hindi'), findsOneWidget);
-      expect(find.text('Popular Anime Series'), findsOneWidget);
+      expect(find.text('Popular Movies'), findsOneWidget);
+
       expect(find.text('Blockbusters & Classics'), findsOneWidget);
 
       // 9. Test horizontal scroll on media carousels

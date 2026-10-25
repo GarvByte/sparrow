@@ -9,6 +9,8 @@ class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
   }
 
   final TmdbService _tmdbService = TmdbService();
+  String? _currentExecutingQuery;
+  SearchMediaType? _currentExecutingType;
 
   /// Search movies or TV shows based on the provided or active media type.
   Future<List<dynamic>> search({
@@ -17,11 +19,16 @@ class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
   }) async {
     final cleanQuery = (query ?? '').trim();
     if (cleanQuery.isEmpty) {
+      _currentExecutingQuery = null;
       state = const AsyncValue.data([]);
       return [];
     }
 
     final activeType = mediaType ?? ref.read(searchMediaTypeProvider);
+    _currentExecutingQuery = cleanQuery;
+    _currentExecutingType = activeType;
+
+    // Keep previously loaded items during transient search refetches if same query
     state = const AsyncValue.loading();
 
     try {
@@ -31,10 +38,18 @@ class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
       } else {
         searchResults = await _tmdbService.searchMovies(cleanQuery);
       }
-      state = AsyncValue.data(searchResults);
+
+      // Check that this response matches the most recent executing query
+      if (_currentExecutingQuery == cleanQuery &&
+          _currentExecutingType == activeType) {
+        state = AsyncValue.data(searchResults);
+      }
       return searchResults;
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (_currentExecutingQuery == cleanQuery &&
+          _currentExecutingType == activeType) {
+        state = AsyncValue.error(e, st);
+      }
       return [];
     }
   }

@@ -30,6 +30,89 @@ class TvEpisodeCarousel extends ConsumerWidget {
     );
     final seasonDetailAsync = ref.watch(tvSeasonDetailProvider(query));
 
+    Widget content;
+    // 1. Render existing data whenever available (even during background refresh)
+    if (seasonDetailAsync.hasValue &&
+        seasonDetailAsync.value != null &&
+        seasonDetailAsync.value!.episodes.isNotEmpty) {
+      final episodes = seasonDetailAsync.value!.episodes;
+      content = SizedBox(
+        height: 290,
+        child: DpadRegion(
+          leftEdge: DpadEdgeBehavior.leave,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: episodes.length,
+            itemBuilder: (context, index) {
+              final episode = episodes[index];
+              return TvEpisodeCard(
+                episode: episode,
+                seriesId: seriesId,
+                isTvLayout: true,
+                onPlay: () => onEpisodeSelected?.call(episode),
+              );
+            },
+          ),
+        ),
+      );
+    } else if (seasonDetailAsync.isLoading) {
+      // 2. Initial loading
+      content = Container(
+        height: 260,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: ColorPalette.primaryGreen,
+        ),
+      );
+    } else if (seasonDetailAsync.hasError) {
+      // 3. Error with retry
+      content = Container(
+        height: 220,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: ColorPalette.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            const Icon(Icons.wifi_off_rounded,
+                size: 20, color: ColorPalette.textMuted),
+            const Text(
+              'Unable to load episodes',
+              style: TextStyle(color: ColorPalette.textMuted, fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              onPressed: () => ref.refresh(tvSeasonDetailProvider(query)),
+              child: const Text('Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // 4. Genuinely empty
+      content = Container(
+        height: 220,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: ColorPalette.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+        ),
+        child: const Text(
+          'No episodes available for this season.',
+          style: TextStyle(color: ColorPalette.textMuted, fontSize: 15),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -76,70 +159,7 @@ class TvEpisodeCarousel extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
 
-        // 16:9 Landscape Horizontal Carousel
-        seasonDetailAsync.when(
-          data: (seasonDetail) {
-            final episodes = seasonDetail?.episodes ?? [];
-
-            if (episodes.isEmpty) {
-              return Container(
-                height: 220,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: ColorPalette.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-                ),
-                child: const Text(
-                  'No episodes available for this season.',
-                  style: TextStyle(color: ColorPalette.textMuted, fontSize: 15),
-                ),
-              );
-            }
-
-            // Height to accommodate 16:9 thumbnail + title and 2 lines overview + padding (~290px)
-            return SizedBox(
-              height: 290,
-              child: DpadRegion(
-                leftEdge: DpadEdgeBehavior.leave,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: episodes.length,
-                  itemBuilder: (context, index) {
-                    final episode = episodes[index];
-                    return TvEpisodeCard(
-                      episode: episode,
-                      seriesId: seriesId,
-                      isTvLayout: true,
-                      onPlay: () => onEpisodeSelected?.call(episode),
-                    );
-                  },
-                ),
-              ),
-            );
-          },
-          loading: () => Container(
-            height: 260,
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              color: ColorPalette.primaryGreen,
-            ),
-          ),
-          error: (error, _) => Container(
-            height: 220,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: ColorPalette.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Text(
-              'Unable to load episodes. Please try again.',
-              style: TextStyle(color: ColorPalette.textMuted, fontSize: 15),
-            ),
-          ),
-        ),
+        content,
       ],
     );
   }
