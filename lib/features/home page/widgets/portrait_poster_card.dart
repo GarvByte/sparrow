@@ -43,16 +43,11 @@ class PortraitPosterCard extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: item.imageUrl,
               fit: BoxFit.cover,
+              fadeInDuration: const Duration(milliseconds: 200),
+              fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) => const ErrorImagePlaceholder(),
-              placeholder: (context, url) => const Center(
-                child: SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: ColorPalette.primaryGreen,
-                  ),
-                ),
+              placeholder: (context, url) => Container(
+                color: ColorPalette.surfaceContainerLow,
               ),
             ),
 

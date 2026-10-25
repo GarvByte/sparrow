@@ -261,6 +261,8 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               imageUrl: posterUrl,
               fit: BoxFit.cover,
               alignment: alignment,
+              fadeInDuration: const Duration(milliseconds: 200),
+              fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) =>
                   const ErrorImagePlaceholder(),
             )
@@ -273,8 +275,9 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               imageUrl: backdropUrl,
               fit: BoxFit.cover,
               alignment: alignment,
-              fadeInDuration: const Duration(milliseconds: 600),
-              fadeOutDuration: const Duration(milliseconds: 300),
+              memCacheWidth: 1920,
+              fadeInDuration: const Duration(milliseconds: 400),
+              fadeOutDuration: const Duration(milliseconds: 200),
               placeholder: (context, url) => const SizedBox.shrink(),
               errorWidget: (context, url, error) => const SizedBox.shrink(),
             ),
@@ -594,6 +597,10 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                             ? CachedNetworkImage(
                                 imageUrl: info.posterUrl!,
                                 fit: BoxFit.cover,
+                                fadeInDuration:
+                                    const Duration(milliseconds: 200),
+                                fadeOutDuration:
+                                    const Duration(milliseconds: 200),
                                 errorWidget: (context, url, error) =>
                                     const ErrorImagePlaceholder(),
                               )

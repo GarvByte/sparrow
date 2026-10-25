@@ -8,7 +8,7 @@ import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 /// Vertically scrolling episode list for mobile and tablet views.
-class TvEpisodeList extends ConsumerWidget {
+class TvEpisodeList extends ConsumerStatefulWidget {
   final String seriesId;
   final List<TvSeasonSummary> seasons;
   final void Function(TvEpisodeInfo episode)? onEpisodeSelected;
@@ -21,12 +21,28 @@ class TvEpisodeList extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TvEpisodeList> createState() => _TvEpisodeListState();
+}
+
+class _TvEpisodeListState extends ConsumerState<TvEpisodeList> {
+  int _visibleCount = 30;
+  String? _lastSeriesId;
+  int? _lastSeasonNum;
+
+  @override
+  Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final selectedSeasonNum = ref.watch(selectedSeasonProvider(seriesId));
+    final selectedSeasonNum = ref.watch(selectedSeasonProvider(widget.seriesId));
+
+    if (_lastSeriesId != widget.seriesId ||
+        _lastSeasonNum != selectedSeasonNum) {
+      _lastSeriesId = widget.seriesId;
+      _lastSeasonNum = selectedSeasonNum;
+      _visibleCount = 30;
+    }
 
     final query = TvSeasonQuery(
-      seriesId: seriesId,
+      seriesId: widget.seriesId,
       seasonNumber: selectedSeasonNum,
     );
     final seasonDetailAsync = ref.watch(tvSeasonDetailProvider(query));
@@ -37,24 +53,65 @@ class TvEpisodeList extends ConsumerWidget {
         seasonDetailAsync.value != null &&
         seasonDetailAsync.value!.episodes.isNotEmpty) {
       final episodes = seasonDetailAsync.value!.episodes;
-      content = ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: episodes.length,
-        separatorBuilder: (context, index) => const Divider(
-          color: ColorPalette.ghostBorder,
-          height: 16,
-          thickness: 0.8,
-        ),
-        itemBuilder: (context, index) {
-          final episode = episodes[index];
-          return TvEpisodeCard(
-            episode: episode,
-            seriesId: seriesId,
-            isTvLayout: false,
-            onPlay: () => onEpisodeSelected?.call(episode),
-          );
-        },
+      final displayedCount = _visibleCount.clamp(0, episodes.length);
+      content = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayedCount,
+            separatorBuilder: (context, index) => const Divider(
+              color: ColorPalette.ghostBorder,
+              height: 16,
+              thickness: 0.8,
+            ),
+            itemBuilder: (context, index) {
+              final episode = episodes[index];
+              return TvEpisodeCard(
+                episode: episode,
+                seriesId: widget.seriesId,
+                isTvLayout: false,
+                onPlay: () => widget.onEpisodeSelected?.call(episode),
+              );
+            },
+          ),
+          if (displayedCount < episodes.length)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: ColorPalette.primaryGreen,
+                    side: const BorderSide(
+                      color: ColorPalette.primaryGreen,
+                      width: 1,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _visibleCount += 50;
+                    });
+                  },
+                  icon: const Icon(Icons.expand_more_rounded, size: 20),
+                  label: Text(
+                    'Load More Episodes ($displayedCount of ${episodes.length})',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       );
     } else if (seasonDetailAsync.isLoading) {
       // 2. Initial loading
@@ -137,8 +194,8 @@ class TvEpisodeList extends ConsumerWidget {
               ],
             ),
             TvSeasonSelector(
-              seriesId: seriesId,
-              seasons: seasons,
+              seriesId: widget.seriesId,
+              seasons: widget.seasons,
               isTvOrDesktop: false,
             ),
           ],

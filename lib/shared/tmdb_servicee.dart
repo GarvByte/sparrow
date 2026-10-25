@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
 import 'package:sparrow/shared/api.dart';
 import 'package:sparrow/shared/genre_ids.dart';
 
@@ -10,6 +13,7 @@ class TmdbService {
   TmdbService({http.Client? client}) : _client = client ?? _defaultClient;
 
   static final http.Client _defaultClient = http.Client();
+  static final Map<String, Future<http.Response>> _inFlightGetRequests = {};
 
   /// Determines whether an error or HTTP status code is a temporary/transient failure
   /// that warrants a bounded retry.
@@ -33,7 +37,33 @@ class TmdbService {
 
   /// Sends an HTTP GET request with a bounded retry mechanism for transient network
   /// failures (e.g., Connection reset by peer, rate limits, timeouts).
+  /// Deduplicates simultaneous in-flight requests for the exact same URI.
   Future<http.Response> _getWithRetry(
+    Uri uri, {
+    Map<String, String>? headers,
+    Duration timeout = const Duration(seconds: 12),
+    int maxAttempts = 3,
+  }) {
+    final key = uri.toString();
+    final existing = _inFlightGetRequests[key];
+    if (existing != null) {
+      return existing;
+    }
+
+    final future = _executeGetWithRetry(
+      uri,
+      headers: headers,
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    ).whenComplete(() {
+      _inFlightGetRequests.remove(key);
+    });
+
+    _inFlightGetRequests[key] = future;
+    return future;
+  }
+
+  Future<http.Response> _executeGetWithRetry(
     Uri uri, {
     Map<String, String>? headers,
     Duration timeout = const Duration(seconds: 12),
@@ -364,7 +394,46 @@ class TmdbService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final body = response.body;
+      if (!kIsWeb && body.length > 50000) {
+        return Isolate.run(() => jsonDecode(body) as Map<String, dynamic>);
+      }
+      return jsonDecode(body) as Map<String, dynamic>;
+    } else {
+      throw http.ClientException(
+        'TMDB TV season error: ${response.statusCode}',
+        Uri.parse(
+          'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+        ),
+      );
+    }
+  }
+
+  /// Fetch and parse TV season details including all episodes, using background isolate for large payloads.
+  Future<TvSeasonDetail?> fetchAndParseTvSeasonDetail(
+    String seriesId,
+    int seasonNumber,
+  ) async {
+    final cleanId = seriesId.trim();
+    if (cleanId.isEmpty) return null;
+
+    final response = await _getWithRetry(
+      Uri.parse(
+        'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+      ),
+      headers: {'Authorization': tokenAuth},
+    );
+
+    if (response.statusCode == 200) {
+      final body = response.body;
+      if (!kIsWeb && body.length > 50000) {
+        return Isolate.run(() {
+          final json = jsonDecode(body) as Map<String, dynamic>;
+          return TvSeasonDetail.fromJson(json);
+        });
+      }
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      return TvSeasonDetail.fromJson(json);
     } else {
       throw http.ClientException(
         'TMDB TV season error: ${response.statusCode}',

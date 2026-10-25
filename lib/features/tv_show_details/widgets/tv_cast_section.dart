@@ -210,17 +210,14 @@ class _TvCastCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: actor.profileUrl,
                       fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 200),
+                      fadeOutDuration: const Duration(milliseconds: 200),
                       placeholder: (context, url) => Container(
                         color: ColorPalette.surfaceContainerHighest,
-                        child: const Center(
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                              color: ColorPalette.primaryGreen,
-                            ),
-                          ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: ColorPalette.textMuted,
+                          size: 24,
                         ),
                       ),
                       errorWidget: (context, url, error) => const Icon(

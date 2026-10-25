@@ -55,20 +55,12 @@ class DiscoverPosterCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: item.imageUrl,
                               fit: BoxFit.cover,
+                              fadeInDuration: const Duration(milliseconds: 200),
+                              fadeOutDuration: const Duration(milliseconds: 200),
                               errorWidget: (context, url, error) =>
                                   const ErrorImagePlaceholder(),
                               placeholder: (context, url) => Container(
                                 color: ColorPalette.surfaceContainerLow,
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: ColorPalette.primaryGreen,
-                                    ),
-                                  ),
-                                ),
                               ),
                             )
                           : const ErrorImagePlaceholder(),

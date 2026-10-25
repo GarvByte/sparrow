@@ -18,14 +18,13 @@ final tvShowDetailsProvider =
     return TvShowDetailInfo.fromMediaItem(initialItem);
   }
 
-  Map<String, dynamic>? creditsJson;
-  try {
-    creditsJson = await service.fetchTvShowCredits(cleanId);
-  } catch (_) {
-    // Non-fatal if credits fail; details are the primary payload
-  }
+  // Concurrently initiate primary TV details and secondary credits
+  final detailsFuture = service.fetchTvShowDetails(cleanId);
+  final creditsFuture = service.fetchTvShowCredits(cleanId).catchError((_) => null);
 
-  final detailsJson = await service.fetchTvShowDetails(cleanId);
+  final detailsJson = await detailsFuture;
+  final creditsJson = await creditsFuture;
+
   if (detailsJson != null) {
     return TvShowDetailInfo.fromTmdbJson(
       json: detailsJson,

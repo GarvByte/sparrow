@@ -53,8 +53,5 @@ final tvSeasonDetailProvider =
 
   if (cleanId.isEmpty) return null;
 
-  final json = await service.fetchTvSeasonDetails(cleanId, query.seasonNumber);
-  if (json == null) return null;
-
-  return TvSeasonDetail.fromJson(json);
+  return service.fetchAndParseTvSeasonDetail(cleanId, query.seasonNumber);
 });

@@ -18,14 +18,13 @@ final movieDetailsProvider = FutureProvider.family<MovieDetailInfo, MediaItem>((
     return MovieDetailInfo.fromMediaItem(initialItem);
   }
 
-  Map<String, dynamic>? creditsJson;
-  try {
-    creditsJson = await service.fetchMovieCredits(cleanId);
-  } catch (_) {
-    // Non-fatal if credits fail; details are the primary payload
-  }
+  // Concurrently initiate primary movie details and secondary credits
+  final detailsFuture = service.fetchMovieDetails(cleanId);
+  final creditsFuture = service.fetchMovieCredits(cleanId).catchError((_) => null);
 
-  final detailsJson = await service.fetchMovieDetails(cleanId);
+  final detailsJson = await detailsFuture;
+  final creditsJson = await creditsFuture;
+
   if (detailsJson != null) {
     return MovieDetailInfo.fromTmdbJson(
       json: detailsJson,

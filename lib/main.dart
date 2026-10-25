@@ -19,6 +19,7 @@ void main() async {
     ),
   );
   await WatchlistStorage.init();
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 150 * 1024 * 1024;
   runApp(const ProviderScope(child: SparrowApp()));
 }
 

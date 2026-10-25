@@ -68,18 +68,10 @@ class TvEpisodeCard extends StatelessWidget {
                           CachedNetworkImage(
                             imageUrl: episode.stillUrl,
                             fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 200),
+                            fadeOutDuration: const Duration(milliseconds: 200),
                             placeholder: (context, url) => Container(
                               color: ColorPalette.surfaceContainerLow,
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                    color: ColorPalette.primaryGreen,
-                                  ),
-                                ),
-                              ),
                             ),
                             errorWidget: (context, url, error) =>
                                 const ErrorImagePlaceholder(),
@@ -218,6 +210,11 @@ class TvEpisodeCard extends StatelessWidget {
                           CachedNetworkImage(
                             imageUrl: episode.stillUrl,
                             fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 200),
+                            fadeOutDuration: const Duration(milliseconds: 200),
+                            placeholder: (context, url) => Container(
+                              color: ColorPalette.surfaceContainerLow,
+                            ),
                             errorWidget: (context, url, error) =>
                                 const ErrorImagePlaceholder(),
                           )
