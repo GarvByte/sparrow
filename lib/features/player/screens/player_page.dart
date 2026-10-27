@@ -14,6 +14,7 @@ import '../models/resolved_source.dart';
 import '../providers/stream_resolution_provider.dart';
 import '../widgets/link_selection_sheet.dart';
 import '../widgets/server_selection_sheet.dart';
+import '../widgets/sparrow_material_controls.dart';
 
 /// Fullscreen player page powered by Better Player Plus.
 /// Features instant playback of the first valid source, background resolution of alternatives,
@@ -99,8 +100,14 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
 
   void _setupPlayerController() {
     final controlsConfig = BetterPlayerControlsConfiguration(
-      playerTheme: BetterPlayerTheme.material,
-      
+      playerTheme: BetterPlayerTheme.custom,
+      customControlsBuilder: (controller, onControlsVisibilityChanged, controlsConfiguration) {
+        return SparrowMaterialControls(
+          controller: controller,
+          onControlsVisibilityChanged: onControlsVisibilityChanged,
+          controlsConfiguration: controlsConfiguration,
+        );
+      },
       enableFullscreen: true,
       enableOverflowMenu: true,
       enableAudioTracks: true,
@@ -129,7 +136,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
       progressBarHandleColor: ColorPalette.primaryGreen,
       progressBarBufferedColor: Colors.white30,
       progressBarBackgroundColor: Colors.white10,
-      controlBarColor: const Color.fromARGB(51, 0, 0, 0)
+      controlBarColor: const Color.fromARGB(51, 0, 0, 0),
     );
 
     final configuration = BetterPlayerConfiguration(

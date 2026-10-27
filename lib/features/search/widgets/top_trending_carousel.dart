@@ -32,26 +32,25 @@ class TopTrendingCarousel extends ConsumerWidget {
             horizontal: responsive.scale(16, min: 12, max: 20),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.trending_up_rounded,
-                    size: 20,
-                    color: ColorPalette.primaryGreen,
+              const Icon(
+                Icons.trending_up_rounded,
+                size: 20,
+                color: ColorPalette.primaryGreen,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Top Trending Today',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ColorPalette.fontWhite,
+                    fontSize: responsive.sp(18, min: 15, max: 21),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Top Trending Today',
-                    style: TextStyle(
-                      color: ColorPalette.fontWhite,
-                      fontSize: responsive.sp(18, min: 15, max: 21),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),

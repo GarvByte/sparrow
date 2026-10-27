@@ -6,6 +6,7 @@ import 'package:sparrow/theme/color_palette.dart';
 
 class SearchBarDeck extends StatefulWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onClear;
@@ -13,6 +14,7 @@ class SearchBarDeck extends StatefulWidget {
   const SearchBarDeck({
     super.key,
     required this.controller,
+    this.focusNode,
     this.onChanged,
     this.onSubmitted,
     this.onClear,
@@ -24,13 +26,14 @@ class SearchBarDeck extends StatefulWidget {
 
 class _SearchBarDeckState extends State<SearchBarDeck> {
   late bool _hasText;
-  late final FocusNode _focusNode;
+  late final FocusNode _internalFocusNode;
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
 
   @override
   void initState() {
     super.initState();
     _hasText = widget.controller.text.isNotEmpty;
-    _focusNode = FocusNode();
+    _internalFocusNode = FocusNode();
     _focusNode.addListener(_onFocusChange);
     widget.controller.addListener(_onTextChanged);
   }
@@ -51,7 +54,7 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
+    _internalFocusNode.dispose();
     widget.controller.removeListener(_onTextChanged);
     super.dispose();
   }

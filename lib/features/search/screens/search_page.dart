@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/search/data/category_item.dart';
 import 'package:sparrow/features/search/providers/category_results_provider.dart';
 import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
@@ -30,6 +31,7 @@ class SearchPage extends ConsumerStatefulWidget {
 
 class _SearchPageState extends ConsumerState<SearchPage> {
   late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
   Timer? _debounceTimer;
 
   @override
@@ -37,17 +39,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     super.initState();
     final initialQuery = ref.read(searchQueryProvider);
     _searchController = TextEditingController(text: initialQuery);
+    _searchFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onQueryChanged(String query) {
     _debounceTimer?.cancel();
+    final isTv = context.responsive.isTvOrDesktop;
+    // On TV, keystrokes must NOT trigger search requests
+    if (isTv) {
+      return;
+    }
+
     final clean = query.trim();
     if (clean.isEmpty) {
       ref.read(searchQueryProvider.notifier).clear();
@@ -74,14 +84,24 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
     final clean = query.trim();
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (clean.isEmpty) {
-      _clearSearch();
+      if (!context.responsive.isTvOrDesktop) {
+        _clearSearch();
+      }
       return;
     }
+
+    final isTv = context.responsive.isTvOrDesktop;
     ref.read(searchQueryProvider.notifier).setQuery(clean);
     ref.read(searchResultsNotifier.notifier).search(query: clean);
     ref.read(selectedCategoryProvider.notifier).clear();
-    FocusScope.of(context).unfocus();
+
+    if (isTv) {
+      context.push('/search/results', extra: clean);
+    }
   }
 
   void _clearSearch() {
@@ -90,11 +110,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     ref.read(searchQueryProvider.notifier).clear();
     ref.read(selectedCategoryProvider.notifier).clear();
     ref.read(searchResultsNotifier.notifier).clear();
-    FocusScope.of(context).unfocus();
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   KeyEventResult _handleSearchKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) {
+      return KeyEventResult.ignored;
+    }
+
+    final isTv = context.responsive.isTvOrDesktop;
+    if (isTv) {
+      // On TV, Back press on the search page is handled by standard navigation
       return KeyEventResult.ignored;
     }
 
@@ -122,9 +149,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return KeyEventResult.ignored;
   }
 
+  void _unfocusAndOpenMovie(dynamic item) {
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+    openMovieDetails(context, item);
+  }
+
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final topPadding = responsive.padding.top;
     final headerHeight = responsive.headerHeight;
 
@@ -132,6 +166,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           searchQueryProvider.select((q) => q.trim().isNotEmpty),
         ) ||
         ref.watch(selectedCategoryProvider.select((c) => c != null));
+
+    final showInlineResults = !isTv && isSearching;
 
     // Reactively refresh search results when media type (Movies vs TV Shows) changes
     ref.listen<SearchMediaType>(searchMediaTypeProvider, (prev, next) {
@@ -147,10 +183,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
 
     return PopScope(
-      canPop: !isSearching,
+      canPop: isTv || !isSearching,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (isSearching) {
+        if (!isTv && isSearching) {
           _clearSearch();
         }
       },
@@ -186,6 +222,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         ),
                         child: SearchBarDeck(
                           controller: _searchController,
+                          focusNode: _searchFocusNode,
                           onChanged: _onQueryChanged,
                           onSubmitted: _onQuerySubmitted,
                           onClear: _clearSearch,
@@ -194,10 +231,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       const SizedBox(height: 16),
 
                       // Content Switcher: Search Results View OR Discover Home Deck
-                      if (isSearching)
+                      if (showInlineResults)
                         SearchResultsView(
                           onClear: _clearSearch,
                           onMovieTap: (item) {
+                            _searchFocusNode.unfocus();
+                            FocusManager.instance.primaryFocus?.unfocus();
                             if (item.isTvShow) {
                               openTvShowDetails(context, item);
                             } else {
@@ -216,6 +255,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             ref
                                 .read(categoryResultsNotifier.notifier)
                                 .fetchMoviesByGenre(category.tmdbGenreId);
+                            if (isTv) {
+                              _searchFocusNode.unfocus();
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              context.push('/search/results', extra: category);
+                            }
                           },
                         ),
 
@@ -224,7 +268,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         // 2. Top Trending Today
                         TopTrendingCarousel(
                           onSeeAllTap: () {},
-                          onMovieTap: (item) => openMovieDetails(context, item),
+                          onMovieTap: _unfocusAndOpenMovie,
                         ),
 
                         SizedBox(height: responsive.scale(24, min: 18, max: 30)),
@@ -232,19 +276,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         // 3. Sparrow Masters Featured Showcase
                         SparrowMastersCard(
                           onPlayTap: () {},
-                          onTap: (item) => openMovieDetails(context, item),
+                          onTap: _unfocusAndOpenMovie,
                         ),
 
                         SizedBox(height: responsive.scale(24, min: 18, max: 30)),
 
                         // 4. Curated For Your Taste
                         CuratedTasteGrid(
-                          onMovieTap: (item) => openMovieDetails(context, item),
+                          onMovieTap: _unfocusAndOpenMovie,
                         ),
 
                         // 5. Vertically stacked hero banner cards for randomly selected genres
                         RandomGenreHeroBanners(
-                          onMovieTap: (item) => openMovieDetails(context, item),
+                          onMovieTap: _unfocusAndOpenMovie,
                         ),
                       ],
                     ],
