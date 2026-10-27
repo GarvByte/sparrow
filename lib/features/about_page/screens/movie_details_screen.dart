@@ -9,6 +9,7 @@ import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
 import 'package:sparrow/features/about_page/widgets/movie_cast_section.dart';
 import 'package:sparrow/features/about_page/widgets/movie_info_matrix.dart';
 import 'package:sparrow/features/about_page/widgets/similar_movies_section.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/features/player/providers/stream_resolution_provider.dart';
 import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
@@ -547,9 +548,11 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                             size: 28,
                             color: Colors.black,
                           ),
-                          label: const Text(
-                            'Watch Now',
-                            style: TextStyle(
+                          label: Text(
+                            ref.watch(hasPlaybackProgressProvider('movie_${item.id}'))
+                                ? 'Resume'
+                                : 'Watch Now',
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -1040,12 +1043,14 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     MediaItem item,
     MovieDetailInfo info,
   ) {
+    final hasProgress =
+        ref.watch(hasPlaybackProgressProvider('movie_${item.id}'));
     return ElevatedButton.icon(
       onPressed: () => _openPlayer(context, item, info),
       icon: const Icon(Icons.play_arrow_rounded, size: 24, color: Colors.black),
-      label: const Text(
-        'Watch Now',
-        style: TextStyle(
+      label: Text(
+        hasProgress ? 'Resume' : 'Watch Now',
+        style: const TextStyle(
           color: Colors.black,
           fontSize: 15,
           fontWeight: FontWeight.w800,

@@ -1,9 +1,14 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
 import 'package:sparrow/features/anime%20hub/widgets/anime_hero_section.dart';
+import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
+import 'package:sparrow/features/home%20page/widgets/continue_watching_card.dart';
 import 'package:sparrow/features/home%20page/widgets/horizontal_media_carousel.dart';
+import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/features/home%20page/widgets/portrait_poster_card.dart';
 import 'package:sparrow/features/home%20page/widgets/section_header.dart';
 import 'package:sparrow/features/home%20page/widgets/sparrow_header.dart';
@@ -72,6 +77,9 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                   AnimeHeroSection(
                     onWatchNow: (item) => openTvShowDetails(context, item),
                   ),
+
+                  // Continue Watching Section (Reactive local Hive storage, hidden if empty)
+                  _buildTvContinueWatchingSection(context, responsive),
 
                   SizedBox(height: responsive.scale(16, min: 12, max: 22)),
 
@@ -277,6 +285,68 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildTvContinueWatchingSection(
+    BuildContext context,
+    SparrowResponsive responsive,
+  ) {
+    final tvItems = ref.watch(tvContinueWatchingProvider);
+    if (tvItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: responsive.scale(16, min: 12, max: 22)),
+        DpadRegion(
+          memoryKey: 'tv/continueWatching',
+          leftEdge: DpadEdgeBehavior.leave,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeader(
+                leadingIcon: Icons.history_rounded,
+                title: 'Continue Watching',
+              ),
+              const SizedBox(height: 8),
+              HorizontalMediaCarousel(
+                height: responsive.continueWatchingHeight,
+                itemCount: tvItems.length,
+                itemBuilder: (context, index) {
+                  final entry = tvItems[index];
+                  final item = entry.toMediaItem();
+                  return ContinueWatchingCard(
+                    item: item,
+                    width: responsive.continueWatchingWidth,
+                    onTap: () => _openTvContinueWatchingItem(context, entry),
+                    onRemove: () {
+                      ref
+                          .read(continueWatchingProvider.notifier)
+                          .remove(entry.key);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openTvContinueWatchingItem(
+    BuildContext context,
+    ContinueWatchingItem entry,
+  ) {
+    final playbackContext = PlaybackContext.tv(
+      item: entry.toMediaItem(),
+      season: entry.season,
+      episode: entry.episode,
+      episodeTitle: entry.episodeTitle,
+    );
+    context.push('/player', extra: playbackContext);
   }
 
   Widget _buildPosterCarousel({

@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart' as mui;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/navigation/dpad_shortcut.dart';
+import 'features/continue_watching/data/continue_watching_storage.dart';
 import 'features/player/services/stream_cache_service.dart';
 import 'features/watchlist/data/watchlist_storage.dart';
 import 'navigation/app_router.dart';
@@ -23,6 +24,7 @@ void main() async {
     ),
   );
   await WatchlistStorage.init();
+  await ContinueWatchingStorage.init();
   await StreamCacheService.init();
   PaintingBinding.instance.imageCache.maximumSizeBytes = 150 * 1024 * 1024;
   runApp(const ProviderScope(child: SparrowApp()));

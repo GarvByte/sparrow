@@ -2,12 +2,32 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sparrow/main.dart';
+import 'package:sparrow/features/continue_watching/data/continue_watching_repository.dart';
 import 'package:sparrow/features/home page/widgets/horizontal_media_carousel.dart';
 import 'package:sparrow/features/home page/widgets/floating_bottom_nav.dart';
 import 'package:sparrow/features/home page/data/mock_home_data.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 void main() {
+  setUp(() async {
+    final repo = ContinueWatchingRepository();
+    await repo.clearAll();
+    await repo.saveProgress(
+      mediaType: 'movie',
+      tmdbId: '693134',
+      title: 'Dune: Part Two',
+      imageUrl:
+          'https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg',
+      positionMs: 300000,
+      durationMs: 7200000,
+    );
+  });
+
+  tearDown(() async {
+    final repo = ContinueWatchingRepository();
+    await repo.clearAll();
+  });
+
   testWidgets(
     'Sparrow Home Page renders layered featured carousel with rounded brown container on each movie card',
     (WidgetTester tester) async {

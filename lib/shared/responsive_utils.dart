@@ -24,9 +24,16 @@ class SparrowResponsive {
   /// Device classification
   bool get isSmallPhone => width < 360 || height < 700;
   bool get isNormalPhone => width >= 360 && width < 600;
-  bool get isTablet => width >= 600 && width < 1024;
-  bool get isTvOrDesktop => width >= 1024 || (isLandscape && width >= 900);
+  bool get isTablet =>
+      (mediaQuery.size.shortestSide >= 600 && !isTvOrDesktop) ||
+      (width >= 600 && width < 1024 && !isTvOrDesktop);
+  bool get isTvOrDesktop =>
+      width >= 1024 ||
+      (isLandscape && width >= 900 && mediaQuery.size.shortestSide >= 500);
   bool get isLandscape => width > height;
+
+  /// Whether the device is a mobile phone (shortest side < 600dp and not a TV/desktop).
+  bool get isPhone => mediaQuery.size.shortestSide < 600 && !isTvOrDesktop;
 
   /// Width scale factor relative to standard 390dp baseline, clamped to prevent
   /// extremes on very small phones or wide TV/tablet screens.

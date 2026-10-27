@@ -3,6 +3,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/navigation/main_shell_scaffold.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
@@ -209,7 +210,7 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
 /// Serves as the self-contained rounded brown container (#281913) enclosing:
 /// - 17:16 exact aspect ratio poster (with BoxFit.cover and zero overlays).
 /// - Title, genre chips, star rating, and "Watch Now" action button.
-class _LayeredMovieCard extends StatelessWidget {
+class _LayeredMovieCard extends ConsumerWidget {
   final MediaItem item;
   final bool isCurrent;
   final double cardHeight;
@@ -227,7 +228,7 @@ class _LayeredMovieCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
 
     final scale = isCurrent ? 1.0 : 0.86;
@@ -433,7 +434,11 @@ class _LayeredMovieCard extends StatelessWidget {
                             color: Colors.black,
                           ),
                           label: Text(
-                            'Watch Now',
+                            ref.watch(hasPlaybackProgressProvider(
+                              item.isTvShow ? 'tv_${item.id}_s1_e1' : 'movie_${item.id}',
+                            ))
+                                ? 'Resume'
+                                : 'Watch Now',
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: responsive.sp(11.5, min: 10, max: 13),

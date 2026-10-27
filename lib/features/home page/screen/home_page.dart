@@ -1,6 +1,10 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
+import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
@@ -102,7 +106,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     final trendingNowMovies = ref.watch(trendingNowProvider);
     final popularMovies = ref.watch(popularMoviesProvider);
     final topRatedMovies = ref.watch(topRatedMoviesProvider);
-    final trendingTvShows = ref.watch(trendingShowProvider);
 
     return Scaffold(
       backgroundColor: ColorPalette.backgroundBlack,
@@ -133,75 +136,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     onWatchNow: (item) => openMovieDetails(context, item),
                   ),
 
-                  SizedBox(height: responsive.scale(14, min: 10, max: 20)),
-
-                  // 2. Continue Watching Section
-                  DpadRegion(
-                    memoryKey: 'home/continueWatching',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          leadingIcon: Icons.history_rounded,
-                          title: 'Continue Watching',
-                          actionText: 'See All',
-                          onTrailingTap: () {},
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMediaCarouselSection(
-                          asyncValue: trendingTvShows,
-                          height: responsive.continueWatchingHeight,
-                          onRetry: () => ref.refresh(trendingShowProvider),
-                          carouselBuilder: (data) {
-                            return HorizontalMediaCarousel(
-                              height: responsive.continueWatchingHeight,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                final movie = data[index];
-                                final backdrop =
-                                    movie['backdrop_path'] as String?;
-                                final poster = movie['poster_path'] as String?;
-                                final item = MediaItem(
-                                  id: movie['id'].toString(),
-                                  title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)
-                                      ?.toDouble(),
-                                  ratingCount: movie['vote_count']?.toString(),
-                                  imageUrl:
-                                      backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl + backdrop
-                                      : (poster != null && poster.isNotEmpty
-                                            ? imageBaseUrl + poster
-                                            : ''),
-                                  genres: movie['genre'] ?? [],
-                                  isAdult: movie['adult'] as bool? ?? false,
-                                  overview: movie['overview'] as String?,
-                                  releaseDate: movie['release_date'] as String?,
-                                  backdropUrl:
-                                      backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
-                                );
-                                return FocusablePosterCard(
-                                  onSelected: () =>
-                                      openMovieDetails(context, item),
-                                  child: ContinueWatchingCard(
-                                    item: item,
-                                    width: responsive.continueWatchingWidth,
-                                    onTap: () =>
-                                        openMovieDetails(context, item),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                  // 2. Continue Watching Section (Reactive local Hive storage, hidden if empty)
+                  _buildContinueWatchingSection(context, responsive),
 
                   // 3. Trending Now Section
                   DpadRegion(
@@ -460,6 +396,73 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
       ),
     );
+  }
+
+  Widget _buildContinueWatchingSection(
+    BuildContext context,
+    SparrowResponsive responsive,
+  ) {
+    final continueWatchingItems = ref.watch(continueWatchingProvider);
+    if (continueWatchingItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: responsive.scale(14, min: 10, max: 20)),
+        DpadRegion(
+          memoryKey: 'home/continueWatching',
+          leftEdge: DpadEdgeBehavior.leave,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeader(
+                leadingIcon: Icons.history_rounded,
+                title: 'Continue Watching',
+              ),
+              const SizedBox(height: 8),
+              HorizontalMediaCarousel(
+                height: responsive.continueWatchingHeight,
+                itemCount: continueWatchingItems.length,
+                itemBuilder: (context, index) {
+                  final entry = continueWatchingItems[index];
+                  final item = entry.toMediaItem();
+                  return ContinueWatchingCard(
+                    item: item,
+                    width: responsive.continueWatchingWidth,
+                    onTap: () => _openContinueWatchingItem(context, entry),
+                    onRemove: () {
+                      ref
+                          .read(continueWatchingProvider.notifier)
+                          .remove(entry.key);
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+      ],
+    );
+  }
+
+  void _openContinueWatchingItem(
+    BuildContext context,
+    ContinueWatchingItem entry,
+  ) {
+    final playbackContext = entry.isTvShow
+        ? PlaybackContext.tv(
+            item: entry.toMediaItem(),
+            season: entry.season,
+            episode: entry.episode,
+            episodeTitle: entry.episodeTitle,
+          )
+        : PlaybackContext.movie(
+            item: entry.toMediaItem(),
+          );
+    context.push('/player', extra: playbackContext);
   }
 
   List<Widget> _buildGenreSections(

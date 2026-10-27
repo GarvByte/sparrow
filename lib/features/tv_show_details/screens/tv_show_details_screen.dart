@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/features/player/providers/stream_resolution_provider.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
@@ -521,9 +522,13 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                             size: 28,
                             color: Colors.black,
                           ),
-                          label: const Text(
-                            'Watch Now',
-                            style: TextStyle(
+                          label: Text(
+                            ref.watch(hasPlaybackProgressProvider(
+                              'tv_${item.id}_s${info.seasons.isNotEmpty ? (info.seasons.first.seasonNumber > 0 ? info.seasons.first.seasonNumber : 1) : 1}_e1',
+                            ))
+                                ? 'Resume'
+                                : 'Watch Now',
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -849,7 +854,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               ],
               Row(
                 children: [
-                  Expanded(flex: 3, child: _buildWatchNowButton(context, info)),
+                  Expanded(flex: 3, child: _buildWatchNowButton(context, info, item)),
                   const SizedBox(width: 12),
                   _buildGhostButton(
                     icon: isBookmarked
@@ -1225,7 +1230,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
   ) {
     return Row(
       children: [
-        Expanded(child: _buildWatchNowButton(context, info)),
+        Expanded(child: _buildWatchNowButton(context, info, item)),
         const SizedBox(width: 10),
         _buildGhostButton(
           icon: isBookmarked ? Icons.bookmark_added_rounded : Icons.add_rounded,
@@ -1237,13 +1242,24 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     );
   }
 
-  Widget _buildWatchNowButton(BuildContext context, TvShowDetailInfo info) {
+  Widget _buildWatchNowButton(
+    BuildContext context,
+    TvShowDetailInfo info,
+    MediaItem item,
+  ) {
+    final firstSeasonNum = info.seasons.isNotEmpty
+        ? (info.seasons.first.seasonNumber > 0
+            ? info.seasons.first.seasonNumber
+            : 1)
+        : 1;
+    final firstEpKey = 'tv_${item.id}_s${firstSeasonNum}_e1';
+    final hasProgress = ref.watch(hasPlaybackProgressProvider(firstEpKey));
     return ElevatedButton.icon(
       onPressed: () => _handleWatchNow(info),
       icon: const Icon(Icons.play_arrow_rounded, size: 24, color: Colors.black),
-      label: const Text(
-        'Watch Now',
-        style: TextStyle(
+      label: Text(
+        hasProgress ? 'Resume' : 'Watch Now',
+        style: const TextStyle(
           color: Colors.black,
           fontSize: 15,
           fontWeight: FontWeight.w800,

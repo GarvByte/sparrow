@@ -120,7 +120,11 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
   /// Called when player page disposes to isolate playback sessions.
   void cancelSession() {
     _currentSessionId++;
-    state = const StreamResolutionState();
+    try {
+      if (ref.mounted) {
+        state = const StreamResolutionState();
+      }
+    } catch (_) {}
   }
 
   /// Concurrently preloads the server list when details page opens.

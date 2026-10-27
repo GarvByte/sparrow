@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import '../../../shared/media_item.dart';
+import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../models/playback_context.dart';
 import '../models/resolved_source.dart';
@@ -39,7 +42,8 @@ class PlayerPage extends ConsumerStatefulWidget {
   ConsumerState<PlayerPage> createState() => _PlayerPageState();
 }
 
-class _PlayerPageState extends ConsumerState<PlayerPage> {
+class _PlayerPageState extends ConsumerState<PlayerPage>
+    with WidgetsBindingObserver {
   static const double _fallbackAspectRatio = 16 / 9;
 
   late BetterPlayerController _controller;
@@ -54,15 +58,32 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   int _playbackSessionToken = 0;
   ResolvedSource? _activeSource;
 
+  Timer? _progressSaveTimer;
+  bool _hasRestoredResumePosition = false;
+  Duration? _savedResumePosition;
+  int _lastSavedPositionMs = -1;
+  bool _isCompleting = false;
+
+  bool _isTv = false;
+  bool _isOrientationRestored = false;
+
   PlaybackContext get _context => widget.resolvedContext;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _isTv = context.responsive.isTvOrDesktop;
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _streamResolutionNotifier =
         ref.read(streamResolutionControllerProvider.notifier);
     _lockLandscape();
     _setupPlayerController();
+    _loadSavedResumePosition();
 
     // Start resolution on first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,6 +91,44 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
         _startResolution();
       }
     });
+
+    // Periodic progress save every 5 seconds during active playback
+    _progressSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_controller.videoPlayerController?.value.isPlaying == true) {
+        _saveCurrentProgress();
+      }
+    });
+  }
+
+  void _loadSavedResumePosition() {
+    try {
+      final repo = ref.read(continueWatchingRepositoryProvider);
+      repo.clearRecentlyRemoved(
+        ContinueWatchingItem.compositeKey(
+          _context.type,
+          _context.tmdbId,
+          season: _context.season,
+          episode: _context.episode,
+        ),
+      );
+      final savedItem = repo.getItemForContext(_context);
+      if (savedItem != null && savedItem.positionMs > 0) {
+        if (!repo.isCompleted(savedItem.positionMs, savedItem.durationMs)) {
+          _savedResumePosition = Duration(milliseconds: savedItem.positionMs);
+        }
+      }
+    } catch (e) {
+      debugPrint('PlayerPage: Failed to load saved resume position: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _saveCurrentProgress();
+    }
   }
 
   void _lockLandscape() {
@@ -81,12 +140,20 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   }
 
   void _restoreOrientation() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    if (_isOrientationRestored) return;
+    _isOrientationRestored = true;
+
+    if (_isTv) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -96,6 +163,26 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
+  }
+
+  void _handleBackAction() {
+    if (_isSheetOpen) {
+      Navigator.of(context).pop();
+      return;
+    }
+    if (_controller.isFullScreen) {
+      _controller.exitFullScreen();
+      return;
+    }
+    _saveCurrentProgress();
+    _restoreOrientation();
+    if (mounted) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      } else if (context.canPop()) {
+        context.pop();
+      }
+    }
   }
 
   void _setupPlayerController() {
@@ -147,6 +234,15 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
       controlsConfiguration: controlsConfig,
       fullScreenByDefault: false,
       autoDetectFullscreenAspectRatio: true,
+      playerVisibilityChangedBehavior: (visibility) {
+        try {
+          if (visibility == 0) {
+            if (_controller.videoPlayerController?.value.isPlaying == true) {
+              _controller.pause();
+            }
+          }
+        } catch (_) {}
+      },
     );
 
     _controller = BetterPlayerController(configuration);
@@ -247,6 +343,11 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
         setState(() {
           _videoFinished = true;
         });
+        _saveCurrentProgress(isCompleting: true);
+        break;
+
+      case BetterPlayerEventType.pause:
+        _saveCurrentProgress();
         break;
 
       case BetterPlayerEventType.exception:
@@ -293,6 +394,15 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   }) async {
     final currentToken = ++_playbackSessionToken;
     _activeSource = source;
+
+    if (!_hasRestoredResumePosition) {
+      if (startAt == Duration.zero &&
+          _savedResumePosition != null &&
+          _savedResumePosition! > Duration.zero) {
+        startAt = _savedResumePosition!;
+      }
+      _hasRestoredResumePosition = true;
+    }
 
     final isHls = source.type == 'm3u8' ||
         source.url.toLowerCase().contains('.m3u8');
@@ -419,14 +529,87 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     });
   }
 
+  void _saveCurrentProgress({bool isCompleting = false}) {
+    if (_isCompleting) return;
+    if (isCompleting) {
+      _isCompleting = true;
+    }
+
+    final vpc = _controller.videoPlayerController;
+    if (vpc == null || !vpc.value.initialized) return;
+
+    final pos = vpc.value.position;
+    final dur = vpc.value.duration;
+    final posMs = pos.inMilliseconds;
+    final durMs = dur != null ? dur.inMilliseconds : 0;
+
+    if (!isCompleting && posMs <= 0) return;
+
+    final repo = ref.read(continueWatchingRepositoryProvider);
+    final item = _context.item;
+    final key = ContinueWatchingItem.compositeKey(
+      _context.type,
+      _context.tmdbId,
+      season: _context.season,
+      episode: _context.episode,
+    );
+
+    if (isCompleting || repo.isCompleted(posMs, durMs)) {
+      repo.removeItem(key);
+      try {
+        ref.read(continueWatchingProvider.notifier).refresh();
+      } catch (_) {}
+      return;
+    }
+
+    // Avoid saving redundant unchanged positions
+    if (!isCompleting && (posMs - _lastSavedPositionMs).abs() < 1000) return;
+    _lastSavedPositionMs = posMs;
+
+    final backdrop =
+        (item.backdropUrl != null && item.backdropUrl!.isNotEmpty)
+            ? item.backdropUrl!
+            : (item.imageUrl.isNotEmpty ? item.imageUrl : '');
+
+    repo
+        .saveProgress(
+      mediaType: _context.type,
+      tmdbId: _context.tmdbId,
+      title: item.title,
+      imageUrl: item.imageUrl,
+      backdropUrl: backdrop,
+      positionMs: posMs,
+      durationMs: durMs,
+      season: _context.season,
+      episode: _context.episode,
+      episodeTitle: _context.episodeTitle,
+      genres: item.genres.map((e) => e.toString()).toList(),
+      rating: item.rating,
+      overview: item.overview,
+      isAdult: item.isAdult,
+    )
+        .then((saved) {
+      if (saved && mounted) {
+        try {
+          ref.read(continueWatchingProvider.notifier).refresh();
+        } catch (_) {}
+      }
+    });
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _progressSaveTimer?.cancel();
+    _saveCurrentProgress();
     _removeVideoPlayerListener();
     _restoreOrientation();
     _controlsVisibilitySubscription?.cancel();
     _controller.removeEventsListener(_handlePlayerEvent);
     _controller.dispose();
-    _streamResolutionNotifier?.cancelSession();
+    try {
+      _streamResolutionNotifier?.cancelSession();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -439,10 +622,20 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     final statusMsg = state.statusMessage;
 
     return PopScope(
-      canPop: !_isSheetOpen,
+      canPop: !_isSheetOpen && !_controller.isFullScreen,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _isSheetOpen) {
-          Navigator.of(context).pop();
+        if (!didPop) {
+          if (_isSheetOpen) {
+            Navigator.of(context).pop();
+            return;
+          }
+          if (_controller.isFullScreen) {
+            _controller.exitFullScreen();
+            return;
+          }
+        } else if (didPop) {
+          _saveCurrentProgress();
+          _restoreOrientation();
         }
       },
       child: Scaffold(
@@ -454,79 +647,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
               child: AspectRatio(
                 aspectRatio: _videoAspectRatio ?? _fallbackAspectRatio,
                 child: BetterPlayer(controller: _controller),
-              ),
-            ),
-
-            // Top Bar Overlay (Title & Back Button) - Fades synchronously with Better Player controls
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: AnimatedOpacity(
-                opacity: _controlsVisible ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 250),
-                child: IgnorePointer(
-                  ignoring: !_controlsVisible,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black87,
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: Row(
-                        children: [
-                          DpadFocusable(
-                            onSelect: () => context.pop(),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_rounded,
-                                color: Colors.white,
-                              ),
-                              onPressed: () => context.pop(),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _context.displayTitle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (state.selectedServer != null)
-                                  Text(
-                                    'Server: ${state.selectedServer!.name}${state.currentSource != null ? " • ${state.currentSource!.displayName}" : ""}',
-                                    style: const TextStyle(
-                                      color: ColorPalette.textMuted,
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ),
 
@@ -598,8 +718,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 14,
+                          runSpacing: 10,
                           children: [
                             DpadFocusable(
                               onSelect: _startResolution,
@@ -620,7 +742,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                                 label: const Text('Retry'),
                               ),
                             ),
-                            const SizedBox(width: 14),
                             DpadFocusable(
                               onSelect: _openServerSheet,
                               child: OutlinedButton.icon(
@@ -683,6 +804,79 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                   ),
                 ),
               ),
+
+            // Top Bar Overlay (Title & Back Button) - Placed on top so back navigation is always accessible
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedOpacity(
+                opacity: (_controlsVisible || errorMessage != null || isResolvingInitial) ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 250),
+                child: IgnorePointer(
+                  ignoring: !(_controlsVisible || errorMessage != null || isResolvingInitial),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black87,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: SafeArea(
+                      child: Row(
+                        children: [
+                          DpadFocusable(
+                            onSelect: _handleBackAction,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white,
+                              ),
+                              onPressed: _handleBackAction,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _context.displayTitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (state.selectedServer != null)
+                                  Text(
+                                    'Server: ${state.selectedServer!.name}${state.currentSource != null ? " • ${state.currentSource!.displayName}" : ""}',
+                                    style: const TextStyle(
+                                      color: ColorPalette.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
