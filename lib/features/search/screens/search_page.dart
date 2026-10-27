@@ -48,19 +48,39 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   void _onQueryChanged(String query) {
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 350), () {
+    final clean = query.trim();
+    if (clean.isEmpty) {
+      ref.read(searchQueryProvider.notifier).clear();
+      ref.read(selectedCategoryProvider.notifier).clear();
+      ref.read(searchResultsNotifier.notifier).clear();
+      return;
+    }
+
+    // Debounce by 1 second to avoid excessive network requests and UI churn during typing
+    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
       if (mounted) {
-        ref.read(searchQueryProvider.notifier).setQuery(query);
-        ref.read(searchResultsNotifier.notifier).search(query: query);
-        ref.read(selectedCategoryProvider.notifier).clear();
+        final cleanQuery = query.trim();
+        if (cleanQuery.isNotEmpty) {
+          ref.read(searchQueryProvider.notifier).setQuery(cleanQuery);
+          ref.read(searchResultsNotifier.notifier).search(query: cleanQuery);
+          ref.read(selectedCategoryProvider.notifier).clear();
+        } else {
+          _clearSearch();
+        }
       }
     });
   }
 
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
-    ref.read(searchQueryProvider.notifier).setQuery(query);
-    ref.read(searchResultsNotifier.notifier).search(query: query);
+    final clean = query.trim();
+    if (clean.isEmpty) {
+      _clearSearch();
+      return;
+    }
+    ref.read(searchQueryProvider.notifier).setQuery(clean);
+    ref.read(searchResultsNotifier.notifier).search(query: clean);
+    ref.read(selectedCategoryProvider.notifier).clear();
     FocusScope.of(context).unfocus();
   }
 
@@ -69,6 +89,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _searchController.clear();
     ref.read(searchQueryProvider.notifier).clear();
     ref.read(selectedCategoryProvider.notifier).clear();
+    ref.read(searchResultsNotifier.notifier).clear();
     FocusScope.of(context).unfocus();
   }
 
@@ -107,9 +128,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final topPadding = responsive.padding.top;
     final headerHeight = responsive.headerHeight;
 
-    final query = ref.watch(searchQueryProvider);
-    final selectedCategory = ref.watch(selectedCategoryProvider);
-    final isSearching = query.trim().isNotEmpty || selectedCategory != null;
+    final isSearching = ref.watch(
+          searchQueryProvider.select((q) => q.trim().isNotEmpty),
+        ) ||
+        ref.watch(selectedCategoryProvider.select((c) => c != null));
 
     // Reactively refresh search results when media type (Movies vs TV Shows) changes
     ref.listen<SearchMediaType>(searchMediaTypeProvider, (prev, next) {

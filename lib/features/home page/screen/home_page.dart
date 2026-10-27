@@ -60,8 +60,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             spacing: 8,
             runSpacing: 4,
             children: [
-              const Icon(Icons.wifi_off_rounded,
-                  size: 18, color: ColorPalette.textMuted),
+              const Icon(
+                Icons.wifi_off_rounded,
+                size: 18,
+                color: ColorPalette.textMuted,
+              ),
               const Text(
                 'Failed to load section',
                 style: TextStyle(color: ColorPalette.textMuted, fontSize: 13),
@@ -69,8 +72,10 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               TextButton(
                 onPressed: onRetry,
-                child: const Text('Retry',
-                    style: TextStyle(color: ColorPalette.primaryGreen)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen),
+                ),
               ),
             ],
           ),
@@ -150,23 +155,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating:
-                                      (movie['vote_average'] as num?)?.toDouble(),
+                                  rating: (movie['vote_average'] as num?)
+                                      ?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl:
                                       backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl + backdrop
-                                          : (poster != null && poster.isNotEmpty
-                                              ? imageBaseUrl + poster
-                                              : ''),
+                                      ? imageBaseUrl + backdrop
+                                      : (poster != null && poster.isNotEmpty
+                                            ? imageBaseUrl + poster
+                                            : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
                                   backdropUrl:
                                       backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl2 + backdrop
-                                          : null,
+                                      ? imageBaseUrl2 + backdrop
+                                      : null,
                                 );
                                 return FocusablePosterCard(
                                   onSelected: () =>
@@ -174,7 +179,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   child: ContinueWatchingCard(
                                     item: item,
                                     width: responsive.continueWatchingWidth,
-                                    onTap: () => openMovieDetails(context, item),
+                                    onTap: () =>
+                                        openMovieDetails(context, item),
                                   ),
                                 );
                               },
@@ -226,22 +232,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating:
-                                      (movie['vote_average'] as num?)?.toDouble(),
+                                  rating: (movie['vote_average'] as num?)
+                                      ?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl + backdrop
-                                          : ''),
+                                            ? imageBaseUrl + backdrop
+                                            : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
                                   backdropUrl:
                                       backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl2 + backdrop
-                                          : null,
+                                      ? imageBaseUrl2 + backdrop
+                                      : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8),
@@ -307,22 +313,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating:
-                                      (movie['vote_average'] as num?)?.toDouble(),
+                                  rating: (movie['vote_average'] as num?)
+                                      ?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl + backdrop
-                                          : ''),
+                                            ? imageBaseUrl + backdrop
+                                            : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
                                   backdropUrl:
                                       backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl2 + backdrop
-                                          : null,
+                                      ? imageBaseUrl2 + backdrop
+                                      : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8),
@@ -385,22 +391,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 final item = MediaItem(
                                   id: movie['id'].toString(),
                                   title: movie['title'] ?? 'Untitled',
-                                  rating:
-                                      (movie['vote_average'] as num?)?.toDouble(),
+                                  rating: (movie['vote_average'] as num?)
+                                      ?.toDouble(),
                                   ratingCount: movie['vote_count']?.toString(),
                                   imageUrl: poster != null && poster.isNotEmpty
                                       ? imageBaseUrl + poster
                                       : (backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl + backdrop
-                                          : ''),
+                                            ? imageBaseUrl + backdrop
+                                            : ''),
                                   genres: movie['genre'] ?? [],
                                   isAdult: movie['adult'] as bool? ?? false,
                                   overview: movie['overview'] as String?,
                                   releaseDate: movie['release_date'] as String?,
                                   backdropUrl:
                                       backdrop != null && backdrop.isNotEmpty
-                                          ? imageBaseUrl2 + backdrop
-                                          : null,
+                                      ? imageBaseUrl2 + backdrop
+                                      : null,
                                 );
                                 return Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -452,8 +458,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     ]; // Action, Comedy, Thriller, Sci-Fi, Horror
 
     final allGenres = genresAsync.value ?? fallbackMovieGenres;
-    final genresToShow =
-        allGenres.where((g) => selectedGenreIds.contains(g.id)).toList();
+    final genresToShow = allGenres
+        .where((g) => selectedGenreIds.contains(g.id))
+        .toList();
 
     return genresToShow
         .map((genre) => _HomeGenreSection(genre: genre, responsive: responsive))
@@ -467,10 +474,7 @@ class _HomeGenreSection extends ConsumerWidget {
   final TmdbGenre genre;
   final SparrowResponsive responsive;
 
-  const _HomeGenreSection({
-    required this.genre,
-    required this.responsive,
-  });
+  const _HomeGenreSection({required this.genre, required this.responsive});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

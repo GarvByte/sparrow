@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/screens/movie_details_screen.dart';
 import 'package:sparrow/features/anime%20hub/screens/anime_hub_page.dart';
 import 'package:sparrow/features/home%20page/screen/home_page.dart';
+import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/features/player/screens/player_page.dart';
 import 'package:sparrow/features/search/screens/search_page.dart';
 import 'package:sparrow/features/tv_show_details/screens/tv_show_details_screen.dart';
@@ -34,9 +35,21 @@ final appRouter = GoRouter(
       name: 'player',
       parentNavigatorKey: _rootNavigatorKey,
       pageBuilder: (context, state) {
-        final item = state.extra as MediaItem;
+        final extra = state.extra;
+        final PlaybackContext playbackContext;
+        if (extra is PlaybackContext) {
+          playbackContext = extra;
+        } else if (extra is MediaItem) {
+          playbackContext = PlaybackContext.fromMediaItem(extra);
+        } else {
+          playbackContext = PlaybackContext.fromMediaItem(
+            const MediaItem(id: '0', title: 'Video', imageUrl: '', genres: []),
+          );
+        }
 
-        return MaterialPage(child: PlayerPage(item: item));
+        return MaterialPage(
+          child: PlayerPage(playbackContext: playbackContext),
+        );
       },
     ),
     GoRoute(

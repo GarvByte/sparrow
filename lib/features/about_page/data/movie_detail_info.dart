@@ -26,10 +26,12 @@ class MovieDetailInfo {
   final String revenueFormatted;
   final String? tagline;
   final bool isAdult;
+  final String imdbId;
 
   const MovieDetailInfo({
     required this.id,
     required this.title,
+    this.imdbId = '',
     this.overview,
     this.backdropUrl,
     this.posterUrl,
@@ -88,6 +90,7 @@ class MovieDetailInfo {
       revenueFormatted: '',
       tagline: null,
       isAdult: item.isAdult,
+      imdbId: '',
     );
   }
 
@@ -271,6 +274,7 @@ class MovieDetailInfo {
       revenueFormatted: revenueFormatted,
       tagline: tagline,
       isAdult: isAdult,
+      imdbId: (json['imdb_id'] ?? '').toString(),
     );
   }
 

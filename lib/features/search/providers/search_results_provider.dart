@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
 import 'package:sparrow/features/search/providers/search_filter_provider.dart';
-import 'package:sparrow/shared/tmdb_servicee.dart';
 
 class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
   @override
@@ -8,46 +9,96 @@ class SearchResultsProvider extends AsyncNotifier<List<dynamic>> {
     return [];
   }
 
-  final TmdbService _tmdbService = TmdbService();
+  int _requestId = 0;
   String? _currentExecutingQuery;
   SearchMediaType? _currentExecutingType;
+  Future<List<dynamic>>? _inFlightFuture;
+
+  /// Clear the active search results and invalidate any in-flight requests.
+  void clear() {
+    _requestId++;
+    _currentExecutingQuery = null;
+    _currentExecutingType = null;
+    _inFlightFuture = null;
+    state = const AsyncValue.data([]);
+  }
+
+  /// Retries the most recent search query with force refresh.
+  Future<List<dynamic>> retry() async {
+    final query = _currentExecutingQuery ?? ref.read(searchQueryProvider);
+    final mediaType =
+        _currentExecutingType ?? ref.read(searchMediaTypeProvider);
+    return search(query: query, mediaType: mediaType, force: true);
+  }
 
   /// Search movies or TV shows based on the provided or active media type.
   Future<List<dynamic>> search({
     String? query,
     SearchMediaType? mediaType,
+    bool force = false,
   }) async {
     final cleanQuery = (query ?? '').trim();
     if (cleanQuery.isEmpty) {
-      _currentExecutingQuery = null;
-      state = const AsyncValue.data([]);
+      clear();
       return [];
     }
 
     final activeType = mediaType ?? ref.read(searchMediaTypeProvider);
+
+    // If query and media type are unchanged and we already have valid data,
+    // avoid redundant network calls unless force refresh is requested.
+    if (!force &&
+        cleanQuery == _currentExecutingQuery &&
+        activeType == _currentExecutingType &&
+        state.hasValue &&
+        !state.hasError) {
+      return state.value ?? [];
+    }
+
+    // Deduplicate identical in-flight query requests.
+    if (!force &&
+        cleanQuery == _currentExecutingQuery &&
+        activeType == _currentExecutingType &&
+        _inFlightFuture != null) {
+      return _inFlightFuture!;
+    }
+
+    final reqId = ++_requestId;
     _currentExecutingQuery = cleanQuery;
     _currentExecutingType = activeType;
 
-    // Keep previously loaded items during transient search refetches if same query
     state = const AsyncValue.loading();
 
+    final future = _executeSearch(cleanQuery, activeType, reqId);
+    _inFlightFuture = future;
+    return future;
+  }
+
+  Future<List<dynamic>> _executeSearch(
+    String cleanQuery,
+    SearchMediaType? activeType,
+    int reqId,
+  ) async {
     try {
+      final tmdbService = ref.read(tmdbServiceProvider);
       List<dynamic> searchResults;
       if (activeType == SearchMediaType.tvShows) {
-        searchResults = await _tmdbService.searchTvShows(cleanQuery);
+        searchResults = await tmdbService.searchTvShows(cleanQuery);
       } else {
-        searchResults = await _tmdbService.searchMovies(cleanQuery);
+        searchResults = await tmdbService.searchMovies(cleanQuery);
       }
 
-      // Check that this response matches the most recent executing query
-      if (_currentExecutingQuery == cleanQuery &&
-          _currentExecutingType == activeType) {
+      // Safe request coordination: only the latest query may update visible results
+      if (reqId == _requestId) {
+        _inFlightFuture = null;
         state = AsyncValue.data(searchResults);
+        return searchResults;
       }
-      return searchResults;
+      return [];
     } catch (e, st) {
-      if (_currentExecutingQuery == cleanQuery &&
-          _currentExecutingType == activeType) {
+      // Safe error handling: only report error if this request is still active
+      if (reqId == _requestId) {
+        _inFlightFuture = null;
         state = AsyncValue.error(e, st);
       }
       return [];

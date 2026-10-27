@@ -41,6 +41,16 @@ class SearchResultsView extends ConsumerWidget {
               ? '${selectedCategory.title} Movies'
               : (isTvShowMode ? 'TV Show Results' : 'Movie Results'));
 
+    void onRetry() {
+      if (selectedCategory != null) {
+        ref
+            .read(categoryResultsNotifier.notifier)
+            .fetchMoviesByGenre(selectedCategory.tmdbGenreId);
+      } else {
+        ref.read(searchResultsNotifier.notifier).retry();
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: responsive.scale(16, min: 12, max: 20),
@@ -319,9 +329,9 @@ class SearchResultsView extends ConsumerWidget {
                     const SizedBox(height: 16),
                     TvFocusable(
                       borderRadius: BorderRadius.circular(20),
-                      onSelect: () => ref.refresh(searchResultsNotifier),
+                      onSelect: onRetry,
                       child: ElevatedButton.icon(
-                        onPressed: () => ref.refresh(searchResultsNotifier),
+                        onPressed: onRetry,
                         icon: const Icon(Icons.refresh_rounded, size: 16),
                         label: const Text('Try Again'),
                         style: ElevatedButton.styleFrom(

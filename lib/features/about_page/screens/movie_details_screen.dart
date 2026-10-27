@@ -9,6 +9,8 @@ import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
 import 'package:sparrow/features/about_page/widgets/movie_cast_section.dart';
 import 'package:sparrow/features/about_page/widgets/movie_info_matrix.dart';
 import 'package:sparrow/features/about_page/widgets/similar_movies_section.dart';
+import 'package:sparrow/features/player/models/playback_context.dart';
+import 'package:sparrow/features/player/providers/stream_resolution_provider.dart';
 import 'package:sparrow/features/watchlist/data/watchlist_item.dart';
 import 'package:sparrow/features/watchlist/providers/watchlist_provider.dart';
 import 'package:sparrow/navigation/dpad_navigation.dart';
@@ -40,6 +42,31 @@ class MovieDetailsScreen extends ConsumerStatefulWidget {
 
 class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
   bool _isSynopsisExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialItem = _resolveMediaItem();
+      if (initialItem != null) {
+        final playbackContext = PlaybackContext.movie(
+          item: initialItem,
+          imdbId: '',
+        );
+        ref
+            .read(streamResolutionControllerProvider.notifier)
+            .preloadServers(playbackContext);
+      }
+    });
+  }
+
+  void _openPlayer(BuildContext context, MediaItem item, MovieDetailInfo info) {
+    final playbackContext = PlaybackContext.movie(
+      item: item,
+      imdbId: info.imdbId,
+    );
+    context.push('/player', extra: playbackContext);
+  }
 
   void _toggleWatchlist(MovieDetailInfo info, MediaItem initialItem) {
     final item = WatchlistItem(
@@ -502,7 +529,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                     children: [
                       // Large TV Watch Now Button
                       DpadFocusable(
-                        onSelect: () => context.push('/player', extra: item),
+                        onSelect: () => _openPlayer(context, item, info),
                         effects: [
                           DpadScaleEffect(scale: 1.05),
                           DpadTintEffect(
@@ -513,7 +540,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                         ],
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            context.push('/player', extra: item);
+                            _openPlayer(context, item, info);
                           },
                           icon: const Icon(
                             Icons.play_arrow_rounded,
@@ -597,10 +624,12 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                             ? CachedNetworkImage(
                                 imageUrl: info.posterUrl!,
                                 fit: BoxFit.cover,
-                                fadeInDuration:
-                                    const Duration(milliseconds: 200),
-                                fadeOutDuration:
-                                    const Duration(milliseconds: 200),
+                                fadeInDuration: const Duration(
+                                  milliseconds: 200,
+                                ),
+                                fadeOutDuration: const Duration(
+                                  milliseconds: 200,
+                                ),
                                 errorWidget: (context, url, error) =>
                                     const ErrorImagePlaceholder(),
                               )
@@ -746,7 +775,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               ],
               Row(
                 children: [
-                  Expanded(flex: 3, child: _buildWatchNowButton(context, item)),
+                  Expanded(flex: 3, child: _buildWatchNowButton(context, item, info)),
                   const SizedBox(width: 12),
                   _buildGhostButton(
                     icon: isBookmarked
@@ -987,7 +1016,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     return Row(
       children: [
         // Watch Now Action
-        Expanded(child: _buildWatchNowButton(context, item)),
+        Expanded(child: _buildWatchNowButton(context, item, info)),
         const SizedBox(width: 10),
 
         // My List
@@ -1001,11 +1030,13 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-  Widget _buildWatchNowButton(BuildContext context, MediaItem item) {
+  Widget _buildWatchNowButton(
+    BuildContext context,
+    MediaItem item,
+    MovieDetailInfo info,
+  ) {
     return ElevatedButton.icon(
-      onPressed: () {
-        context.push('/player', extra: item);
-      },
+      onPressed: () => _openPlayer(context, item, info),
       icon: const Icon(Icons.play_arrow_rounded, size: 24, color: Colors.black),
       label: const Text(
         'Watch Now',

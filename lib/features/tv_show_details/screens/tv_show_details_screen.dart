@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
+import 'package:sparrow/features/player/models/playback_context.dart';
+import 'package:sparrow/features/player/providers/stream_resolution_provider.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
 import 'package:sparrow/features/tv_show_details/data/tv_show_detail_info.dart';
 import 'package:sparrow/features/tv_show_details/providers/tv_show_details_provider.dart';
@@ -94,34 +96,55 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     return null;
   }
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final initialItem = _resolveMediaItem();
+      if (initialItem != null) {
+        final playbackContext = PlaybackContext.tv(
+          item: initialItem,
+          season: 1,
+          episode: 1,
+          imdbId: '',
+        );
+        ref
+            .read(streamResolutionControllerProvider.notifier)
+            .preloadServers(playbackContext);
+      }
+    });
+  }
+
   void _handleEpisodePlayback(TvEpisodeInfo episode, String seriesId) {
-    //debugPrintt(
-    // 'Episode playback selected: Series $seriesId, Season ${episode.seasonNumber}, Episode ${episode.episodeNumber} (${episode.name})',
-    // );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: ColorPalette.surfaceContainerHighest,
-        content: Text(
-          'Playing S${episode.seasonNumber} E${episode.episodeNumber} · ${episode.name}',
-          style: const TextStyle(color: ColorPalette.fontWhite),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    final initialItem = _resolveMediaItem();
+    if (initialItem == null) return;
+    final detailsAsync = ref.read(tvShowDetailsProvider(initialItem));
+    final info = detailsAsync.value ?? TvShowDetailInfo.fromMediaItem(initialItem);
+
+    final playbackContext = PlaybackContext.tv(
+      item: initialItem,
+      season: episode.seasonNumber,
+      episode: episode.episodeNumber,
+      imdbId: info.imdbId,
+      episodeTitle: episode.name,
     );
+    context.push('/player', extra: playbackContext);
   }
 
   void _handleWatchNow(TvShowDetailInfo info) {
-    //debugPrintt('Watch Now triggered for series: ${info.id} (${info.name})');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: ColorPalette.surfaceContainerHighest,
-        content: Text(
-          'Streaming ${info.name}',
-          style: const TextStyle(color: ColorPalette.fontWhite),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    final initialItem = _resolveMediaItem();
+    if (initialItem == null) return;
+
+    final seasonNumber = info.seasons.isNotEmpty ? info.seasons.first.seasonNumber : 1;
+    final episodeNumber = 1;
+
+    final playbackContext = PlaybackContext.tv(
+      item: initialItem,
+      season: seasonNumber > 0 ? seasonNumber : 1,
+      episode: episodeNumber,
+      imdbId: info.imdbId,
     );
+    context.push('/player', extra: playbackContext);
   }
 
   @override

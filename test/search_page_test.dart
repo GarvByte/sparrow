@@ -285,10 +285,10 @@ void main() {
         // Initially Discover content is visible
         expect(find.text('Explore Categories'), findsOneWidget);
 
-        // Enter search query
+        // Enter search query and wait for 1-second debounce
         await tester.enterText(find.byType(TextField), 'Batman');
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 1050));
         await tester.pumpAndSettle();
 
         // Search Results view is now showing

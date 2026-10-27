@@ -1,9 +1,13 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+// ignore: depend_on_referenced_packages
+import 'package:material_ui/material_ui.dart' as mui;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/navigation/dpad_shortcut.dart';
+import 'features/player/services/stream_cache_service.dart';
 import 'features/watchlist/data/watchlist_storage.dart';
 import 'navigation/app_router.dart';
 import 'theme/color_palette.dart';
@@ -19,18 +23,28 @@ void main() async {
     ),
   );
   await WatchlistStorage.init();
+  await StreamCacheService.init();
   PaintingBinding.instance.imageCache.maximumSizeBytes = 150 * 1024 * 1024;
   runApp(const ProviderScope(child: SparrowApp()));
 }
-
 
 class SparrowApp extends StatelessWidget {
   const SparrowApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { 
     return ProviderScope(
       child: MaterialApp.router(
+        localizationsDelegates: [
+          mui.GlobalMaterialLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [
+          Locale('en', 'US'),
+          // add other locales if needed
+        ],
         title: 'Sparrow',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

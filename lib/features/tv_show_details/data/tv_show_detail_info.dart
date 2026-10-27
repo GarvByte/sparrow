@@ -33,10 +33,12 @@ class TvShowDetailInfo {
   final bool isAdult;
   final String? contentCertification;
   final List<TvSeasonSummary> seasons;
+  final String imdbId;
 
   const TvShowDetailInfo({
     required this.id,
     required this.name,
+    this.imdbId = '',
     this.originalName,
     this.overview,
     this.backdropUrl,
@@ -120,6 +122,7 @@ class TvShowDetailInfo {
       isAdult: item.isAdult,
       contentCertification: null,
       seasons: const [],
+      imdbId: '',
     );
   }
 
@@ -357,6 +360,7 @@ class TvShowDetailInfo {
       isAdult: isAdult,
       contentCertification: contentCertification,
       seasons: seasonsList,
+      imdbId: (json['imdb_id'] ?? json['external_ids']?['imdb_id'] ?? '').toString(),
     );
   }
 
