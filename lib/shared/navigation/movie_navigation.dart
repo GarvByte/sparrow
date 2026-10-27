@@ -10,6 +10,9 @@ import 'package:sparrow/shared/tmdb_base_url.dart';
 /// Uses GoRouter's [push] method so the details screen is pushed above the current
 /// stack without resetting the previous page's scroll or navigation state.
 void openMovieDetails(BuildContext context, dynamic movieData) {
+  FocusScope.of(context).unfocus();
+  FocusManager.instance.primaryFocus?.unfocus();
+
   if (movieData == null) {
     //debugPrintt('Cannot navigate to Movie Details: movieData is null');
     return;

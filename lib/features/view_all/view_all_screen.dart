@@ -10,6 +10,7 @@ import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
+import 'package:sparrow/shared/scroll_aware_header.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 class ViewAllScreen extends ConsumerStatefulWidget {
@@ -23,10 +24,13 @@ class ViewAllScreen extends ConsumerStatefulWidget {
 
 class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
   final ScrollController _scrollController = ScrollController();
+  final ScrollAwareHeaderController _headerController =
+      ScrollAwareHeaderController();
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _headerController.dispose();
     super.dispose();
   }
 
@@ -59,13 +63,30 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
             ],
           ),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            // Top App Bar
-            _buildAppBar(context, topPadding, responsive),
-
             // Main Content Area
-            Expanded(child: _buildBody(context, state, notifier, responsive)),
+            NotificationListener<ScrollNotification>(
+              onNotification: _headerController.handleScrollNotification,
+              child: _buildBody(
+                context,
+                state,
+                notifier,
+                responsive,
+                topOffset: topPadding + 66,
+              ),
+            ),
+
+            // Top App Bar with Scroll Awareness
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ScrollAwareHeader(
+                controller: _headerController,
+                child: _buildAppBar(context, topPadding, responsive),
+              ),
+            ),
           ],
         ),
       ),
@@ -177,13 +198,17 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
     BuildContext context,
     ViewAllState state,
     ViewAllNotifier notifier,
-    SparrowResponsive responsive,
-  ) {
+    SparrowResponsive responsive, {
+    double topOffset = 0,
+  }) {
     if (state.isLoadingInitial && state.items.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          color: ColorPalette.primaryGreen,
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: topOffset),
+          child: const CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: ColorPalette.primaryGreen,
+          ),
         ),
       );
     }
@@ -191,7 +216,12 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
     if (state.errorMessage != null && state.items.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.only(
+            top: topOffset,
+            left: 24.0,
+            right: 24.0,
+            bottom: 24.0,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -230,10 +260,13 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
     }
 
     if (state.items.isEmpty) {
-      return const Center(
-        child: Text(
-          'No titles available in this category.',
-          style: TextStyle(color: ColorPalette.textMuted),
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: topOffset),
+          child: const Text(
+            'No titles available in this category.',
+            style: TextStyle(color: ColorPalette.textMuted),
+          ),
         ),
       );
     }
@@ -259,7 +292,7 @@ class _ViewAllScreenState extends ConsumerState<ViewAllScreen> {
           padding: EdgeInsets.only(
             left: horizontalPadding,
             right: horizontalPadding,
-            top: 16,
+            top: topOffset + 12,
             bottom: 120, // Clears floating bottom nav
           ),
           child: Column(

@@ -9,6 +9,9 @@ import 'package:sparrow/shared/tmdb_base_url.dart';
 /// Uses GoRouter's [push] method so the details screen is pushed above the current
 /// stack without resetting the previous page's scroll or navigation state.
 void openTvShowDetails(BuildContext context, dynamic tvData) {
+  FocusScope.of(context).unfocus();
+  FocusManager.instance.primaryFocus?.unfocus();
+
   if (tvData == null) {
     //debugPrintt('Cannot navigate to TV Show Details: tvData is null');
     return;

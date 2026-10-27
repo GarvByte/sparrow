@@ -721,7 +721,9 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
         const SizedBox(height: 36),
 
         // Section 1: Cast & Crew
-        MovieCastSection(movieId: info.id, isTvOrDesktop: true),
+        DpadRegion(
+          child: MovieCastSection(movieId: info.id, isTvOrDesktop: true),
+        ),
 
         const SizedBox(height: 36),
 
@@ -775,7 +777,10 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               ],
               Row(
                 children: [
-                  Expanded(flex: 3, child: _buildWatchNowButton(context, item, info)),
+                  Expanded(
+                    flex: 3,
+                    child: _buildWatchNowButton(context, item, info),
+                  ),
                   const SizedBox(width: 12),
                   _buildGhostButton(
                     icon: isBookmarked

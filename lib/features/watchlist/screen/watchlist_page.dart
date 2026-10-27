@@ -10,6 +10,7 @@ import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
+import 'package:sparrow/shared/scroll_aware_header.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 enum WatchlistFilter { all, movies, tvShows }
@@ -33,10 +34,17 @@ class WatchlistPage extends ConsumerStatefulWidget {
 
 class _WatchlistPageState extends ConsumerState<WatchlistPage>
     with AutomaticKeepAliveClientMixin {
+  final _headerController = ScrollAwareHeaderController();
   WatchlistFilter _selectedFilter = WatchlistFilter.all;
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    super.dispose();
+  }
 
   void _onMediaTap(WatchlistItem item) {
     final mediaItem = item.toMediaItem();
@@ -85,23 +93,29 @@ class _WatchlistPageState extends ConsumerState<WatchlistPage>
         child: Stack(
           children: [
             // Scrollable Content
-            allItems.isEmpty
-                ? _buildEmptyState(context, topPadding + headerHeight)
-                : _buildContent(
-                    context,
-                    filteredItems,
-                    allItems.length,
-                    movieCount,
-                    tvCount,
-                    topPadding + headerHeight,
-                  ),
+            NotificationListener<ScrollNotification>(
+              onNotification: _headerController.handleScrollNotification,
+              child: allItems.isEmpty
+                  ? _buildEmptyState(context, topPadding + headerHeight)
+                  : _buildContent(
+                      context,
+                      filteredItems,
+                      allItems.length,
+                      movieCount,
+                      tvCount,
+                      topPadding + headerHeight,
+                    ),
+            ),
 
-            // Fixed Top Header matching Home & Anime Hub
-            const Positioned(
+            // Fixed Top Header matching Home & Anime Hub with Scroll Awareness
+            Positioned(
               top: 0,
               left: 0,
               right: 0,
-              child: SparrowHeader(subtitle: 'WATCHLIST'),
+              child: ScrollAwareHeader(
+                controller: _headerController,
+                child: const SparrowHeader(subtitle: 'WATCHLIST'),
+              ),
             ),
           ],
         ),

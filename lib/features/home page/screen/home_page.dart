@@ -17,6 +17,7 @@ import 'package:sparrow/shared/genre_providers.dart';
 import 'package:sparrow/shared/navigation/view_all_navigation.dart';
 import '../widgets/section_header.dart';
 import '../widgets/sparrow_header.dart';
+import '../../../shared/scroll_aware_header.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -26,6 +27,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  final _headerController = ScrollAwareHeaderController();
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    super.dispose();
+  }
   Widget _buildMediaCarouselSection({
     required AsyncValue<List<dynamic>> asyncValue,
     required double height,
@@ -109,7 +117,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Stack(
           children: [
             // Scrollable Home Content Body
-            SingleChildScrollView(
+            NotificationListener<ScrollNotification>(
+              onNotification: _headerController.handleScrollNotification,
+              child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.only(
                 top: topPadding + headerHeight + 6,
@@ -434,9 +444,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ],
               ),
             ),
+          ),
 
-            // Pinned Frosted Sparrow Header at Top
-            const Positioned(top: 0, left: 0, right: 0, child: SparrowHeader()),
+          // Pinned Frosted Sparrow Header at Top with Scroll Awareness
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ScrollAwareHeader(
+              controller: _headerController,
+              child: const SparrowHeader(),
+            ),
+          ),
           ],
         ),
       ),

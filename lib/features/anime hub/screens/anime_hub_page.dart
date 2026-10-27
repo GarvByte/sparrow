@@ -13,6 +13,7 @@ import 'package:sparrow/shared/genre_providers.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/navigation/view_all_navigation.dart';
+import '../../../shared/scroll_aware_header.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 
@@ -24,6 +25,13 @@ class AnimeHubPage extends ConsumerStatefulWidget {
 }
 
 class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
+  final _headerController = ScrollAwareHeaderController();
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
@@ -49,7 +57,9 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
         child: Stack(
           children: [
             // Scrollable Hub Content
-            SingleChildScrollView(
+            NotificationListener<ScrollNotification>(
+              onNotification: _headerController.handleScrollNotification,
+              child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.only(
                 top: topPadding + headerHeight + 6,
@@ -251,14 +261,18 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
                 ],
               ),
             ),
+          ),
 
-            // Pinned Frosted Sparrow Header at Top
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: SparrowHeader(subtitle: 'ANIME & TV'),
+          // Pinned Frosted Sparrow Header at Top with Scroll Awareness
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ScrollAwareHeader(
+              controller: _headerController,
+              child: const SparrowHeader(subtitle: 'ANIME & TV'),
             ),
+          ),
           ],
         ),
       ),

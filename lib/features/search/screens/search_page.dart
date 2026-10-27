@@ -20,6 +20,7 @@ import 'package:sparrow/features/search/widgets/top_trending_carousel.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
+import 'package:sparrow/shared/scroll_aware_header.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
@@ -32,7 +33,10 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   late final TextEditingController _searchController;
   late final FocusNode _searchFocusNode;
+  late final FocusScopeNode _searchScopeNode;
+  late final ScrollAwareHeaderController _headerController;
   Timer? _debounceTimer;
+  bool _isNavigatingToTvResults = false;
 
   @override
   void initState() {
@@ -40,11 +44,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final initialQuery = ref.read(searchQueryProvider);
     _searchController = TextEditingController(text: initialQuery);
     _searchFocusNode = FocusNode();
+    _searchScopeNode = FocusScopeNode(debugLabel: 'SearchPageScope');
+    _headerController = ScrollAwareHeaderController();
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _headerController.dispose();
+    _searchScopeNode.dispose();
     _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
@@ -84,24 +92,38 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
     final clean = query.trim();
+    _searchScopeNode.unfocus();
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
 
+    final isTv = context.responsive.isTvOrDesktop;
+
     if (clean.isEmpty) {
-      if (!context.responsive.isTvOrDesktop) {
+      if (!isTv) {
         _clearSearch();
       }
       return;
     }
 
-    final isTv = context.responsive.isTvOrDesktop;
+    // On TV: push dedicated search results page without triggering requests for keystrokes
+    if (isTv) {
+      if (_isNavigatingToTvResults) return;
+      _isNavigatingToTvResults = true;
+      context.push('/search/results', extra: clean).then((_) {
+        if (mounted) {
+          _isNavigatingToTvResults = false;
+          _searchScopeNode.unfocus();
+          _searchFocusNode.unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      });
+      return;
+    }
+
+    // Mobile: trigger inline live search
     ref.read(searchQueryProvider.notifier).setQuery(clean);
     ref.read(searchResultsNotifier.notifier).search(query: clean);
     ref.read(selectedCategoryProvider.notifier).clear();
-
-    if (isTv) {
-      context.push('/search/results', extra: clean);
-    }
   }
 
   void _clearSearch() {
@@ -110,6 +132,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     ref.read(searchQueryProvider.notifier).clear();
     ref.read(selectedCategoryProvider.notifier).clear();
     ref.read(searchResultsNotifier.notifier).clear();
+    _searchScopeNode.unfocus();
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
   }
@@ -150,6 +173,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   void _unfocusAndOpenMovie(dynamic item) {
+    _searchScopeNode.unfocus();
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
     openMovieDetails(context, item);
@@ -190,114 +214,146 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           _clearSearch();
         }
       },
-      child: Focus(
-        skipTraversal: true,
-        onKeyEvent: _handleSearchKeyEvent,
-        child: Scaffold(
-          backgroundColor: ColorPalette.backgroundBlack,
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [ColorPalette.backgroundBlack, ColorPalette.gradientEnd],
-              ),
-            ),
-            child: Stack(
-              children: [
-                // Scrollable Content
-                SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    top: topPadding + headerHeight + 8,
-                    bottom: 110, // Clears the floating bottom nav dock
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Search & Filter Input Deck
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: responsive.scale(16, min: 12, max: 20),
-                        ),
-                        child: SearchBarDeck(
-                          controller: _searchController,
-                          focusNode: _searchFocusNode,
-                          onChanged: _onQueryChanged,
-                          onSubmitted: _onQuerySubmitted,
-                          onClear: _clearSearch,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Content Switcher: Search Results View OR Discover Home Deck
-                      if (showInlineResults)
-                        SearchResultsView(
-                          onClear: _clearSearch,
-                          onMovieTap: (item) {
-                            _searchFocusNode.unfocus();
-                            FocusManager.instance.primaryFocus?.unfocus();
-                            if (item.isTvShow) {
-                              openTvShowDetails(context, item);
-                            } else {
-                              openMovieDetails(context, item);
-                            }
-                          },
-                        )
-                      else ...[
-                        // 1. Explore Categories
-                        ExploreCategoriesGrid(
-                          onCategoryTap: (CategoryItem category) {
-                            // Tapping selects category and switches to results mode
-                            ref
-                                .read(selectedCategoryProvider.notifier)
-                                .setCategory(category);
-                            ref
-                                .read(categoryResultsNotifier.notifier)
-                                .fetchMoviesByGenre(category.tmdbGenreId);
-                            if (isTv) {
-                              _searchFocusNode.unfocus();
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              context.push('/search/results', extra: category);
-                            }
-                          },
-                        ),
-
-                        SizedBox(height: responsive.scale(22, min: 16, max: 28)),
-
-                        // 2. Top Trending Today
-                        TopTrendingCarousel(
-                          onSeeAllTap: () {},
-                          onMovieTap: _unfocusAndOpenMovie,
-                        ),
-
-                        SizedBox(height: responsive.scale(24, min: 18, max: 30)),
-
-                        // 3. Sparrow Masters Featured Showcase
-                        SparrowMastersCard(
-                          onPlayTap: () {},
-                          onTap: _unfocusAndOpenMovie,
-                        ),
-
-                        SizedBox(height: responsive.scale(24, min: 18, max: 30)),
-
-                        // 4. Curated For Your Taste
-                        CuratedTasteGrid(
-                          onMovieTap: _unfocusAndOpenMovie,
-                        ),
-
-                        // 5. Vertically stacked hero banner cards for randomly selected genres
-                        RandomGenreHeroBanners(
-                          onMovieTap: _unfocusAndOpenMovie,
-                        ),
-                      ],
-                    ],
-                  ),
+      child: FocusScope(
+        node: _searchScopeNode,
+        child: Focus(
+          skipTraversal: true,
+          onKeyEvent: _handleSearchKeyEvent,
+          child: Scaffold(
+            backgroundColor: ColorPalette.backgroundBlack,
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [ColorPalette.backgroundBlack, ColorPalette.gradientEnd],
                 ),
+              ),
+              child: Stack(
+                children: [
+                  // Scrollable Content
+                  NotificationListener<ScrollNotification>(
+                    onNotification: _headerController.handleScrollNotification,
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.only(
+                        top: topPadding + headerHeight + 8,
+                        bottom: 110, // Clears the floating bottom nav dock
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Search & Filter Input Deck
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: responsive.scale(16, min: 12, max: 20),
+                            ),
+                            child: SearchBarDeck(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              onChanged: _onQueryChanged,
+                              onSubmitted: _onQuerySubmitted,
+                              onClear: _clearSearch,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                // Pinned Top Frosted Search Header
-                const Positioned(top: 0, left: 0, right: 0, child: SearchHeader()),
-              ],
+                          // Content Switcher: Search Results View OR Discover Home Deck
+                          if (showInlineResults)
+                            SearchResultsView(
+                              onClear: _clearSearch,
+                              onMovieTap: (item) {
+                                _searchScopeNode.unfocus();
+                                _searchFocusNode.unfocus();
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                if (item.isTvShow) {
+                                  openTvShowDetails(context, item);
+                                } else {
+                                  openMovieDetails(context, item);
+                                }
+                              },
+                            )
+                          else ...[
+                            // 1. Explore Categories
+                            ExploreCategoriesGrid(
+                              onCategoryTap: (CategoryItem category) {
+                                if (isTv) {
+                                  if (_isNavigatingToTvResults) return;
+                                  _isNavigatingToTvResults = true;
+                                  _searchScopeNode.unfocus();
+                                  _searchFocusNode.unfocus();
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  context.push('/search/results', extra: category).then((_) {
+                                    if (mounted) {
+                                      _isNavigatingToTvResults = false;
+                                      _searchScopeNode.unfocus();
+                                      _searchFocusNode.unfocus();
+                                      FocusManager.instance.primaryFocus?.unfocus();
+                                    }
+                                  });
+                                  return;
+                                }
+
+                                // Mobile: Tapping selects category and switches to results mode
+                                ref
+                                    .read(selectedCategoryProvider.notifier)
+                                    .setCategory(category);
+                                ref
+                                    .read(categoryResultsNotifier.notifier)
+                                    .fetchMoviesByGenre(category.tmdbGenreId);
+                              },
+                            ),
+
+                            SizedBox(height: responsive.scale(22, min: 16, max: 28)),
+
+                            // 2. Top Trending Today
+                            TopTrendingCarousel(
+                              onSeeAllTap: () {},
+                              onMovieTap: _unfocusAndOpenMovie,
+                            ),
+
+                            SizedBox(height: responsive.scale(24, min: 18, max: 30)),
+
+                            // 3. Sparrow Masters Featured Showcase
+                            SparrowMastersCard(
+                              onPlayTap: () {},
+                              onTap: _unfocusAndOpenMovie,
+                            ),
+
+                            SizedBox(height: responsive.scale(24, min: 18, max: 30)),
+
+                            // 4. Curated For Your Taste
+                            CuratedTasteGrid(
+                              onMovieTap: _unfocusAndOpenMovie,
+                            ),
+
+                            // 5. Vertically stacked hero banner cards for randomly selected genres
+                            RandomGenreHeroBanners(
+                              onMovieTap: _unfocusAndOpenMovie,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Pinned Top Frosted Search Header with Scroll-Aware Hide/Show
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AnimatedBuilder(
+                      animation: _headerController,
+                      builder: (context, _) {
+                        return ScrollAwareHeader(
+                          isVisible: _headerController.isVisible,
+                          child: const SearchHeader(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class ColorPalette {
   // Original theme colors preserved strictly
   static const Color primaryGreen = Color(0xFF1DB954);
+  // static const Color primaryGreen = Color.fromARGB(255, 255, 28, 28);
   static const Color backgroundBlack = Color.fromARGB(255, 0, 0, 0);
   static const Color secondaryBrown = Color.fromARGB(255, 46, 12, 0);
   static const Color fontWhite = Color.fromARGB(255, 255, 255, 255);

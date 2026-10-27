@@ -237,9 +237,9 @@ class _LayeredMovieCard extends StatelessWidget {
     final cardRadius = responsive.heroContainerRadius;
     final posterRadius = responsive.radius(16.0);
 
-    final paddingH = responsive.scale(10.0, min: 6.0, max: 14.0);
-    final paddingTop = responsive.scale(10.0, min: 6.0, max: 14.0);
-    final paddingBottom = responsive.scale(12.0, min: 8.0, max: 16.0);
+    final paddingH = responsive.scale(10.0, min: 8.0, max: 14.0);
+    final paddingTop = responsive.scale(10.0, min: 8.0, max: 14.0);
+    final paddingBottom = responsive.scale(12.0, min: 10.0, max: 16.0);
 
     final cardContent = GestureDetector(
       onTap: onTap,
@@ -268,184 +268,192 @@ class _LayeredMovieCard extends StatelessWidget {
                       : ColorPalette.heroBorder.withValues(alpha: 0.60),
                   width: isCurrent ? 1.5 : 1.0,
                 ),
+                boxShadow: isCurrent
+                    ? [
+                        BoxShadow(
+                          color: ColorPalette.primaryGreen.withValues(
+                            alpha: 0.25,
+                          ),
+                          blurRadius: 24,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.70),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
               ),
-              clipBehavior: Clip.antiAlias,
-              padding: EdgeInsets.fromLTRB(
-                paddingH,
-                paddingTop,
-                paddingH,
-                paddingBottom,
-              ),
-              child: Stack(
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topCenter,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // 1. Movie Poster (Exact 17:16 aspect ratio, ZERO overlays)
-                        SizedBox(
-                          height: posterHeight,
-                          child: AspectRatio(
-                            aspectRatio: 17.0 / 16.0,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(posterRadius),
-                              child: CachedNetworkImage(
-                                imageUrl: item.imageUrl,
-                                placeholder: (context, url) => Container(
-                                  color: ColorPalette.surfaceContainerLow,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(cardRadius),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    paddingH,
+                    paddingTop,
+                    paddingH,
+                    paddingBottom,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 16:17 aspect ratio poster
+                      SizedBox(
+                        height: posterHeight,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 17,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(posterRadius),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                item.imageUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: item.imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            const ErrorImagePlaceholder(),
+                                        placeholder: (context, url) => Container(
+                                          color: ColorPalette.surfaceContainerLow,
+                                        ),
+                                      )
+                                    : const ErrorImagePlaceholder(),
+                                // Movie Badge
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.75,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: ColorPalette.primaryGreen
+                                            .withValues(alpha: 0.5),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'MOVIE',
+                                      style: TextStyle(
+                                        color: ColorPalette.primaryGreen,
+                                        fontSize: responsive.sp(
+                                          8.5,
+                                          min: 7.5,
+                                          max: 9.5,
+                                        ),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    const ErrorImagePlaceholder(),
-                                fit: BoxFit.cover,
-                              ),
+                              ],
                             ),
                           ),
                         ),
+                      ),
+                      SizedBox(height: responsive.scale(8, min: 6, max: 10)),
 
-                      SizedBox(height: responsive.scale(7, min: 4, max: 9)),
-
-                      // 2. Movie Title
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          item.title,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: ColorPalette.fontWhite,
-                            fontSize: responsive.sp(17, min: 14.5, max: 20),
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                          ),
+                      // Title
+                      Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: ColorPalette.fontWhite,
+                          fontSize: responsive.sp(14, min: 12, max: 16),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                         ),
                       ),
+                      const SizedBox(height: 4),
 
-                      SizedBox(height: responsive.scale(5, min: 3, max: 7)),
-
-                      // 3. Genre Chips
-                      Wrap(
-                        spacing: 5,
-                        runSpacing: 4,
-                        alignment: WrapAlignment.center,
-                        children: item.genres.map<Widget>((genre) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: responsive.scale(7, min: 5, max: 9),
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: ColorPalette.heroChipBackground.withValues(
-                                alpha: 0.90,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: ColorPalette.ghostBorder.withValues(
-                                  alpha: 0.08,
-                                ),
-                                width: 0.6,
-                              ),
-                            ),
-                            child: Text(
-                              genre,
-                              style: TextStyle(
-                                color: ColorPalette.textSecondary,
-                                fontSize: responsive.sp(9, min: 7.5, max: 10.5),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-
-                      SizedBox(height: responsive.scale(5, min: 3, max: 7)),
-
-                      // 4. Star Rating & Review Count
+                      // Rating & Year
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          for (int i = 0; i < 4; i++)
-                            Icon(
+                          if (item.rating != null && item.rating! > 0) ...[
+                            const Icon(
                               Icons.star_rounded,
-                              size: responsive.iconSize(13, min: 11, max: 15),
-                              color: ColorPalette.primaryGreen,
+                              size: 14,
+                              color: Color(0xFF84FFA8),
                             ),
-                          Icon(
-                            Icons.star_half_rounded,
-                            size: responsive.iconSize(13, min: 11, max: 15),
-                            color: ColorPalette.primaryGreen,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${item.rating ?? 8.8}',
-                            style: TextStyle(
-                              color: ColorPalette.fontWhite,
-                              fontSize: responsive.sp(10.5, min: 8.5, max: 12),
-                              fontWeight: FontWeight.w700,
+                            const SizedBox(width: 3),
+                            Text(
+                              item.rating!.toStringAsFixed(1),
+                              style: TextStyle(
+                                color: ColorPalette.fontWhite,
+                                fontSize: responsive.sp(
+                                  11,
+                                  min: 9.5,
+                                  max: 12.5,
+                                ),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            '(${item.ratingCount ?? "142k"})',
-                            style: TextStyle(
-                              color: ColorPalette.textMuted,
-                              fontSize: responsive.sp(9.5, min: 8, max: 11),
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(width: 8),
+                          ],
+                          if (item.releaseDate != null &&
+                              item.releaseDate!.length >= 4)
+                            Text(
+                              item.releaseDate!.substring(0, 4),
+                              style: TextStyle(
+                                color: ColorPalette.textMuted,
+                                fontSize: responsive.sp(11, min: 9.5, max: 12),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
                         ],
                       ),
+                      SizedBox(height: responsive.scale(8, min: 6, max: 10)),
 
-                      SizedBox(height: responsive.scale(7, min: 5, max: 10)),
-
-                      // 5. Watch Now Action Button (Inside this movie's brown container)
-                      ElevatedButton.icon(
-                        onPressed: onWatchNow,
-                        icon: Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.black,
-                          size: responsive.iconSize(18, min: 15, max: 21),
-                        ),
-                        label: Text(
-                          'Watch Now',
-                          style: TextStyle(
+                      // "Watch Now" action button
+                      SizedBox(
+                        height: responsive.scale(32, min: 28, max: 36),
+                        child: ElevatedButton.icon(
+                          onPressed: onWatchNow,
+                          icon: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 16,
                             color: Colors.black,
-                            fontSize: responsive.sp(13, min: 11, max: 15),
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.2,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorPalette.primaryGreen,
-                          elevation: 2,
-                          shadowColor: ColorPalette.primaryGreen.withValues(
-                            alpha: 0.35,
+                          label: Text(
+                            'Watch Now',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: responsive.sp(11.5, min: 10, max: 13),
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorPalette.primaryGreen,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
-                          padding: const EdgeInsets.all(10),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                  // Atmospheric depth tint for background side cards
-                  if (!isCurrent)
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(cardRadius - 1),
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.42),
-                        ),
-                      ),
-                    ),
-                ],
               ),
             ),
           ),

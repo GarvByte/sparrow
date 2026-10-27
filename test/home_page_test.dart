@@ -48,9 +48,9 @@ void main() {
       expect(posterFinder, findsOneWidget);
       final ar = tester.widget<AspectRatio>(posterFinder);
       expect(
-        (ar.aspectRatio - (17.0 / 16.0)).abs() < 0.01,
+        (ar.aspectRatio - (16.0 / 17.0)).abs() < 0.01,
         isTrue,
-        reason: 'Hero poster must use exact 17:16 aspect ratio',
+        reason: 'Hero poster must use exact 16:17 aspect ratio',
       );
 
       // - Movie title
@@ -61,18 +61,17 @@ void main() {
         ),
         findsOneWidget,
       );
-      // - Genre chips
+      // - Movie badge
       expect(
-        find.descendant(of: activeCardContainer, matching: find.text('Action')),
+        find.descendant(
+          of: activeCardContainer,
+          matching: find.text('MOVIE'),
+        ),
         findsOneWidget,
       );
-      // - Rating & review count
+      // - Rating
       expect(
         find.descendant(of: activeCardContainer, matching: find.text('8.8')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: activeCardContainer, matching: find.text('(142k)')),
         findsOneWidget,
       );
       // - Watch Now button

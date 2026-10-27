@@ -162,7 +162,7 @@ void main() {
       id: '693134',
       title: 'Dune: Part Two',
       imageUrl: 'https://image.tmdb.org/t/p/w500/poster.jpg',
-      backdropUrl: 'https://image.tmdb.org/t/p/original/backdrop.jpg',
+      backdropUrl: 'https://image.tmdb.org/t/p/w500/backdrop.jpg',
       genres: ['Sci-Fi', 'Adventure'],
       rating: 8.6,
       overview: 'Paul Atreides unites with Chani and the Fremen.',
