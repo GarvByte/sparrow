@@ -8,13 +8,13 @@ import 'package:sparrow/shared/tmdb_base_url.dart';
 /// Accepts a [MediaItem] or a raw TMDB [Map<String, dynamic>] safely.
 /// Uses GoRouter's [push] method so the details screen is pushed above the current
 /// stack without resetting the previous page's scroll or navigation state.
-void openTvShowDetails(BuildContext context, dynamic tvData) {
+Future<T?> openTvShowDetails<T>(BuildContext context, dynamic tvData) {
   FocusScope.of(context).unfocus();
   FocusManager.instance.primaryFocus?.unfocus();
 
   if (tvData == null) {
     //debugPrintt('Cannot navigate to TV Show Details: tvData is null');
-    return;
+    return Future.value(null);
   }
 
   MediaItem? resolvedItem;
@@ -45,7 +45,7 @@ void openTvShowDetails(BuildContext context, dynamic tvData) {
     final rawId = tvData['id']?.toString() ?? '';
     if (rawId.isEmpty) {
       //debugPrintt('Cannot navigate to TV Show Details: series ID is missing');
-      return;
+      return Future.value(null);
     }
 
     final posterPath = tvData['poster_path'] as String?;
@@ -83,8 +83,8 @@ void openTvShowDetails(BuildContext context, dynamic tvData) {
 
   if (resolvedItem == null || resolvedItem.id.trim().isEmpty) {
     //debugPrintt('Cannot navigate to TV Show Details: invalid series identifier');
-    return;
+    return Future.value(null);
   }
 
-  context.push('/tv-show-details', extra: resolvedItem);
+  return context.push<T>('/tv-show-details', extra: resolvedItem);
 }

@@ -9,24 +9,22 @@ import 'package:sparrow/shared/tmdb_base_url.dart';
 /// Accepts [MediaItem] or a raw TMDB [Map<String, dynamic>] safely.
 /// Uses GoRouter's [push] method so the details screen is pushed above the current
 /// stack without resetting the previous page's scroll or navigation state.
-void openMovieDetails(BuildContext context, dynamic movieData) {
+Future<T?> openMovieDetails<T>(BuildContext context, dynamic movieData) {
   FocusScope.of(context).unfocus();
   FocusManager.instance.primaryFocus?.unfocus();
 
   if (movieData == null) {
     //debugPrintt('Cannot navigate to Movie Details: movieData is null');
-    return;
+    return Future.value(null);
   }
 
   // Intercept TV shows and route cleanly to TV Show Details
   if (movieData is MediaItem && movieData.isTvShow) {
-    openTvShowDetails(context, movieData);
-    return;
+    return openTvShowDetails<T>(context, movieData);
   }
   if (movieData is Map<String, dynamic> &&
       (movieData['media_type'] == 'tv' || movieData['is_tv'] == true)) {
-    openTvShowDetails(context, movieData);
-    return;
+    return openTvShowDetails<T>(context, movieData);
   }
 
   MediaItem? resolvedItem;
@@ -37,7 +35,7 @@ void openMovieDetails(BuildContext context, dynamic movieData) {
     final rawId = movieData['id']?.toString() ?? '';
     if (rawId.isEmpty) {
       //debugPrintt('Cannot navigate to Movie Details: movie ID is missing');
-      return;
+      return Future.value(null);
     }
 
     final posterPath = movieData['poster_path'] as String?;
@@ -72,8 +70,8 @@ void openMovieDetails(BuildContext context, dynamic movieData) {
 
   if (resolvedItem == null || resolvedItem.id.trim().isEmpty) {
     //debugPrintt('Cannot navigate to Movie Details: invalid movie identifier');
-    return;
+    return Future.value(null);
   }
 
-  context.push('/movie-details', extra: resolvedItem);
+  return context.push<T>('/movie-details', extra: resolvedItem);
 }

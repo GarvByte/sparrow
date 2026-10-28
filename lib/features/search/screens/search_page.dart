@@ -17,6 +17,8 @@ import 'package:sparrow/features/search/widgets/search_header.dart';
 import 'package:sparrow/features/search/widgets/search_results_view.dart';
 import 'package:sparrow/features/search/widgets/sparrow_masters_card.dart';
 import 'package:sparrow/features/search/widgets/top_trending_carousel.dart';
+import 'package:sparrow/navigation/app_router.dart';
+import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
 import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
@@ -37,15 +39,26 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   late final ScrollAwareHeaderController _headerController;
   Timer? _debounceTimer;
   bool _isNavigatingToTvResults = false;
+  bool _isSubrouteActive = false;
 
   @override
   void initState() {
     super.initState();
     final initialQuery = ref.read(searchQueryProvider);
     _searchController = TextEditingController(text: initialQuery);
-    _searchFocusNode = FocusNode();
+    _searchFocusNode = FocusNode(
+      debugLabel: 'SearchFieldFocusNode',
+      skipTraversal: true,
+    );
     _searchScopeNode = FocusScopeNode(debugLabel: 'SearchPageScope');
     _headerController = ScrollAwareHeaderController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isTv = context.responsive.isTvOrDesktop;
+    _searchFocusNode.skipTraversal = !isTv;
   }
 
   @override
@@ -92,9 +105,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
     final clean = query.trim();
-    _searchScopeNode.unfocus();
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
+    if (!context.responsive.isTvOrDesktop) {
+      _searchScopeNode.requestScopeFocus();
+    }
+    _searchScopeNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    _searchFocusNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    FocusManager.instance.primaryFocus?.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
 
     final isTv = context.responsive.isTvOrDesktop;
 
@@ -132,9 +154,73 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     ref.read(searchQueryProvider.notifier).clear();
     ref.read(selectedCategoryProvider.notifier).clear();
     ref.read(searchResultsNotifier.notifier).clear();
-    _searchScopeNode.unfocus();
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
+    if (mounted && !context.responsive.isTvOrDesktop) {
+      _searchScopeNode.requestScopeFocus();
+    }
+    _searchScopeNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    _searchFocusNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    FocusManager.instance.primaryFocus?.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+  }
+
+  bool get _isTopRoute {
+    if (_isSubrouteActive) return false;
+    if (appRouter.canPop()) return false;
+    final modalRoute = ModalRoute.of(context);
+    return modalRoute?.isCurrent ?? true;
+  }
+
+  void _navigateToDetails(dynamic item) {
+    if (!context.responsive.isTvOrDesktop) {
+      _searchScopeNode.requestScopeFocus();
+    }
+    _searchScopeNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    _searchFocusNode.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+    FocusManager.instance.primaryFocus?.unfocus(
+      disposition: UnfocusDisposition.previouslyFocusedChild,
+    );
+
+    setState(() {
+      _isSubrouteActive = true;
+    });
+
+    final isTv = item is MediaItem
+        ? item.isTvShow
+        : (item is Map &&
+            (item['media_type'] == 'tv' || item['is_tv'] == true));
+
+    final Future<dynamic> future = isTv
+        ? openTvShowDetails(context, item)
+        : openMovieDetails(context, item);
+
+    future.then((_) {
+      if (mounted) {
+        if (!context.responsive.isTvOrDesktop) {
+          _searchScopeNode.requestScopeFocus();
+        }
+        _searchScopeNode.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+        _searchFocusNode.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+        FocusManager.instance.primaryFocus?.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+        setState(() {
+          _isSubrouteActive = false;
+        });
+      }
+    });
   }
 
   KeyEventResult _handleSearchKeyEvent(FocusNode node, KeyEvent event) {
@@ -142,41 +228,57 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       return KeyEventResult.ignored;
     }
 
-    final isTv = context.responsive.isTvOrDesktop;
-    if (isTv) {
-      // On TV, Back press on the search page is handled by standard navigation
-      return KeyEventResult.ignored;
-    }
-
-    final query = ref.read(searchQueryProvider);
-    final selectedCategory = ref.read(selectedCategoryProvider);
-    final isSearching = query.trim().isNotEmpty || selectedCategory != null;
-
-    if (!isSearching) {
+    if (!_isTopRoute) {
       return KeyEventResult.ignored;
     }
 
     final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.escape ||
+
+    final isBackKey =
+        key == LogicalKeyboardKey.escape ||
         key == LogicalKeyboardKey.goBack ||
-        key == LogicalKeyboardKey.gameButtonB) {
-      final primary = FocusManager.instance.primaryFocus;
-      final isEditingText =
-          primary?.context?.findAncestorStateOfType<EditableTextState>() != null;
-      if (key == LogicalKeyboardKey.escape || !isEditingText) {
-        _clearSearch();
-        return KeyEventResult.handled;
-      }
+        key == LogicalKeyboardKey.gameButtonB;
+
+    if (!isBackKey) {
+      return KeyEventResult.ignored;
+    }
+
+    final isTv = context.responsive.isTvOrDesktop;
+
+    // Preserve normal TV navigation when the search field
+    // is no longer focused.
+    if (isTv) {
+      return KeyEventResult.ignored;
+    }
+
+    // Escape always clears active search immediately (e.g. desktop/web/tests)
+    if (key == LogicalKeyboardKey.escape) {
+      _clearSearch();
+      return KeyEventResult.handled;
+    }
+
+    // Priority 1: Dismiss the focused search input on back key.
+    if (_searchFocusNode.hasFocus) {
+      _searchFocusNode.unfocus();
+      return KeyEventResult.handled;
+    }
+
+    // Priority 2: Clear active mobile search.
+    final query = ref.read(searchQueryProvider);
+    final selectedCategory = ref.read(selectedCategoryProvider);
+
+    final isSearching = query.trim().isNotEmpty || selectedCategory != null;
+
+    if (isSearching) {
+      _clearSearch();
+      return KeyEventResult.handled;
     }
 
     return KeyEventResult.ignored;
   }
 
   void _unfocusAndOpenMovie(dynamic item) {
-    _searchScopeNode.unfocus();
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-    openMovieDetails(context, item);
+    _navigateToDetails(item);
   }
 
   @override
@@ -186,9 +288,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final topPadding = responsive.padding.top;
     final headerHeight = responsive.headerHeight;
 
-    final isSearching = ref.watch(
-          searchQueryProvider.select((q) => q.trim().isNotEmpty),
-        ) ||
+    final isSearching =
+        ref.watch(searchQueryProvider.select((q) => q.trim().isNotEmpty)) ||
         ref.watch(selectedCategoryProvider.select((c) => c != null));
 
     final showInlineResults = !isTv && isSearching;
@@ -198,18 +299,27 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       if (prev != null && prev != next) {
         final currentQuery = ref.read(searchQueryProvider);
         if (currentQuery.trim().isNotEmpty) {
-          ref.read(searchResultsNotifier.notifier).search(
-                query: currentQuery,
-                mediaType: next,
-              );
+          ref
+              .read(searchResultsNotifier.notifier)
+              .search(query: currentQuery, mediaType: next);
         }
       }
     });
 
     return PopScope(
-      canPop: isTv || !isSearching,
+      canPop: !_isTopRoute || isTv || (!_searchFocusNode.hasFocus && !isSearching),
+
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+        if (!_isTopRoute) return;
+
+        // Priority 1: Dismiss the focused search field.
+        if (_searchFocusNode.hasFocus) {
+          _searchFocusNode.unfocus();
+          return;
+        }
+
+        // Priority 2: Clear active inline search on mobile.
         if (!isTv && isSearching) {
           _clearSearch();
         }
@@ -226,7 +336,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [ColorPalette.backgroundBlack, ColorPalette.gradientEnd],
+                  colors: [
+                    ColorPalette.backgroundBlack,
+                    ColorPalette.gradientEnd,
+                  ],
                 ),
               ),
               child: Stack(
@@ -246,7 +359,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           // Search & Filter Input Deck
                           Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: responsive.scale(16, min: 12, max: 20),
+                              horizontal: responsive.scale(
+                                16,
+                                min: 12,
+                                max: 20,
+                              ),
                             ),
                             child: SearchBarDeck(
                               controller: _searchController,
@@ -262,16 +379,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                           if (showInlineResults)
                             SearchResultsView(
                               onClear: _clearSearch,
-                              onMovieTap: (item) {
-                                _searchScopeNode.unfocus();
-                                _searchFocusNode.unfocus();
-                                FocusManager.instance.primaryFocus?.unfocus();
-                                if (item.isTvShow) {
-                                  openTvShowDetails(context, item);
-                                } else {
-                                  openMovieDetails(context, item);
-                                }
-                              },
+                              onMovieTap: _navigateToDetails,
                             )
                           else ...[
                             // 1. Explore Categories
@@ -283,14 +391,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                   _searchScopeNode.unfocus();
                                   _searchFocusNode.unfocus();
                                   FocusManager.instance.primaryFocus?.unfocus();
-                                  context.push('/search/results', extra: category).then((_) {
-                                    if (mounted) {
-                                      _isNavigatingToTvResults = false;
-                                      _searchScopeNode.unfocus();
-                                      _searchFocusNode.unfocus();
-                                      FocusManager.instance.primaryFocus?.unfocus();
-                                    }
-                                  });
+                                  context
+                                      .push('/search/results', extra: category)
+                                      .then((_) {
+                                        if (mounted) {
+                                          _isNavigatingToTvResults = false;
+                                          _searchScopeNode.unfocus();
+                                          _searchFocusNode.unfocus();
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                        }
+                                      });
                                   return;
                                 }
 
@@ -304,7 +415,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                               },
                             ),
 
-                            SizedBox(height: responsive.scale(22, min: 16, max: 28)),
+                            SizedBox(
+                              height: responsive.scale(22, min: 16, max: 28),
+                            ),
 
                             // 2. Top Trending Today
                             TopTrendingCarousel(
@@ -312,7 +425,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                               onMovieTap: _unfocusAndOpenMovie,
                             ),
 
-                            SizedBox(height: responsive.scale(24, min: 18, max: 30)),
+                            SizedBox(
+                              height: responsive.scale(24, min: 18, max: 30),
+                            ),
 
                             // 3. Sparrow Masters Featured Showcase
                             SparrowMastersCard(
@@ -320,12 +435,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                               onTap: _unfocusAndOpenMovie,
                             ),
 
-                            SizedBox(height: responsive.scale(24, min: 18, max: 30)),
+                            SizedBox(
+                              height: responsive.scale(24, min: 18, max: 30),
+                            ),
 
                             // 4. Curated For Your Taste
-                            CuratedTasteGrid(
-                              onMovieTap: _unfocusAndOpenMovie,
-                            ),
+                            CuratedTasteGrid(onMovieTap: _unfocusAndOpenMovie),
 
                             // 5. Vertically stacked hero banner cards for randomly selected genres
                             RandomGenreHeroBanners(

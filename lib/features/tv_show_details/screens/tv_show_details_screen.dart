@@ -168,42 +168,48 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
     final isTv = responsive.isTvOrDesktop;
     final isTablet = responsive.isTablet;
 
-    return Scaffold(
-      backgroundColor: ColorPalette.backgroundBlack,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ColorPalette.backgroundBlack,
-              ColorPalette.surface,
-              ColorPalette.gradientEnd.withValues(alpha: 0.7),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: ColorPalette.backgroundBlack,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ColorPalette.backgroundBlack,
+                ColorPalette.surface,
+                ColorPalette.gradientEnd.withValues(alpha: 0.7),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 80),
+                child: isTv
+                    ? _buildTvLayout(context, info, initialItem, isBookmarked)
+                    : (isTablet
+                          ? _buildTabletLayout(
+                              context,
+                              info,
+                              initialItem,
+                              isBookmarked,
+                            )
+                          : _buildMobileLayout(
+                              context,
+                              info,
+                              initialItem,
+                              isBookmarked,
+                            )),
+              ),
             ],
           ),
-        ),
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 80),
-              child: isTv
-                  ? _buildTvLayout(context, info, initialItem, isBookmarked)
-                  : (isTablet
-                        ? _buildTabletLayout(
-                            context,
-                            info,
-                            initialItem,
-                            isBookmarked,
-                          )
-                        : _buildMobileLayout(
-                            context,
-                            info,
-                            initialItem,
-                            isBookmarked,
-                          )),
-            ),
-          ],
         ),
       ),
     );
@@ -389,6 +395,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               child: TvFocusable(
                 borderRadius: BorderRadius.circular(24),
                 onSelect: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   if (context.canPop()) {
                     context.pop();
                   } else {
@@ -401,6 +408,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                     backgroundColor: const Color.fromARGB(62, 255, 255, 255),
                   ),
                   onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
                     if (context.canPop()) {
                       context.pop();
                     } else {
@@ -1026,6 +1034,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               backgroundColor: const Color.fromARGB(62, 255, 255, 255),
             ),
             onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
               if (context.canPop()) {
                 context.pop();
               } else {

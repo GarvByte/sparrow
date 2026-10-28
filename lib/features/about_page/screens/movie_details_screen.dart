@@ -135,46 +135,52 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     final isTv = responsive.isTvOrDesktop;
     final isTablet = responsive.isTablet;
 
-    return Scaffold(
-      backgroundColor: ColorPalette.backgroundBlack,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ColorPalette.backgroundBlack,
-              ColorPalette.surface,
-              ColorPalette.gradientEnd.withValues(alpha: 0.7),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: ColorPalette.backgroundBlack,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ColorPalette.backgroundBlack,
+                ColorPalette.surface,
+                ColorPalette.gradientEnd.withValues(alpha: 0.7),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Scrollable Content Viewport
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  // top: isTv ? responsive.headerHeight : 0,
+                  bottom: 80,
+                ),
+                child: isTv
+                    ? _buildTvLayout(context, info, initialItem, isBookmarked)
+                    : (isTablet
+                          ? _buildTabletLayout(
+                              context,
+                              info,
+                              initialItem,
+                              isBookmarked,
+                            )
+                          : _buildMobileLayout(
+                              context,
+                              info,
+                              initialItem,
+                              isBookmarked,
+                            )),
+              ),
             ],
           ),
-        ),
-        child: Stack(
-          children: [
-            // Scrollable Content Viewport
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.only(
-                // top: isTv ? responsive.headerHeight : 0,
-                bottom: 80,
-              ),
-              child: isTv
-                  ? _buildTvLayout(context, info, initialItem, isBookmarked)
-                  : (isTablet
-                        ? _buildTabletLayout(
-                            context,
-                            info,
-                            initialItem,
-                            isBookmarked,
-                          )
-                        : _buildMobileLayout(
-                            context,
-                            info,
-                            initialItem,
-                            isBookmarked,
-                          )),
-            ),
-          ],
         ),
       ),
     );
@@ -379,6 +385,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               backgroundColor: const Color.fromARGB(62, 255, 255, 255),
             ),
             onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
               if (context.canPop()) {
                 context.pop();
               }
@@ -460,6 +467,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               child: TvFocusable(
                 borderRadius: BorderRadius.circular(24),
                 onSelect: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   if (context.canPop()) {
                     context.pop();
                   }
@@ -470,6 +478,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                     backgroundColor: const Color.fromARGB(62, 255, 255, 255),
                   ),
                   onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
                     if (context.canPop()) {
                       context.pop();
                     }

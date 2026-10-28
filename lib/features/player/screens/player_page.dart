@@ -26,14 +26,11 @@ class PlayerPage extends ConsumerStatefulWidget {
   final MediaItem? item;
   final PlaybackContext? playbackContext;
 
-  const PlayerPage({
-    super.key,
-    this.item,
-    this.playbackContext,
-  }) : assert(
-          item != null || playbackContext != null,
-          'Either item or playbackContext must be provided',
-        );
+  const PlayerPage({super.key, this.item, this.playbackContext})
+    : assert(
+        item != null || playbackContext != null,
+        'Either item or playbackContext must be provided',
+      );
 
   PlaybackContext get resolvedContext =>
       playbackContext ?? PlaybackContext.fromMediaItem(item!);
@@ -79,8 +76,9 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _streamResolutionNotifier =
-        ref.read(streamResolutionControllerProvider.notifier);
+    _streamResolutionNotifier = ref.read(
+      streamResolutionControllerProvider.notifier,
+    );
     _lockLandscape();
     _setupPlayerController();
     _loadSavedResumePosition();
@@ -188,13 +186,14 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   void _setupPlayerController() {
     final controlsConfig = BetterPlayerControlsConfiguration(
       playerTheme: BetterPlayerTheme.custom,
-      customControlsBuilder: (controller, onControlsVisibilityChanged, controlsConfiguration) {
-        return SparrowMaterialControls(
-          controller: controller,
-          onControlsVisibilityChanged: onControlsVisibilityChanged,
-          controlsConfiguration: controlsConfiguration,
-        );
-      },
+      customControlsBuilder:
+          (controller, onControlsVisibilityChanged, controlsConfiguration) {
+            return SparrowMaterialControls(
+              controller: controller,
+              onControlsVisibilityChanged: onControlsVisibilityChanged,
+              controlsConfiguration: controlsConfiguration,
+            );
+          },
       enableFullscreen: true,
       enableOverflowMenu: true,
       enableAudioTracks: true,
@@ -247,14 +246,14 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
     _controller = BetterPlayerController(configuration);
     _controller.addEventsListener(_handlePlayerEvent);
-    _controlsVisibilitySubscription =
-        _controller.controlsVisibilityStream.listen((visible) {
-      if (mounted && _controlsVisible != visible) {
-        setState(() {
-          _controlsVisible = visible;
+    _controlsVisibilitySubscription = _controller.controlsVisibilityStream
+        .listen((visible) {
+          if (mounted && _controlsVisible != visible) {
+            setState(() {
+              _controlsVisible = visible;
+            });
+          }
         });
-      }
-    });
   }
 
   double? _extractVideoAspectRatio() {
@@ -404,10 +403,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       _hasRestoredResumePosition = true;
     }
 
-    final isHls = source.type == 'm3u8' ||
-        source.url.toLowerCase().contains('.m3u8');
-    final isMp4 = source.type == 'mp4' ||
-        source.url.toLowerCase().contains('.mp4');
+    final isHls =
+        source.type == 'm3u8' || source.url.toLowerCase().contains('.m3u8');
+    final isMp4 =
+        source.type == 'mp4' || source.url.toLowerCase().contains('.mp4');
 
     final dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
@@ -443,14 +442,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
   void _triggerAutomaticFallback([ResolvedSource? failedSource]) {
     final currentPos = _captureCurrentPosition();
-    ref.read(streamResolutionControllerProvider.notifier).handleSourceFailure(
-      failedSource: failedSource ?? _activeSource,
-      currentPosition: currentPos,
-      onSourceReady: (source, startAt) {
-        if (!mounted) return;
-        _playSource(source, startAt: startAt);
-      },
-    );
+    ref
+        .read(streamResolutionControllerProvider.notifier)
+        .handleSourceFailure(
+          failedSource: failedSource ?? _activeSource,
+          currentPosition: currentPos,
+          onSourceReady: (source, startAt) {
+            if (!mounted) return;
+            _playSource(source, startAt: startAt);
+          },
+        );
   }
 
   void _openServerSheet() {
@@ -466,14 +467,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         context: context,
         currentPosition: currentPos,
         onSelectServer: (serverIndex) {
-          ref.read(streamResolutionControllerProvider.notifier).selectServer(
-            serverIndex,
-            currentPosition: currentPos,
-            onSourceReady: (source, startAt) {
-              if (!mounted) return;
-              _playSource(source, startAt: startAt);
-            },
-          );
+          ref
+              .read(streamResolutionControllerProvider.notifier)
+              .selectServer(
+                serverIndex,
+                currentPosition: currentPos,
+                onSourceReady: (source, startAt) {
+                  if (!mounted) return;
+                  _playSource(source, startAt: startAt);
+                },
+              );
         },
         onOpenLinks: _openLinkSheet,
       ).then((_) {
@@ -510,14 +513,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         context: context,
         currentPosition: currentPos,
         onSelectSource: (sourceIndex) {
-          ref.read(streamResolutionControllerProvider.notifier).selectSource(
-            sourceIndex,
-            currentPosition: currentPos,
-            onSourceReady: (source, startAt) {
-              if (!mounted) return;
-              _playSource(source, startAt: startAt);
-            },
-          );
+          ref
+              .read(streamResolutionControllerProvider.notifier)
+              .selectSource(
+                sourceIndex,
+                currentPosition: currentPos,
+                onSourceReady: (source, startAt) {
+                  if (!mounted) return;
+                  _playSource(source, startAt: startAt);
+                },
+              );
         },
       ).then((_) {
         if (mounted) {
@@ -566,35 +571,34 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     if (!isCompleting && (posMs - _lastSavedPositionMs).abs() < 1000) return;
     _lastSavedPositionMs = posMs;
 
-    final backdrop =
-        (item.backdropUrl != null && item.backdropUrl!.isNotEmpty)
-            ? item.backdropUrl!
-            : (item.imageUrl.isNotEmpty ? item.imageUrl : '');
+    final backdrop = (item.backdropUrl != null && item.backdropUrl!.isNotEmpty)
+        ? item.backdropUrl!
+        : (item.imageUrl.isNotEmpty ? item.imageUrl : '');
 
     repo
         .saveProgress(
-      mediaType: _context.type,
-      tmdbId: _context.tmdbId,
-      title: item.title,
-      imageUrl: item.imageUrl,
-      backdropUrl: backdrop,
-      positionMs: posMs,
-      durationMs: durMs,
-      season: _context.season,
-      episode: _context.episode,
-      episodeTitle: _context.episodeTitle,
-      genres: item.genres.map((e) => e.toString()).toList(),
-      rating: item.rating,
-      overview: item.overview,
-      isAdult: item.isAdult,
-    )
+          mediaType: _context.type,
+          tmdbId: _context.tmdbId,
+          title: item.title,
+          imageUrl: item.imageUrl,
+          backdropUrl: backdrop,
+          positionMs: posMs,
+          durationMs: durMs,
+          season: _context.season,
+          episode: _context.episode,
+          episodeTitle: _context.episodeTitle,
+          genres: item.genres.map((e) => e.toString()).toList(),
+          rating: item.rating,
+          overview: item.overview,
+          isAdult: item.isAdult,
+        )
         .then((saved) {
-      if (saved && mounted) {
-        try {
-          ref.read(continueWatchingProvider.notifier).refresh();
-        } catch (_) {}
-      }
-    });
+          if (saved && mounted) {
+            try {
+              ref.read(continueWatchingProvider.notifier).refresh();
+            } catch (_) {}
+          }
+        });
   }
 
   @override
@@ -811,37 +815,46 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
               left: 0,
               right: 0,
               child: AnimatedOpacity(
-                opacity: (_controlsVisible || errorMessage != null || isResolvingInitial) ? 1.0 : 0.0,
+                opacity:
+                    (_controlsVisible ||
+                        errorMessage != null ||
+                        isResolvingInitial)
+                    ? 1.0
+                    : 0.0,
                 duration: const Duration(milliseconds: 250),
                 child: IgnorePointer(
-                  ignoring: !(_controlsVisible || errorMessage != null || isResolvingInitial),
+                  ignoring:
+                      !(_controlsVisible ||
+                          errorMessage != null ||
+                          isResolvingInitial),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black87,
-                          Colors.transparent,
-                        ],
+                        colors: [Colors.black87, Colors.transparent],
                       ),
                     ),
                     child: SafeArea(
                       child: Row(
                         children: [
-                          DpadFocusable(
-                            onSelect: _handleBackAction,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_rounded,
-                                color: Colors.white,
-                              ),
-                              onPressed: _handleBackAction,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
+                          !_isTv
+                              ? DpadFocusable(
+                                  onSelect: _handleBackAction,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_back_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: _handleBackAction,
+                                  ),
+                                )
+                              : SizedBox.shrink(),
+                          !_isTv ? const SizedBox(width: 8) : SizedBox.shrink(),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

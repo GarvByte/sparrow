@@ -38,6 +38,28 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
     widget.controller.addListener(_onTextChanged);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isTv = context.responsive.isTvOrDesktop;
+    _focusNode.skipTraversal = !isTv;
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchBarDeck oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final oldFocusNode =
+        oldWidget.focusNode ?? _internalFocusNode;
+    final newFocusNode =
+        widget.focusNode ?? _internalFocusNode;
+
+    if (oldFocusNode != newFocusNode) {
+      oldFocusNode.removeListener(_onFocusChange);
+      newFocusNode.addListener(_onFocusChange);
+    }
+  }
+
   void _onFocusChange() {
     if (mounted) setState(() {});
   }
@@ -106,6 +128,11 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
               controller: widget.controller,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmitted,
+              onTapOutside: (_) {
+                _focusNode.unfocus(
+                  disposition: UnfocusDisposition.previouslyFocusedChild,
+                );
+              },
               textInputAction: TextInputAction.search,
               style: TextStyle(
                 color: ColorPalette.fontWhite,

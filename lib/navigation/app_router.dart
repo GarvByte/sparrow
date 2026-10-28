@@ -29,7 +29,10 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       pageBuilder: (context, state) {
         final movieData = state.extra;
-        return MaterialPage(child: MovieDetailsScreen(movieData: movieData));
+        return MaterialPage(
+          key: state.pageKey,
+          child: MovieDetailsScreen(movieData: movieData),
+        );
       },
     ),
     GoRoute(
@@ -60,7 +63,10 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       pageBuilder: (context, state) {
         final tvData = state.extra;
-        return MaterialPage(child: TvShowDetailsScreen(tvData: tvData));
+        return MaterialPage(
+          key: state.pageKey,
+          child: TvShowDetailsScreen(tvData: tvData),
+        );
       },
     ),
     StatefulShellRoute.indexedStack(

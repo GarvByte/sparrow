@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sparrow/navigation/app_router.dart';
+import 'package:sparrow/shared/responsive_utils.dart';
 
 /// Top-level keyboard and TV remote Back shortcut handler.
 ///
@@ -22,6 +23,14 @@ class AppBackShortcuts extends StatelessWidget {
         }
 
         final key = event.logicalKey;
+
+        // On mobile devices, native back button and swipe gestures are handled
+        // natively by the platform navigation pipeline (RouterDelegate.popRoute).
+        // Intercepting goBack key events here causes duplicate pops and closes the app.
+        if (!context.responsive.isTvOrDesktop &&
+            key == LogicalKeyboardKey.goBack) {
+          return KeyEventResult.ignored;
+        }
 
         if (key == LogicalKeyboardKey.escape ||
             key == LogicalKeyboardKey.backspace ||
