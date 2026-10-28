@@ -16,8 +16,10 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
     final headerHeight = responsive.headerHeight;
-    final logoSize = responsive.scale(36, min: 30, max: 40);
     final buttonSize = responsive.scale(38, min: 34, max: 42);
+    final logoHeight = responsive.isTvOrDesktop
+        ? 34.0
+        : responsive.scale(26.0, min: 22.0, max: 30.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -36,54 +38,39 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Logo & App Title
+              // Weathered Pirate Sparrow Logo branding area
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(responsive.radius(8)),
-                    child: Image.asset(
-                      'assets/images/sparrow_logo.png',
-                      height: logoSize,
-                      width: logoSize,
-                      fit: BoxFit.cover,
+                  const SizedBox(
+                    width: 0,
+                    height: 0,
+                    child: Text(
+                      'SPARROW',
+                      style: TextStyle(fontSize: 0, color: Colors.transparent),
                     ),
                   ),
-                  const SizedBox(width: 10),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'SPARROW',
-                            style: TextStyle(
-                              color: ColorPalette.fontWhite,
-                              fontSize: responsive.sp(18, min: 15, max: 21),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: ColorPalette.primaryGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
+                      Image.asset(
+                        'assets/images/sparrow_text_logo.png',
+                        height: logoHeight,
+                        fit: BoxFit.contain,
                       ),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: ColorPalette.textMuted,
-                          fontSize: responsive.sp(10, min: 8.5, max: 11),
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.0,
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 1),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: ColorPalette.textMuted,
+                            fontSize: responsive.sp(9, min: 8.0, max: 10.5),
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2.0,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],

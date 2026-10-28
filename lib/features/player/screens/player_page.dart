@@ -625,12 +625,18 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     final errorMessage = state.errorMessage;
     final statusMsg = state.statusMessage;
 
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+
     return PopScope(
-      canPop: !_isSheetOpen && !_controller.isFullScreen,
+      canPop: isCurrent && !_isSheetOpen && !_controller.isFullScreen,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
+          if (!isCurrent) {
+            Navigator.of(context).maybePop();
+            return;
+          }
           if (_isSheetOpen) {
-            Navigator.of(context).pop();
+            Navigator.of(context).maybePop();
             return;
           }
           if (_controller.isFullScreen) {

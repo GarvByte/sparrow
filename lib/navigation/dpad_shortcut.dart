@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sparrow/navigation/app_router.dart';
-import 'package:sparrow/shared/responsive_utils.dart';
 
 /// Top-level keyboard and TV remote Back shortcut handler.
 ///
@@ -24,24 +23,19 @@ class AppBackShortcuts extends StatelessWidget {
 
         final key = event.logicalKey;
 
-        // On mobile devices, native back button and swipe gestures are handled
-        // natively by the platform navigation pipeline (RouterDelegate.popRoute).
-        // Intercepting goBack key events here causes duplicate pops and closes the app.
-        if (!context.responsive.isTvOrDesktop &&
-            key == LogicalKeyboardKey.goBack) {
+        // Physical back buttons (both on mobile and Android TV / Fire TV remotes)
+        // are handled natively by the platform navigation pipeline (RouterDelegate.popRoute).
+        // Intercepting goBack key events here causes duplicate pops (e.g. details closing
+        // all the way to the root search page, or player closing when dismissing an overflow sheet).
+        if (key == LogicalKeyboardKey.goBack) {
           return KeyEventResult.ignored;
         }
 
         if (key == LogicalKeyboardKey.escape ||
             key == LogicalKeyboardKey.backspace ||
-            key == LogicalKeyboardKey.goBack ||
             key == LogicalKeyboardKey.gameButtonB) {
-          if (appRouter.canPop()) {
-            appRouter.pop();
-            return KeyEventResult.handled;
-          }
-
-          return KeyEventResult.ignored;
+          appRouter.routerDelegate.popRoute();
+          return KeyEventResult.handled;
         }
 
         return KeyEventResult.ignored;

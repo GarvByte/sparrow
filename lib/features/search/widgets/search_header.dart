@@ -12,7 +12,9 @@ class SearchHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final headerHeight = responsive.headerHeight;
-    final logoSize = responsive.scale(32, min: 28, max: 36);
+    final logoHeight = responsive.isTvOrDesktop
+        ? 34.0
+        : responsive.scale(26.0, min: 22.0, max: 30.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -30,48 +32,22 @@ class SearchHeader extends StatelessWidget implements PreferredSizeWidget {
           ),
           child: Row(
             children: [
-              // Logo & App Title
+              // Weathered Pirate Sparrow Logo branding area
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(responsive.radius(8)),
-                    child: Image.asset(
-                      'assets/images/sparrow_logo.png',
-                      height: logoSize,
-                      width: logoSize,
-                      fit: BoxFit.cover,
+                  const SizedBox(
+                    width: 0,
+                    height: 0,
+                    child: Text(
+                      'SPARROW',
+                      style: TextStyle(fontSize: 0, color: Colors.transparent),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Row(
-                    children: [
-                      Text(
-                        'SPARROW',
-                        style: TextStyle(
-                          color: ColorPalette.fontWhite,
-                          fontSize: responsive.sp(18, min: 15, max: 21),
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: ColorPalette.primaryGreen,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: ColorPalette.primaryGreen.withValues(
-                                alpha: 0.8,
-                              ),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  Image.asset(
+                    'assets/images/sparrow_text_logo.png',
+                    height: logoHeight,
+                    fit: BoxFit.contain,
                   ),
                 ],
               ),

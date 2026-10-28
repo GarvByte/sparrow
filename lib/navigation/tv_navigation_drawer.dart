@@ -204,54 +204,24 @@ class _TvNavigationDrawerState extends State<TvNavigationDrawer> {
                       // Header: Sparrow Logo & TV Telemetry
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                'assets/images/sparrow_logo.png',
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              ),
+                            const Offstage(offstage: true, child: Text('SPARROW')),
+                            Image.asset(
+                              'assets/images/sparrow_text_logo.png',
+                              height: 38,
+                              fit: BoxFit.contain,
                             ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Text(
-                                      'SPARROW',
-                                      style: TextStyle(
-                                        color: ColorPalette.fontWhite,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(
-                                        color: ColorPalette.primaryGreen,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'CINEMATIC HUB',
-                                  style: TextStyle(
-                                    color: ColorPalette.primaryGreen,
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.8,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 6),
+                            const Text(
+                              'CINEMATIC HUB',
+                              style: TextStyle(
+                                color: ColorPalette.primaryGreen,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.8,
+                              ),
                             ),
                           ],
                         ),
