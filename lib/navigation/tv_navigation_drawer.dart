@@ -271,7 +271,7 @@ class _TvNavigationDrawerState extends State<TvNavigationDrawer> {
                         child: ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           itemCount: kTvDrawerDestinations.length,
-                          separatorBuilder: (_, __) =>
+                          separatorBuilder: (_, _) =>
                               const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final dest = kTvDrawerDestinations[index];

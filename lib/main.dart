@@ -26,51 +26,54 @@ void main() async {
   await WatchlistStorage.init();
   await ContinueWatchingStorage.init();
   await StreamCacheService.init();
-  PaintingBinding.instance.imageCache.maximumSizeBytes = 150 * 1024 * 1024;
-  runApp(const ProviderScope(child: SparrowApp()));
+
+  // Conservative image cache limits (35 MB max, 60 images) to prevent LMK kills on 1-2 GB Fire TV devices
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 35 * 1024 * 1024;
+  PaintingBinding.instance.imageCache.maximumSize = 60;
+
+  runApp(const SparrowApp());
 }
 
 class SparrowApp extends StatelessWidget {
   const SparrowApp({super.key});
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp.router(
-        localizationsDelegates: [
-          mui.GlobalMaterialLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: [
-          Locale('en', 'US'),
-          // add other locales if needed
-        ],
-        title: 'Sparrow',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: ColorPalette.backgroundBlack,
-          colorScheme: const ColorScheme.dark(
-            primary: ColorPalette.primaryGreen,
-            secondary: ColorPalette.primaryGreen,
-            surface: ColorPalette.surface,
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: ColorPalette.backgroundBlack,
-            elevation: 0,
-          ),
+      localizationsDelegates: [
+        mui.GlobalMaterialLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+      ],
+      title: 'Sparrow',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: ColorPalette.backgroundBlack,
+        colorScheme: const ColorScheme.dark(
+          primary: ColorPalette.primaryGreen,
+          secondary: ColorPalette.primaryGreen,
+          surface: ColorPalette.surface,
         ),
-        routerConfig: appRouter,
-        builder: (context, child) {
-          return Dpad.wrap(debugOverlay: false)(
-            context,
-            AppBackShortcuts(child: child ?? const SizedBox.shrink()),
-          );
-        },
-        scrollBehavior: const CustomScrollBehavior(),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: ColorPalette.backgroundBlack,
+          elevation: 0,
+        ),
       ),
+      routerConfig: appRouter,
+      builder: (context, child) {
+        return Dpad.wrap(debugOverlay: false)(
+          context,
+          AppBackShortcuts(child: child ?? const SizedBox.shrink()),
+        );
+      },
+      scrollBehavior: const CustomScrollBehavior(),
+    ),
     );
   }
 }

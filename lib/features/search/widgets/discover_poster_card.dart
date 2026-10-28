@@ -50,11 +50,12 @@ class DiscoverPosterCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Background Image
+                      // Background Image with bounded decode dimensions
                       item.imageUrl.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: item.imageUrl,
                               fit: BoxFit.cover,
+                              memCacheWidth: 260,
                               fadeInDuration: const Duration(milliseconds: 200),
                               fadeOutDuration: const Duration(milliseconds: 200),
                               errorWidget: (context, url, error) =>
@@ -145,75 +146,48 @@ class DiscoverPosterCard extends StatelessWidget {
                           ),
                         ),
 
-                      // Bottom Overlay Chips: Quality & Star Rating
-                      Positioned(
-                        bottom: 6,
-                        left: 6,
-                        right: 6,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Quality Tag
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: ColorPalette.surfaceContainerHighest
-                                      .withValues(alpha: 0.88),
-                                  borderRadius: BorderRadius.circular(
-                                    responsive.radius(4),
-                                  ),
-                                ),
-                                child: Text(
-                                  item.bottomBadge ?? '4K HDR',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: ColorPalette.primaryGreen,
-                                    fontSize: responsive.sp(
-                                      8.5,
-                                      min: 7.5,
-                                      max: 9.5,
-                                    ),
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
+                      // Bottom Overlay Chip: Star Rating (technical quality badges removed)
+                      if (item.rating != null && item.rating! > 0)
+                        Positioned(
+                          bottom: 6,
+                          right: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ColorPalette.surfaceContainerHighest
+                                  .withValues(alpha: 0.88),
+                              borderRadius: BorderRadius.circular(
+                                responsive.radius(4),
                               ),
                             ),
-                            const SizedBox(width: 4),
-
-                            // Rating
-                            if (item.rating != null && item.rating! > 0)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 12,
-                                    color: Color(0xFF84FFA8),
-                                  ),
-                                  const SizedBox(width: 1),
-                                  Text(
-                                    item.rating!.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      color: ColorPalette.fontWhite,
-                                      fontSize: responsive.sp(
-                                        10.0,
-                                        min: 8.5,
-                                        max: 11.5,
-                                      ),
-                                      fontWeight: FontWeight.w700,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 12,
+                                  color: Color(0xFF84FFA8),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  item.rating!.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    color: ColorPalette.fontWhite,
+                                    fontSize: responsive.sp(
+                                      10.0,
+                                      min: 8.5,
+                                      max: 11.5,
                                     ),
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                ],
-                              ),
-                          ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
 
                       // Perimeter border overlay
                       Positioned.fill(

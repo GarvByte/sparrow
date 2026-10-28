@@ -3,7 +3,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
+// import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
 import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';
 import 'package:sparrow/features/player/providers/stream_resolution_provider.dart';
@@ -270,9 +270,9 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               _buildPrimaryActionRow(context, info, item, isBookmarked),
               const SizedBox(height: 16),
 
-              // Audio Stream Dropdown
-              const MovieAudioDropdown(isTvOrDesktop: false),
-              const SizedBox(height: 18),
+              // Audio Stream Dropdown (inactivated while preserving implementation for future use)
+              // const MovieAudioDropdown(isTvOrDesktop: false),
+              // const SizedBox(height: 18),
 
               // Synopsis Section
               _buildSynopsisSection(context, info),
@@ -420,49 +420,6 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               ),
             ),
 
-            // Live Telemetry Stream Health HUD top right
-            Positioned(
-              right: horizontalPadding,
-              top: 28,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: ColorPalette.backgroundBlack.withValues(alpha: 0.75),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: ColorPalette.primaryGreen.withValues(alpha: 0.4),
-                    width: 0.8,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: const BoxDecoration(
-                        color: ColorPalette.primaryGreen,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'HEVC 2160p · HDR10+ · DOLBY ATMOS',
-                      style: TextStyle(
-                        color: ColorPalette.primaryGreen,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // TV Main Content Container overlaid on Backdrop
             Positioned(
               left: horizontalPadding,
@@ -566,10 +523,9 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                         isSelected: isBookmarked,
                         onTap: () => _toggleWatchlist(info, item),
                       ),
-                      const SizedBox(width: 16),
-
-                      // TV Audio Dropdown
-                      const MovieAudioDropdown(isTvOrDesktop: true),
+                      // TV Audio Dropdown (inactivated while preserving implementation for future use)
+                      // const SizedBox(width: 16),
+                      // const MovieAudioDropdown(isTvOrDesktop: true),
                     ],
                   ),
                 ],
@@ -611,6 +567,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                             ? CachedNetworkImage(
                                 imageUrl: info.posterUrl!,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 360,
                                 fadeInDuration:
                                     const Duration(milliseconds: 200),
                                 fadeOutDuration:
@@ -623,7 +580,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                     ),
                     const SizedBox(width: 24),
 
-                    // Synopsis & Telemetry Chips
+                    // Synopsis & Content
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,25 +620,13 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                           ),
                           const SizedBox(height: 18),
 
-                          // TV Feature Telemetry Metric Badges
+                          // TV Show Metadata Badge
                           Row(
                             children: [
                               _buildTvTelemetryBadge(
                                 'SEASONS',
                                 info.seasonsFormatted.toUpperCase(),
                                 'COMPLETE SERIES',
-                              ),
-                              const SizedBox(width: 12),
-                              _buildTvTelemetryBadge(
-                                'DYNAMIC RANGE',
-                                '1,000 NITS',
-                                'DOLBY VISION',
-                              ),
-                              const SizedBox(width: 12),
-                              _buildTvTelemetryBadge(
-                                'AUDIO MASTER',
-                                'DOLBY ATMOS',
-                                'SPATIAL SOUND',
                               ),
                             ],
                           ),
@@ -872,11 +817,12 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
                     isBookmarked: isBookmarked,
                     onTap: () => _toggleWatchlist(info, item),
                   ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    flex: 3,
-                    child: MovieAudioDropdown(isTvOrDesktop: false),
-                  ),
+                  // Audio Stream Dropdown (inactivated while preserving implementation for future use)
+                  // const SizedBox(width: 16),
+                  // const Expanded(
+                  //   flex: 3,
+                  //   child: MovieAudioDropdown(isTvOrDesktop: false),
+                  // ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -943,6 +889,7 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               imageUrl: posterUrl,
               fit: BoxFit.cover,
               alignment: alignment,
+              memCacheWidth: 400,
               fadeInDuration: const Duration(milliseconds: 200),
               fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) =>
@@ -957,7 +904,8 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
               imageUrl: backdropUrl,
               fit: BoxFit.cover,
               alignment: alignment,
-              memCacheWidth: 1920,
+              memCacheWidth: 1280,
+              memCacheHeight: 720,
               fadeInDuration: const Duration(milliseconds: 400),
               fadeOutDuration: const Duration(milliseconds: 200),
               placeholder: (context, url) => const SizedBox.shrink(),
@@ -1117,10 +1065,6 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
             ],
           ),
         ),
-        _buildDot(),
-        _buildBadge('4K ULTRA', isPrimary: true),
-        _buildDot(),
-        _buildBadge('Dolby Atmos'),
       ],
     );
   }
@@ -1191,9 +1135,6 @@ class _TvShowDetailsScreenState extends ConsumerState<TvShowDetailsScreen> {
             ],
           ),
         ),
-        _buildBadge('4K ULTRA', isPrimary: true),
-        _buildBadge('DOLBY VISION'),
-        _buildBadge('DOLBY ATMOS'),
       ],
     );
   }

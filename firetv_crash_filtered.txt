@@ -1,0 +1,2085 @@
+﻿
+  firetv_crash.txt:154:10-28 19:55:58.894   818  1395 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:155:10-28 19:55:58.902   285  3684 I Binder  : Binder handle 104 
+died, dispatching death
+  firetv_crash.txt:156:10-28 19:55:58.902   285  3684 I Binder  : Dispatching death to 
+0xadc427f0 for handle 104
+  firetv_crash.txt:157:10-28 19:55:58.904   275   275 I Zygote  : Process 12541 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:158:10-28 19:55:58.915  1609 12604 I CSM-ProactiveReporter: 
+Uninterruptibly waiting for 400
+  firetv_crash.txt:159:10-28 19:55:58.915  1609  2638 I SPCH-SIM_SimStateMachine: Got 
+InteractionCompleteEvent in ReadyState
+  firetv_crash.txt:160:10-28 19:55:58.917  4326  4326 I HomeActivity_vNext: Processing 
+user Home key press or home intent
+  firetv_crash.txt:161:10-28 19:55:58.918  1616  2387 I VuiStateListenerService: 
+sendVuiStateChangedIntent: VOICE_SEQUENCE_COMPLETE
+  firetv_crash.txt:162:10-28 19:55:58.928   323   323 I hdmi_cec: [HWCEC] send_message 
+end, opcode: 0xd, mResult:1
+  firetv_crash.txt:163:10-28 19:55:58.929   323   323 I hdmi_cec: [HWCEC] send_message 
+init:4, dest:0, opcode: 0xd, size:0, body[0]=0x0
+  firetv_crash.txt:164:10-28 19:55:58.931  1609  1609 I 
+SPCH-CapAg_FastPathSupportChecker: Alexa interaction is complete; clearing supported 
+data buffers.
+  firetv_crash.txt:165:10-28 19:55:58.931  1609  1609 I 
+Vizzini:ClassicSpeechUIVuiCommandReceiverBinder: onVuiCommand command: 
+VuiCommand[COMMAND, state=VOICE_SEQUENCE_COMPLETE, source=ANY, detail=DEFAULT, 
+endpointTime=1793197558747, activeAgent=UNDEFINED]
+  firetv_crash.txt:166:10-28 19:55:58.931  1609  1609 I 
+Vizzini:ClassicSpeechUIVuiCommandReceiverBinder: Got VuiCommand with state: 
+VOICE_SEQUENCE_COMPLETE
+  firetv_crash.txt:167:10-28 19:55:58.932  1609  1609 I Vizzini:OverlayController: 
+onProcessingEnd
+  firetv_crash.txt:168:10-28 19:55:58.936  4326  4326 E NavigationSoundEffects: Sound 
+BACK not loaded yet
+> firetv_crash.txt:169:10-28 19:55:58.951   215   215 E lowmemorykiller: Error opening 
+/proc/12541/oom_score_adj; errno=2
+  firetv_crash.txt:170:10-28 19:55:58.955 12208 12208 I PrismService: 
+[main][PrismService] onTrimMemory: Prism Service
+> firetv_crash.txt:171:10-28 19:55:58.956   525  2136 I ActivityManager: Process 
+com.amazon.ceviche (pid 12541) has died: cch+3CEM 
+  firetv_crash.txt:172:10-28 19:55:58.957 11752 11752 W View    : requestLayout() 
+improperly called by android.widget.TextView{9ef7a35 V.ED..... ..S...ID 0,0-404,41 
+#7f0b007a app:id/action_title} during layout: running second layout pass
+  firetv_crash.txt:173:10-28 19:55:58.957 11752 11752 W View    : requestLayout() 
+improperly called by android.widget.TextView{c315eca V.ED..... ..S...ID 0,43-404,74 
+#7f0b006b app:id/action_description} during layout: running second layout pass
+  firetv_crash.txt:174:10-28 19:55:58.959   525   546 W libprocessgroup: kill(-12541, 
+9) failed: No such process
+  firetv_crash.txt:175:10-28 19:55:58.959   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10078 pid 12541 in 0ms
+  firetv_crash.txt:176:10-28 19:55:58.961   525  3100 I 
+CrashReporterActivityManagerCallback: CPU cores online info: 1111
+  firetv_crash.txt:177:10-28 19:55:58.970  4326  4326 I HintNodePresenterDI: Received 
+home_button_pressedfrom com.amazon.tv.launcher.ui.HomeActivity_vNext@e6fceb7
+  firetv_crash.txt:178:10-28 19:55:58.973  4326  4326 I NavigationNodePresenter: 
+receives message: hero_collapsed_up
+  firetv_crash.txt:179:10-28 19:55:58.973  4326  4326 I HintNodePresenterDI: Received 
+hero_collapsed_upfrom com.amazon.tv.sceneflow.scene.SceneNode@76e0133
+  firetv_crash.txt:180:10-28 19:55:58.973   525 12610 I 
+CrashReporterActivityManagerCallback: addErrorToDropBox inserted 
+hashcode=72f1636c4a43d69f8da669b1f80b5e29ae0376d3 for eventType wtf.
+  firetv_crash.txt:181:10-28 19:55:58.974  4326  4326 I AlexaNavHintNodePresent: 
+message=hero_collapsed_up, mHintsAllowed=true
+  firetv_crash.txt:182:10-28 19:55:58.978  4326  4326 I FeaturedRotatorVie@1813: 
+Handling sceneflow message: home_button_pressed | data: 'null
+  firetv_crash.txt:183:10-28 19:55:58.995  4326  4326 I FeaturedRotatorVie@1813: 
+Handling sceneflow message: nav_bar_selected | data: 
+'com.amazon.tv.sceneflow.scene.SceneNode@297a726
+  firetv_crash.txt:184:10-28 19:55:58.996  4326  4326 I NavigationNodePresenter: 
+receives old state: ACTIVE, previousCustomState: null, new state: SELECTED, new 
+customState: null
+  firetv_crash.txt:185:10-28 19:55:58.996  4326  4326 W NavigationNodePresenter: 
+onNodeStateChange SELECTED: mFocusState=GRID, translationY=0.0
+  firetv_crash.txt:186:10-28 19:55:58.998  4326  4326 I NavigationNodePresenter: 
+receives message: primary_full_screen_multi_row_grid_inactive
+  firetv_crash.txt:187:10-28 19:55:58.999  4326  4699 I FeaturedRotatorVie@1813: 
+setExpandState: SHORT
+  firetv_crash.txt:188:10-28 19:55:59.005  1454  2301 I com_amazon_devicecont..: DART: 
+Device type supports DART
+  firetv_crash.txt:189:10-28 19:55:59.005  1454  2301 I com_amazon_devicecont..: DART: 
+Rate limit active, skipping capability publication
+  firetv_crash.txt:190:10-28 19:55:59.005  1454  2301 I com_amazon_devicecont..: DART: 
+Battery level capability published: true
+  firetv_crash.txt:191:10-28 19:55:59.005  1454  2301 I com_amazon_devicecont..: DART: 
+Capability already published, scheduling battery level reporting
+  firetv_crash.txt:192:10-28 19:55:59.009  4326  4699 I ContextualFeaturedRotat: Local 
+FR feature is disabled for the device=A31DTMEEVDDOIV because the set of 
+eligibleDevices=[A2JKHJ0PX4J3L3, A265XOI9586NML, A3EVMLQTU6WL1W, A1VGB7MHSIEYFK, 
+A1WZKXFLI43K86, A1Q6UGEXJZWJQ0, AZDQ9AW1RNF81, A2FDUYD6UQ1BQ, A3UE99Z411FI1N, 
+ASA4NDZT8E80A, A36URTS2ZYZ2VH, A34GWYQOXSYZN, AZZXWAJYUB122, A359HI7OGMDZRV, 
+A2MGXR8OYP6PPI, A1GAVERFF7K6QE, A3GX5HW2XVSRYM, A100D3AIQH6D4W, A344VUVLX0R7YR, 
+A15HEVL2FX5FUP, AO8HYS9YR3PYU, A1M2A9MKAZ61HE, AV267H7C0RQSV, A10MKRIXAA9OT8, 
+A8MCGN45KMHDH, A33S43L213VSHQ, ADOUDFQX2QVX0, A3D5JL73E6MKZ1, AXLL9HLUCP9OP, 
+A2AFH666ZTTTE8, ATTOT0OOKAFEW, AHCEDGRIFN5RP].
+  firetv_crash.txt:193:10-28 19:55:59.014  1454  2301 I com_amazon_devicecont..: DART: 
+Starting battery level report job scheduling
+  firetv_crash.txt:194:10-28 19:55:59.015  1454  2301 I com_amazon_devicecont..: DART: 
+Battery level reporting frequency duration: 432000s
+  firetv_crash.txt:195:10-28 19:55:59.016   818  1392 I NeoJobScheduling: Calling 
+getPendingJobV2 JobId (10006) for requestingService (name=com.amazon.tv.devicecontrol, 
+uid=10145).
+  firetv_crash.txt:196:10-28 19:55:59.017  4326  4326 I NavigationNodePresenter: 
+receives message: primary_multi_row_grid_inactive
+  firetv_crash.txt:197:10-28 19:55:59.017  4326  4326 I NavigationNodePresenter: 
+receives message: settings_original_show_navbar
+  firetv_crash.txt:198:10-28 19:55:59.017  4326  4699 I FeaturedRotatorVie@1813: 
+startFocusWork, hasFocus=false
+  firetv_crash.txt:199:10-28 19:55:59.017  4326  4699 I FeaturedRotatorVie@1813: 
+Starting out of focus work
+  firetv_crash.txt:200:10-28 19:55:59.017  4326  4699 I ContextualFeaturedRotat: Local 
+FR feature is disabled for the device=A31DTMEEVDDOIV because the set of 
+eligibleDevices=[A2JKHJ0PX4J3L3, A265XOI9586NML, A3EVMLQTU6WL1W, A1VGB7MHSIEYFK, 
+A1WZKXFLI43K86, A1Q6UGEXJZWJQ0, AZDQ9AW1RNF81, A2FDUYD6UQ1BQ, A3UE99Z411FI1N, 
+ASA4NDZT8E80A, A36URTS2ZYZ2VH, A34GWYQOXSYZN, AZZXWAJYUB122, A359HI7OGMDZRV, 
+A2MGXR8OYP6PPI, A1GAVERFF7K6QE, A3GX5HW2XVSRYM, A100D3AIQH6D4W, A344VUVLX0R7YR, 
+A15HEVL2FX5FUP, AO8HYS9YR3PYU, A1M2A9MKAZ61HE, AV267H7C0RQSV, A10MKRIXAA9OT8, 
+A8MCGN45KMHDH, A33S43L213VSHQ, ADOUDFQX2QVX0, A3D5JL73E6MKZ1, AXLL9HLUCP9OP, 
+A2AFH666ZTTTE8, ATTOT0OOKAFEW, AHCEDGRIFN5RP].
+  firetv_crash.txt:201:10-28 19:55:59.023  1454  2301 W amzn_neo_service_api:..: 
+Undefined workmode(Falling back to WorkMode::Repeating)
+  firetv_crash.txt:239:10-28 19:55:59.050  4326  4326 I NavMenuController: 
+LoadServerBrowseMenuRunnable request created with priority: 8
+  firetv_crash.txt:240:10-28 19:55:59.050  4326  4326 I NavMenuController: Informing 
+cached scene to this observer
+  firetv_crash.txt:241:10-28 19:55:59.056  4326  4394 I NavMenuController:  Element is 
+displayed as tab: My Stuff
+  firetv_crash.txt:242:10-28 19:55:59.056  4326  4394 I NavMenuController:  Element is 
+displayed as tab: Find
+  firetv_crash.txt:243:10-28 19:55:59.056  4326  4394 I NavMenuController:  Element is 
+displayed as tab: Free
+  firetv_crash.txt:244:10-28 19:55:59.056  4326  4394 I NavMenuController:  Element is 
+displayed as tab: Home
+  firetv_crash.txt:245:10-28 19:55:59.056  4326  4394 I NavMenuController:  Element is 
+displayed as tab: Live
+  firetv_crash.txt:246:10-28 19:55:59.057  4326  4326 W ResumedStateDebouncer: Call 
+was made before Observable entered RESUME state; avoiding this situation is strongly 
+suggested.
+  firetv_crash.txt:247:10-28 19:55:59.060  4326  4326 I chatty  : 
+uid=10152(com.amazon.tv.launcher) identical 1 line
+  firetv_crash.txt:248:10-28 19:55:59.061  4326  4326 W ResumedStateDebouncer: Call 
+was made before Observable entered RESUME state; avoiding this situation is strongly 
+suggested.
+  firetv_crash.txt:249:10-28 19:55:59.062  4326  4542 I FeaturedRotatorDat@9223: 
+getFrMetadataIfUpdateDeferred [reftype=bc,refid=GLOBAL_FEATURED_ROTATOR]
+  firetv_crash.txt:250:10-28 19:55:59.063  4326  4542 I FeaturedRotatorDat@9223: 
+getFrMetadataIfLoadDeferred [reftype=bc,refid=GLOBAL_FEATURED_ROTATOR]
+  firetv_crash.txt:251:10-28 19:55:59.063   525   545 I ActivityManager: Start proc 
+12614:com.amazon.tv.devicecontrol/u0a145 for broadcast 
+com.amazon.tv.devicecontrol/.receivers.HomePressReceiver
+  firetv_crash.txt:252:10-28 19:55:59.085 12614 12614 E v.devicecontro: Not starting 
+debugger since process cannot load the jdwp agent.
+  firetv_crash.txt:253:10-28 19:55:59.100 12208 12230 I PrismService: 
+[Thread-3][MinervaMetricRecorder] Minerva event App.OnTrimMemory recording successful
+> firetv_crash.txt:254:10-28 19:55:59.115   215   215 E lowmemorykiller: Error writing 
+/proc/12070/oom_score_adj; errno=22
+  firetv_crash.txt:255:10-28 19:55:59.115  4326  4385 I BuellerApplication: start 
+deserialize recent row onscreen tile
+  firetv_crash.txt:256:10-28 19:55:59.115  4326  4385 I BuellerApplication: start 
+deserialize recent item GTI
+  firetv_crash.txt:257:10-28 19:55:59.130  4951  4951 I Firebat : 
+TrimMemoryCommandLogger - level=COMPLETE
+  firetv_crash.txt:258:10-28 19:55:59.130  4951  4951 I Firebat : Reporting metric 
+[metricName=CommandRouter, metricSubName=TrimMemoryCommandLogger-ProcessingDuration, 
+value=3.00]
+  firetv_crash.txt:259:10-28 19:55:59.147 12614 12614 I v.devicecontro: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:260:10-28 19:55:59.157 12614 12614 W v.devicecontro: 
+ClassLoaderContext classpath size mismatch for position 0. expected=0, found=1 (PCL[] 
+| PCL[/system/framework/com.amazon.identity.auth.device.jar*247403874])
+  firetv_crash.txt:261:10-28 19:55:59.158   275   275 I Zygote  : Process 12070 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:262:10-28 19:55:59.162  4326  4470 I F_C.DefaultConsumerClie: 
+Querying CDA: uri=AlertController$2(TARGET=home @@ myAppsAndGames, ACTOR=amzn1.actor.pe
+rson.did.APU32BFJFUGXS5QXFJHUA5TA5I37AZM4H2ST7JHUPGXREQY3WHAMDJQYOPBKCAP3XJBGC4DP), 
+selection=null, selectionArgs=0, orderBy=null
+  firetv_crash.txt:263:10-28 19:55:59.162  4326  4470 I F_C.DefaultConsumerClie: Using 
+non-local ContentProvider
+  firetv_crash.txt:264:10-28 19:55:59.162  4326 10757 I GridLTSEventManager: 
+screenVisibilityEvent: Snapshot:
+  firetv_crash.txt:265:10-28 19:55:59.163  4326  4394 I NonMemberMode: Non-member mode 
+enabled:false
+  firetv_crash.txt:266:10-28 19:55:59.163  4326  4394 I NavMenuController: 
+LoadServerBrowseMenuRunnable, is non member mode : false
+  firetv_crash.txt:267:10-28 19:55:59.163  4326  4394 I NavMenuController: 
+createProfileNode. Is non member node : false
+  firetv_crash.txt:268:10-28 19:55:59.163  4326  4394 I NavMenuController: Creating 
+normal profile picker node
+  firetv_crash.txt:269:10-28 19:55:59.164  4326  4394 I NavMenuController: Clearing 
+NavMarker to NavKey map
+  firetv_crash.txt:270:10-28 19:55:59.169  4326  4394 I NavMenuController: Received 
+menu options from Browse
+  firetv_crash.txt:271:10-28 19:55:59.169   323   323 I hdmi_cec: [HWCEC] send_message 
+end, opcode: 0x82, mResult:0
+  firetv_crash.txt:272:10-28 19:55:59.170   323   323 I hdmi_cec: [HWCEC] send_message 
+init:4, dest:0, opcode: 0x8e, size:1, body[0]=0x0
+  firetv_crash.txt:273:10-28 19:55:59.171   343   426 W SurfaceFlinger: Attempting to 
+set client state on removed layer: 
+com.amazon.tv.settings.v2/com.amazon.tv.settings.v2.tv.network.NetworkActivity#0
+  firetv_crash.txt:274:10-28 19:55:59.171   343   426 W SurfaceFlinger: Attempting to 
+destroy on removed layer: 
+com.amazon.tv.settings.v2/com.amazon.tv.settings.v2.tv.network.NetworkActivity#0
+  firetv_crash.txt:275:10-28 19:55:59.177 12614 12614 I v.devicecontro: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:276:10-28 19:55:59.179   343   426 W SurfaceFlinger: Attempting to 
+destroy on removed layer: AppWindowToken{cab40a4 token=Token{ee2b337 
+ActivityRecord{b2ad836 u0 com.amazon.tv.settings.v2/.tv.network.NetworkActivity 
+t1992}}}#0
+> firetv_crash.txt:277:10-28 19:55:59.183   525  3100 I ActivityManager: Process 
+com.amazon.tv.settings.core (pid 12070) has died: fore SVC 
+  firetv_crash.txt:278:10-28 19:55:59.184   525   546 W libprocessgroup: kill(-12070, 
+9) failed: No such process
+  firetv_crash.txt:279:10-28 19:55:59.184   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 1000 pid 12070 in 0ms
+  firetv_crash.txt:280:10-28 19:55:59.192  4326  4699 I FeaturedRotatorDat@9223: 
+Update already in progress for key '[reftype=bc,refid=GLOBAL_FEATURED_ROTATOR]', no 
+need to proceed. Locked by com.amazon.tv.launcher.featuredrotator.domain.FeaturedRotato
+rDataRefresher.getFrMetadataIfLoadOrUpdateDeferred:138 at 1793197559063, me: com.amazon
+.tv.launcher.featuredrotator.viewmodel.FeaturedRotatorViewModel$startOutOfFocusWork$2.i
+nvokeSuspend:52
+  firetv_crash.txt:281:10-28 19:55:59.195  4326  4542 I FeaturedRotatorDat@9223: 
+refresh() on ref: '[reftype=bc,refid=GLOBAL_FEATURED_ROTATOR]'
+  firetv_crash.txt:282:10-28 19:55:59.196 12614 12614 W v.devicecontro: 
+ClassLoaderContext classpath size mismatch for position 0. expected=0, found=4 (PCL[] 
+| PCL[/system/framework/com.amazon.identity.auth.device.jar*247403874:/system/priv-app/
+DeviceMessagingAndroidInternalSDK/DeviceMessagingAndroidInternalSDK.apk*1700992038:/sys
+tem/priv-app/MinervaApi/MinervaApi.apk*2929471093:/system/framework/com.amazon.ceviche.
+sdk.jar*211858957])
+  firetv_crash.txt:283:10-28 19:55:59.197   525   730 W Eve     : MEMORY_LEVEL: 
+[12070,0][12541,903]
+  firetv_crash.txt:284:10-28 19:55:59.197   525   730 W Eve     :   
+top=com.amazon.tv.launcher/.ui.HomeActivity_vNext launching=true
+  firetv_crash.txt:285:10-28 19:55:59.197   525   730 W Eve     :   
+prev=com.amazon.tv.settings.v2/.tv.network.NetworkActivity screen_on=true thermal=0
+  firetv_crash.txt:286:10-28 19:55:59.197   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:287:10-28 19:55:59.197   525   730 W Eve     :   memory=0 trim=60 
+available=227116KB free=54608KB
+  firetv_crash.txt:288:10-28 19:55:59.204  4326  4326 I CurrentNavTabTrack@2402: 
+selected tab OTHER -> LIBRARY (tabId=KT_NAV_MENU_LIBRARY)
+  firetv_crash.txt:289:10-28 19:55:59.204  4326  4326 I ContextualFeaturedRotat: Local 
+FR feature is disabled for the device=A31DTMEEVDDOIV because the set of 
+eligibleDevices=[A2JKHJ0PX4J3L3, A265XOI9586NML, A3EVMLQTU6WL1W, A1VGB7MHSIEYFK, 
+A1WZKXFLI43K86, A1Q6UGEXJZWJQ0, AZDQ9AW1RNF81, A2FDUYD6UQ1BQ, A3UE99Z411FI1N, 
+ASA4NDZT8E80A, A36URTS2ZYZ2VH, A34GWYQOXSYZN, AZZXWAJYUB122, A359HI7OGMDZRV, 
+A2MGXR8OYP6PPI, A1GAVERFF7K6QE, A3GX5HW2XVSRYM, A100D3AIQH6D4W, A344VUVLX0R7YR, 
+A15HEVL2FX5FUP, AO8HYS9YR3PYU, A1M2A9MKAZ61HE, AV267H7C0RQSV, A10MKRIXAA9OT8, 
+A8MCGN45KMHDH, A33S43L213VSHQ, ADOUDFQX2QVX0, A3D5JL73E6MKZ1, AXLL9HLUCP9OP, 
+A2AFH666ZTTTE8, ATTOT0OOKAFEW, AHCEDGRIFN5RP].
+  firetv_crash.txt:290:10-28 19:55:59.205 12614 12614 I v.devicecontro: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:291:10-28 19:55:59.206  4326  4394 I NavMenuController: Received 
+menu options from Browse for request id 3
+  firetv_crash.txt:292:10-28 19:55:59.206  4326  4326 W ResumedStateDebouncer: Call 
+was made before Observable entered RESUME state; avoiding this situation is strongly 
+suggested.
+  firetv_crash.txt:293:10-28 19:55:59.207 12614 12614 I v.devicecontro: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:294:10-28 19:55:59.210  1609  1609 I Vizzini:SimApplicationImpl: 
+onTrimMemory, 15
+  firetv_crash.txt:295:10-28 19:55:59.210   818   818 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:296:10-28 19:55:59.210  1609  1609 I 
+Vizzini:ShortPressOverlayManager: Memory trim requested, level: 15
+  firetv_crash.txt:297:10-28 19:55:59.210  1609  1609 I 
+Vizzini:ShortPressOverlayManager: Tearing down ShortPressOverlayManager with reason 
+DISMISS_MEMORY_LOW
+  firetv_crash.txt:298:10-28 19:55:59.210   818   818 I CoordinatorUtils: Report 
+Trim-memory (level-15) to NSC
+  firetv_crash.txt:299:10-28 19:55:59.210  4326  4326 I CurrentNavTabTrack@2402: 
+selected tab LIBRARY -> HOME (tabId=KT_NAV_MENU_HOME)
+  firetv_crash.txt:300:10-28 19:55:59.210   818   818 I CoordinatorUtils: Neo 
+Trim-memory NSC notification (level-15) - done
+  firetv_crash.txt:301:10-28 19:55:59.210  4326  4326 I ContextualFeaturedRotat: Local 
+FR feature is disabled for the device=A31DTMEEVDDOIV because the set of 
+eligibleDevices=[A2JKHJ0PX4J3L3, A265XOI9586NML, A3EVMLQTU6WL1W, A1VGB7MHSIEYFK, 
+A1WZKXFLI43K86, A1Q6UGEXJZWJQ0, AZDQ9AW1RNF81, A2FDUYD6UQ1BQ, A3UE99Z411FI1N, 
+ASA4NDZT8E80A, A36URTS2ZYZ2VH, A34GWYQOXSYZN, AZZXWAJYUB122, A359HI7OGMDZRV, 
+A2MGXR8OYP6PPI, A1GAVERFF7K6QE, A3GX5HW2XVSRYM, A100D3AIQH6D4W, A344VUVLX0R7YR, 
+A15HEVL2FX5FUP, AO8HYS9YR3PYU, A1M2A9MKAZ61HE, AV267H7C0RQSV, A10MKRIXAA9OT8, 
+A8MCGN45KMHDH, A33S43L213VSHQ, ADOUDFQX2QVX0, A3D5JL73E6MKZ1, AXLL9HLUCP9OP, 
+A2AFH666ZTTTE8, ATTOT0OOKAFEW, AHCEDGRIFN5RP].
+  firetv_crash.txt:302:10-28 19:55:59.211  4326  4326 W NavigationNodePresenter: 
+reset() called: mFocusState=FOCUSED -> UNKNOWN, translationY=-484.0
+  firetv_crash.txt:303:10-28 19:55:59.211  1454  2301 I com_amazon_devicecont..: 
+on_trim_memory: Releasing unused memory!
+  firetv_crash.txt:304:10-28 19:55:59.213   818  1391 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:305:10-28 19:55:59.214  1460  1460 I com_amazon_neo_minerv..: 
+Received on_trim_memory call - function FLAGS: 2
+  firetv_crash.txt:306:10-28 19:55:59.217 12614 12614 I v.devicecontro: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:307:10-28 19:55:59.217  4326  4385 I WholeHomeAudioManager: 
+bindService() requested
+  firetv_crash.txt:412:10-28 19:55:59.456 12641 12641 I com_amazon_device_rem..: DRCS: 
+device property resolved: 
+working_directory=/data/user/0/com.amazon.device_remote_config_sync_service/drcs
+  firetv_crash.txt:413:10-28 19:55:59.457 12641 12641 I com_amazon_device_rem..: DRCS: 
+ArcusManager initialized for 
+app_config_id=arn:aws:remote-config:us-west-2:294299890423:appConfig:ac74pnhk
+  firetv_crash.txt:414:10-28 19:55:59.457 12641 12641 I com_amazon_device_rem..: DRCS: 
+WeblabProviderConfigManager initialized
+  firetv_crash.txt:415:10-28 19:55:59.457 12641 12641 I com_amazon_device_rem..: DRCS: 
+Registry created: 1 provider(s), 2 job route(s)
+  firetv_crash.txt:416:10-28 19:55:59.460   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:417:10-28 19:55:59.462   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:418:10-28 19:55:59.468   323   323 I hdmi_cec: [HWCEC] send_message 
+end, opcode: 0x8f, mResult:1
+  firetv_crash.txt:419:10-28 19:55:59.468   323   323 I hdmi_cec: [HWCEC] send_message 
+init:4, dest:0, opcode: 0x8f, size:0, body[0]=0x0
+  firetv_crash.txt:420:10-28 19:55:59.470   285  3684 I neo_service_coordinat..: 
+Service(com.amazon.device_remote_config_sync_service, User(0)) connected
+  firetv_crash.txt:421:10-28 19:55:59.501  4326  4326 I HorizontalGridView: Setting 
+minimum horizontal scroll duration of: 400, scroll duration scale of: 2.0
+  firetv_crash.txt:422:10-28 19:55:59.516 12642 12642 I .amazon.cevich: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:423:10-28 19:55:59.536 12642 12642 I .amazon.cevich: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:424:10-28 19:55:59.532  4326  4464 I 
+cevicheLTSPlugin.ItemVisibilityHandler: Reporting ScreenVisibilityEvent to AdManager - 
+T1 treatment
+  firetv_crash.txt:425:10-28 19:55:59.540   285  3684 I Binder  : Binder handle 103 
+died, dispatching death
+  firetv_crash.txt:426:10-28 19:55:59.540   285  3684 I Binder  : Dispatching death to 
+0xadc426b0 for handle 103
+> firetv_crash.txt:427:10-28 19:55:59.541   525  2136 I ActivityManager: Process 
+com.amazon.prism.android.service (pid 12208) has died: cch+1CEM 
+  firetv_crash.txt:428:10-28 19:55:59.541   525  2136 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.prism.android.service/.PrismService in 64000ms
+  firetv_crash.txt:429:10-28 19:55:59.542   525   546 W libprocessgroup: kill(-12208, 
+9) failed: No such process
+  firetv_crash.txt:430:10-28 19:55:59.545 12642 12642 I .amazon.cevich: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:431:10-28 19:55:59.545   275   275 I Zygote  : Process 12208 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:432:10-28 19:55:59.547  4326 12650 I OMXClient: IOmx service 
+obtained
+  firetv_crash.txt:433:10-28 19:55:59.548 12642 12642 I .amazon.cevich: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:434:10-28 19:55:59.557  4326  4637 I ConfigStore: 
+android::hardware::configstore::V1_0::ISurfaceFlingerConfigs::hasWideColorDisplay 
+retrieved: 0
+  firetv_crash.txt:435:10-28 19:55:59.557  4326  4637 I ConfigStore: 
+android::hardware::configstore::V1_0::ISurfaceFlingerConfigs::hasHDRDisplay retrieved: 
+0
+  firetv_crash.txt:436:10-28 19:55:59.557  4326  4637 I OpenGLRenderer: Initialized 
+EGL, version 1.4
+  firetv_crash.txt:437:10-28 19:55:59.558 12641 12659 I com_amazon_device_rem..: DRCS: 
+TtlCache: cache miss ΓÇö no entry
+  firetv_crash.txt:438:10-28 19:55:59.559 12641 12659 I com_amazon_device_rem..: DRCS: 
+weblab: initializing
+  firetv_crash.txt:439:10-28 19:55:59.560   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:440:10-28 19:55:59.560  1609  8655 I AVSClient: [19] I MimeResponseS
+ink:onReceiveResponseCode:this=0x9dad0c10,connectionId=2637993210-1-3,id=AVSEvent-425,r
+esponseCode=200
+  firetv_crash.txt:441:10-28 19:55:59.560  1609  8655 I AVSClient: [19] I MimeResponseS
+ink:receivedRequestId:this=0x9dad0c10,connectionId=2637993210-1-3,id=AVSEvent-425,value
+=x-amzn-requestid\: 86bfcc05-c631-4de4-bb17-c6165178f3ea
+  firetv_crash.txt:442:10-28 19:55:59.560  1609  8655 I AVSClient: [19] I MimeResponseS
+ink:receivedRequestId:this=0x9dad0c10,connectionId=2637993210-1-3,id=AVSEvent-425,value
+=x-amzn-requestid\: 02fff6fffe512d9f-00001d80-0caf4220-b4e9afe61b30b743-8c15b3e5-183
+  firetv_crash.txt:443:10-28 19:55:59.562  1609  8655 I SPCH-SCL_MessageObserverImpl: 
+MessageRequestObserver.onSendCompleted [CSM_e66edd59-cdf0-453f-af44-8431616ba590_179319
+7559326.0..CSM_e66edd59-cdf0-453f-af44-8431616ba590_1793197559326]: SUCCESS
+  firetv_crash.txt:444:10-28 19:55:59.562 12641 12659 I amzn_rodb_core::reade..: 
+Opening RODB: /data/user/0/com.amazon.device_remote_config_sync_service/drcs/weblab/all
+ocations/prod/1793195603.alloc
+  firetv_crash.txt:445:10-28 19:55:59.562 12641 12659 I amzn_rodb_core::reade..: Using 
+memory mapped file IO with prefault-level: None
+  firetv_crash.txt:446:10-28 19:55:59.563 12641 12659 I amzn_rodb_core::reade..: RODB 
+successfully opened.
+  firetv_crash.txt:447:10-28 19:55:59.568  1609  8655 I SPCH-SIM_EventResponseHandler: 
+Finish. Invoking EventCallback for SUCCESS
+  firetv_crash.txt:448:10-28 19:55:59.568   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:449:10-28 19:55:59.568  1609  8655 W AVSClient: [19] W LibcurlHTTP2C
+onnection:streamFinished:this=0x9e81c980,streamId=AVSEvent-425,result=Failed writing 
+received data to disk/application,CURLcode=23
+  firetv_crash.txt:450:10-28 19:55:59.569  1609  1609 I CSM-ProactiveReporter: Got 
+result SUCCESS
+  firetv_crash.txt:451:10-28 19:55:59.569 12641 12659 I com_amazon_device_rem..: DRCS: 
+weblab: initialized successfully
+  firetv_crash.txt:452:10-28 19:55:59.570   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:453:10-28 19:55:59.570  1609 12604 I CSM-ProactiveReporter: 
+Uninterruptibly waiting for 400
+  firetv_crash.txt:454:10-28 19:55:59.570   392  1229 I OMXMaster: 
+makeComponentInstance(OMX.google.vorbis.decoder) in omx@1.0-service process
+  firetv_crash.txt:455:10-28 19:55:59.571   323   323 I hdmi_cec: [HWCEC] send_message 
+end, opcode: 0x8f, mResult:1
+  firetv_crash.txt:456:10-28 19:55:59.571   525   665 W HdmiCecController: Failed to 
+send <Give Device Power Status> 40:8F with errorCode=1
+  firetv_crash.txt:457:10-28 19:55:59.571 12641 12662 I com_amazon_device_rem..: DRCS: 
+is_scheduled_ipc: job_id=101 verifying with NSC via IPC
+  firetv_crash.txt:786:10-28 19:56:00.272  4326  4326 I HomeActivity_vNext: Received a 
+onHomePageComponentLoaded from node: FR
+  firetv_crash.txt:787:10-28 19:56:00.272  4326  4326 I HomeActivity_vNext: Scene 
+Nodes in home page have not loaded
+  firetv_crash.txt:788:10-28 19:56:00.275  4326  4326 I DisplayControllerDeboun: 
+FTV-CDA: DisplayControllerDebouncer executing Operation List with 1 operations
+  firetv_crash.txt:789:10-28 19:56:00.276  4326  4326 I DisplayControllerDeboun: 
+FTV-CDA: DisplayControllerDebouncer executing Operation List with 1 operations
+  firetv_crash.txt:790:10-28 19:56:00.276  4326  4326 I MbTwoDAdapter: Loaded 
+Rexxxxxxxxx xxxx xxxxxx xxx xx xxxxx com.amazon.mediabrowse.channel@2
+  firetv_crash.txt:791:10-28 19:56:00.278  4326 12689 I MediaCodecLogger: 
+updatePTSTime [SW.audio.vorbis] EOS pts:853791
+  firetv_crash.txt:792:10-28 19:56:00.279   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:793:10-28 19:56:00.289  4326  5095 I AuthUtil: Received an Actor! 
+Using the new actor API
+  firetv_crash.txt:794:10-28 19:56:00.291   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:795:10-28 19:56:00.292  4326  4326 I NavigationNodePresenter: 
+Re-enabling focus search after delay
+  firetv_crash.txt:796:10-28 19:56:00.295   285  3684 I Binder  : Binder handle 130 
+died, dispatching death
+  firetv_crash.txt:797:10-28 19:56:00.295   285  3684 I Binder  : Dispatching death to 
+0xadc42f30 for handle 130
+  firetv_crash.txt:798:10-28 19:56:00.295  1043 12637 I 
+com.amazon.imp/TokenJobQueue[0]: Begin executing task GetActorToken:com.amazon.tv.launc
+her/com.amazon.dcp.sso.token.oauth.amazon.actor.access_token
+  firetv_crash.txt:799:10-28 19:56:00.296  1043 12639 I 
+com.amazon.imp/MAPApplicationInformationQueryer[0]: Populate change for remote MAP 
+info.
+  firetv_crash.txt:800:10-28 19:56:00.296  1043 12639 I 
+com.amazon.imp/MAPApplicationInformationQueryer[0]: CacheContainsPartialResults? true
+> firetv_crash.txt:801:10-28 19:56:00.297   525  3099 I ActivityManager: Process 
+com.amazon.tv.settings.v2 (pid 11752) has died: cch  CEM 
+  firetv_crash.txt:802:10-28 19:56:00.297  1043 12637 I 
+com.amazon.imp/TokenJobQueue[0]: Scheduled running concurrent job GetActorToken:com.ama
+zon.tv.launcher/com.amazon.dcp.sso.token.oauth.amazon.actor.access_token.
+  firetv_crash.txt:803:10-28 19:56:00.299   525   546 W libprocessgroup: kill(-11752, 
+9) failed: No such process
+  firetv_crash.txt:804:10-28 19:56:00.300  1043 12639 I 
+com.amazon.imp/TokenJobQueue[0]: Finish executing task GetActorToken:com.amazon.tv.laun
+cher/com.amazon.dcp.sso.token.oauth.amazon.actor.access_token.
+  firetv_crash.txt:805:10-28 19:56:00.301   525  3104 E AmazonHdmiService: Settings 
+client binder died.
+  firetv_crash.txt:806:10-28 19:56:00.304   275   275 I Zygote  : Process 11752 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:807:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/HpbT7Wo9PfPSeas.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:808:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/JfvQhCMDNLNxaom.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:809:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/IqjWBtLnet3YSfL.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:810:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/2Y3du6J2IjVxXn0.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:811:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/xfdccZL6MlykyYJ.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:812:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/qDg0CeV6b0tEXla, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:813:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/SessionId/165-7211
+864-1610206/V5JkHJk3An85s5w.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:814:10-28 19:56:00.305 12641 12663 W com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::client::provider:475] message = Encountered an error 
+while getting treatment for weblab: Weblab has not been exposed 
+FTV_LAUNCHER_MINIMAL_PRISM_1429663; 
+  firetv_crash.txt:815:10-28 19:56:00.305 12641 12663 W com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::client::provider:475] message = Encountered an error 
+while getting treatment for weblab: Weblab has not been exposed 
+FTV_METRIC_REPORTING_SCREEN_CHECK_1363758; 
+  firetv_crash.txt:816:10-28 19:56:00.305 12641 12663 W com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::client::provider:475] message = Encountered an error 
+while getting treatment for weblab: Weblab has not been exposed 
+FTV_LAUNCHER_MINIMAL_PRISM_1429663; 
+  firetv_crash.txt:817:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/HpbT7Wo9PfPSeas.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:818:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/JfvQhCMDNLNxaom.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:819:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/IqjWBtLnet3YSfL.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:820:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/2Y3du6J2IjVxXn0.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:821:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/xfdccZL6MlykyYJ.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:822:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/qDg0CeV6b0tEXla, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:823:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/SessionId/165-7211
+864-1610206/V5JkHJk3An85s5w.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:824:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/HpbT7Wo9PfPSeas.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:825:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/JfvQhCMDNLNxaom.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:826:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/IqjWBtLnet3YSfL.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:827:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/2Y3du6J2IjVxXn0.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:828:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/xfdccZL6MlykyYJ.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:829:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/CustomerId/amzn1.a
+ccount.AHO5QCLRYINSNS7HUNC7E2GQAZTQ/qDg0CeV6b0tEXla, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:830:10-28 19:56:00.305 12641 12663 E com_amazon_device_rem..: DRCS: 
+Weblab: [weblab_external_plugin::overrides::utils:131] message = Encountered an error 
+while parsing shard attributes: Unable to extract attributes from file path /data/user/
+0/com.amazon.device_remote_config_sync_service/drcs/weblab/overrides/SessionId/165-7211
+864-1610206/V5JkHJk3An85s5w.tmp, expected format 
+{visitor_id_type}/(active|inactive)|{timestamp}.overrides; 
+  firetv_crash.txt:831:10-28 19:56:00.305   525   551 W ActivityManager: 
+setHasOverlayUi called on unknown pid: 11752
+  firetv_crash.txt:2516:10-28 19:56:02.475   328   497 I AudioALSAHardware: 
++getParameters(), key = get_audio_delay
+  firetv_crash.txt:2517:10-28 19:56:02.475   328   497 I AudioALSAHardware: 
+-getParameters(), return ""
+  firetv_crash.txt:2518:10-28 19:56:02.475   341  4339 I hash_map_utils: key: 
+'get_audio_delay' value: ''
+  firetv_crash.txt:2519:10-28 19:56:02.476   525   653 W AudioTrack: 
+AUDIO_OUTPUT_FLAG_FAST denied by server; frameCount 0 -> 6000
+  firetv_crash.txt:2520:10-28 19:56:02.477   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:2521:10-28 19:56:02.478   341  4339 I APM_AudioPolicyManager: 
+startOutput() output 13, stream 1, session 4657, caller pid: 525, uid: 1000
+  firetv_crash.txt:2522:10-28 19:56:02.478  4326  4490 W Ceviche : 
+[Metrics-SPE1][EventTracker] EventMetadata is null for event: 
+com.amazon.ceviche.Event@90615e6
+  firetv_crash.txt:2523:10-28 19:56:02.480   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:2524:10-28 19:56:02.482   818 19782 I chatty  : uid=1000(system) 
+Binder:818_D identical 1 line
+  firetv_crash.txt:2525:10-28 19:56:02.483   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:2526:10-28 19:56:02.487 12641 12688 W com_amazon_device_rem..: 
+DRCS: get_treatment_with_record_trigger: No result available, Weblab might not be 
+exposed, weblab=FTV_METRIC_REPORTING_SCREEN_CHECK_1363758
+  firetv_crash.txt:2527:10-28 19:56:02.488   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:2528:10-28 19:56:02.503   525  1119 E AmazonHdmiService: Settings 
+client binder died.
+  firetv_crash.txt:2529:10-28 19:56:02.503   285  3684 I Binder  : Binder handle 116 
+died, dispatching death
+  firetv_crash.txt:2530:10-28 19:56:02.503   285  3684 I Binder  : Dispatching death 
+to 0xadc42df0 for handle 116
+> firetv_crash.txt:2531:10-28 19:56:02.504   525  2401 I ActivityManager: Process 
+com.amazon.tv.devicecontrol (pid 12614) has died: cch+1CEM 
+  firetv_crash.txt:2532:10-28 19:56:02.504   525   546 W libprocessgroup: kill(-12614, 
+9) failed: No such process
+  firetv_crash.txt:2533:10-28 19:56:02.504   275   275 I Zygote  : Process 12614 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:2534:10-28 19:56:02.520   525   730 W Eve     : MEMORY_LEVEL: 
+[12614,901][11752,900][12208,901][12070,0][12541,903]
+  firetv_crash.txt:2535:10-28 19:56:02.520   525   730 W Eve     :   
+top=com.amazon.tv.launcher/.ui.HomeActivity_vNext launching=false
+  firetv_crash.txt:2536:10-28 19:56:02.520   525   730 W Eve     :   
+prev=com.amazon.tv.settings.v2/.tv.network.NetworkActivity screen_on=true thermal=0
+  firetv_crash.txt:2537:10-28 19:56:02.520   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:2538:10-28 19:56:02.520   525   730 W Eve     :   memory=0 trim=60 
+available=225180KB free=53908KB
+  firetv_crash.txt:2539:10-28 19:56:02.530   323   323 I hdmi_cec: [HWCEC] 
+send_message end, opcode: 0x83, mResult:1
+  firetv_crash.txt:2540:10-28 19:56:02.531   323   323 I hdmi_cec: [HWCEC] 
+send_message init:4, dest:9, opcode: 0x83, size:0, body[0]=0x0
+  firetv_crash.txt:2541:10-28 19:56:02.544  4326  4385 I SearchResultsScreenUISt: 
+Sending UI State update
+  firetv_crash.txt:2542:10-28 19:56:02.545  4326  4385 I SearchResultsScreenUISt: {"sce
+ne":{"sceneId":"FTV_LAUNCHER.[reftype=mb/screen,refid=APP_OVERFLOW]"},"elements":[{"ele
+mentId":"[reftype=mb/screen,refid=APP_OVERFLOW]","entity":"XYZ","ordinal":null,"uiSuppo
+rtedActions":["SCROLL_DOWN,SCROLL_FORWARD"],"elements":[{"elementId":"1","entity":"XYZ"
+,"ordinal":1,"uiSupportedActions":["SELECT"],},{"elementId":"2","entity":"XYZ","ordinal
+":2,"uiSupportedActions":["SELECT"],}]}]}
+  firetv_crash.txt:2543:10-28 19:56:02.547  4326  4385 I UIControllerManagerClie: 
+Reporting UI state update
+  firetv_crash.txt:2544:10-28 19:56:02.548   525   546 W libprocessgroup: kill(-12614, 
+9) failed: No such process
+  firetv_crash.txt:2545:10-28 19:56:02.548   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10145 pid 12614 in 44ms
+  firetv_crash.txt:2546:10-28 19:56:02.554  1609  1637 I 
+UICM_Service_UIStateServer_1.0.76723.0: reportUIStateUpdate
+  firetv_crash.txt:2547:10-28 19:56:02.563  1609  1637 I 
+UICM_Service_AppUIStateTracker_1.0.76723.0: Package com.amazon.tv.launcher is not 
+active
+  firetv_crash.txt:2548:10-28 19:56:02.563  1609  1637 I 
+UICM_Service_AppUIStateTracker_1.0.76723.0: getDelayTimeInMilliseconds: 
+[currentTimestamp = 1793197562563 lastUpdatedTimestamp = 1793197322523]
+  firetv_crash.txt:2549:10-28 19:56:02.563  1609  1637 I 
+UICM_Service_ContextUpdater_1.0.76723.0: Schedule DeviceContextUpdateTask with delay 0 
+milliseconds
+  firetv_crash.txt:2550:10-28 19:56:02.564  1609  3186 I 
+UICM_Service_DeviceContextUpdateTask_1.0.76723.0: Task 
+d5dd10eb-a203-431e-864b-671aa6481d16 started.
+  firetv_crash.txt:2551:10-28 19:56:02.566  1609  3186 I CSM-ProactiveReporter: 
+Context with namespace Alexa.UIController allowlisted? true. Cloud-configured 
+allowlist available? false. Allowlisted by cloud: true, device override: false, arcus: 
+false
+  firetv_crash.txt:2552:10-28 19:56:02.566  1609  3186 W ContextChangeObserver: 
+Context namespace (Alexa.UIController) name (uiElements) failed proactive check - 
+interface check (PASSED) device policy check (FAILED) change valid check (PASSED) hard 
+update check (PASSED)
+  firetv_crash.txt:2553:10-28 19:56:02.570  1609  1609 I CSM-ProactiveReporter: 
+Context with namespace VisualFocusManager allowlisted? true. Cloud-configured 
+allowlist available? false. Allowlisted by cloud: true, device override: false, arcus: 
+false
+  firetv_crash.txt:2554:10-28 19:56:02.570  1609  1609 W ContextChangeObserver: 
+Context namespace (VisualFocusManager) name (VisualFocusState) failed proactive check 
+- interface check (PASSED) device policy check (FAILED) change valid check (PASSED) 
+hard update check (PASSED)
+  firetv_crash.txt:2555:10-28 19:56:02.570  1609  1609 I 
+UICM_Service_DeviceContextUpdateTask_1.0.76723.0: Task 
+d5dd10eb-a203-431e-864b-671aa6481d16 is finished. Result: SUCCESS
+  firetv_crash.txt:2556:10-28 19:56:02.570  1609  1609 I 
+UICM_Service_AppUIStateTracker_1.0.76723.0: onUpdateFinished for package 
+com.amazon.tv.launcher isCleanUIState ? false result: SUCCESS
+  firetv_crash.txt:2557:10-28 19:56:02.571  4326  4622 I UIControllerManagerClie: 
+Reporting UIStateUpdateResult: SUCCESS
+  firetv_crash.txt:2558:10-28 19:56:02.601   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:2559:10-28 19:56:02.602   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+  firetv_crash.txt:2560:10-28 19:56:02.603  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:2561:10-28 19:56:02.603  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_DOWN, code: 20, action: 1
+  firetv_crash.txt:3725:10-28 19:56:11.759   285  3683 I Binder  : Dispatching death 
+to 0xadc426b0 for handle 103
+  firetv_crash.txt:3726:10-28 19:56:11.759   285  4087 I Binder  : Dispatching death 
+to 0xadc429f0 for handle 105
+  firetv_crash.txt:3727:10-28 19:56:11.759   285  4178 I Binder  : Binder handle 109 
+died, dispatching death
+  firetv_crash.txt:3728:10-28 19:56:11.759   285  4178 I Binder  : Dispatching death 
+to 0xadc428b0 for handle 109
+  firetv_crash.txt:3729:10-28 19:56:11.759   285  1389 I Binder  : Binder handle 113 
+died, dispatching death
+  firetv_crash.txt:3730:10-28 19:56:11.759   285  1389 I Binder  : Dispatching death 
+to 0xadc42970 for handle 113
+  firetv_crash.txt:3731:10-28 19:56:11.759   285  4087 I neo_service_coordinat..: 
+removed service(com.amazon.device_remote_config_sync_service, User(0))
+  firetv_crash.txt:3732:10-28 19:56:11.764   818  1395 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:3733:10-28 19:56:11.764 12920 12920 I 
+com.amazon.adep/LocalKeyValueStore: Create DE shared preference, OS supports direct 
+boot.
+  firetv_crash.txt:3734:10-28 19:56:11.780 12920 12920 E NIMH#i  : Invalid arcus sync 
+config. Returning default config c{firstSyncInterval=900000, 
+syncRepeatInterval=259200000, syncRetryInterval=900000, maxSyncDuration=60000, 
+maxRetryAttempts=1, analyzerRepeatInterval=172800000, 
+analyzerEchoRepeatInterval=43200000}
+  firetv_crash.txt:3735:10-28 19:56:11.791 12920 12920 I 
+com.amazon.adep/LocalKeyValueStore: Create DE shared preference, OS supports direct 
+boot.
+  firetv_crash.txt:3736:10-28 19:56:11.805 12920 12920 E NIMH#i  : Invalid arcus sync 
+config. Returning default config c{firstSyncInterval=900000, 
+syncRepeatInterval=259200000, syncRetryInterval=900000, maxSyncDuration=60000, 
+maxRetryAttempts=1, analyzerRepeatInterval=172800000, 
+analyzerEchoRepeatInterval=43200000}
+  firetv_crash.txt:3737:10-28 19:56:11.812 12920 12920 I i       : init ADEP Analyzer 
+Scheduler with interval = 172800000
+  firetv_crash.txt:3738:10-28 19:56:11.884   285  3683 I Binder  : Binder handle 130 
+died, dispatching death
+  firetv_crash.txt:3739:10-28 19:56:11.884   285  3683 I Binder  : Dispatching death 
+to 0xadc42f30 for handle 130
+> firetv_crash.txt:3740:10-28 19:56:11.884   525  3099 I ActivityManager: Process 
+com.amazon.adep (pid 12920) has died: cch+1CEM 
+  firetv_crash.txt:3741:10-28 19:56:11.885   525   546 W libprocessgroup: kill(-12920, 
+9) failed: No such process
+  firetv_crash.txt:3742:10-28 19:56:11.887   275   275 I Zygote  : Process 12920 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:3743:10-28 19:56:11.928   525   546 W libprocessgroup: kill(-12920, 
+9) failed: No such process
+  firetv_crash.txt:3744:10-28 19:56:11.928   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10068 pid 12920 in 44ms
+  firetv_crash.txt:3745:10-28 19:56:13.040   323   323 I hdmi_cec: [HWCEC] 
+send_message init:4, dest:0, opcode: 0x8f, size:0, body[0]=0x0
+  firetv_crash.txt:3746:10-28 19:56:13.118  4951  4951 I Firebat : 
+TrimMemoryCommandLogger - level=COMPLETE
+  firetv_crash.txt:3747:10-28 19:56:13.123  4951  4951 I Firebat : Reporting metric 
+[metricName=CommandRouter, metricSubName=TrimMemoryCommandLogger-ProcessingDuration, 
+value=6.00]
+  firetv_crash.txt:3748:10-28 19:56:13.128   323   323 I hdmi_cec: [HWCEC] 
+send_message end, opcode: 0x8f, mResult:1
+  firetv_crash.txt:3749:10-28 19:56:13.128   323   323 I hdmi_cec: [HWCEC] 
+send_message init:4, dest:0, opcode: 0x8f, size:0, body[0]=0x0
+  firetv_crash.txt:3750:10-28 19:56:13.228   323   323 I hdmi_cec: [HWCEC] 
+send_message end, opcode: 0x8f, mResult:1
+  firetv_crash.txt:3751:10-28 19:56:13.228   525   665 W HdmiCecController: Failed to 
+send <Give Device Power Status> 40:8F with errorCode=1
+  firetv_crash.txt:3752:10-28 19:56:13.926  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): is2g=0, is11ac=1, is11ax=0, chan_bw=80, nss=2, bcn_rssi=-43, 
+data_rssi=-49, tx_ok=588849, tx_failed=140201, cca_idle_pct=79
+  firetv_crash.txt:3753:10-28 19:56:13.926  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): last_tx_stats: sgi=0, pream=0, mcs=24, ss=0, bw=0
+  firetv_crash.txt:3754:10-28 19:56:14.121 12642 12959 I CevicheService: 
+[pool-4-thread-2][HttpBatchTransporter] Response code: 200
+  firetv_crash.txt:3755:10-28 19:56:14.121 12642 12959 I CevicheService: 
+[pool-4-thread-2][HttpBatchTransporter] Response body: {}
+  firetv_crash.txt:3756:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: http request timed out: 
+java.net.SocketTimeoutException: timeout
+  firetv_crash.txt:3757:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: java.net.SocketTimeoutException: 
+timeout
+  firetv_crash.txt:3758:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okio.Okio$4.newTimeoutException(SourceFile:15)
+  firetv_crash.txt:3759:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okio.Okio$4.exitAndThrowIfTimedOut(Unknown Source:8)
+  firetv_crash.txt:3760:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http2.Http2Codec.readResponseHeaders(SourceFile:27)
+  firetv_crash.txt:3761:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.CallServerInterceptor.intercept(SourceFile:104)
+  firetv_crash.txt:3762:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:12)
+  firetv_crash.txt:3763:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.cache.CacheInterceptor.intercept(SourceFile:77)
+  firetv_crash.txt:3764:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:12)
+  firetv_crash.txt:3765:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:1)
+  firetv_crash.txt:3766:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.cache.CacheInterceptor.intercept(SourceFile:223)
+  firetv_crash.txt:3767:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:12)
+  firetv_crash.txt:3768:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:1)
+  firetv_crash.txt:3769:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.cache.CacheInterceptor.intercept(SourceFile:674)
+  firetv_crash.txt:3770:10-28 19:56:14.222 12776 12789 E 
+AlexaCentralForApps.LiveCardsServerRequestHelper: 	at 
+okhttp3.internal.http.RealInterceptorChain.proceed(SourceFile:12)
+  firetv_crash.txt:4408:10-28 19:56:26.314 13161 13184 I com.amazon.ade:   at void 
+java.util.concurrent.ThreadPoolExecutor$Worker.run() (ThreadPoolExecutor.java:641)
+  firetv_crash.txt:4409:10-28 19:56:26.314 13161 13184 I com.amazon.ade:   at void 
+java.lang.Thread.run() (Thread.java:764)
+  firetv_crash.txt:4410:10-28 19:56:26.314 13161 13184 I com.amazon.ade: 
+  firetv_crash.txt:4411:10-28 19:56:26.315 13161 13184 W 
+com.amazon.adep/WhatsAppAutoreadPluginHelper: WhatsAppAutoreadPlugin is not supported 
+for this package: com.amazon.adep
+  firetv_crash.txt:4412:10-28 19:56:26.317 13161 13161 I 
+com.amazon.adep/LocalKeyValueStore: Create DE shared preference, OS supports direct 
+boot.
+  firetv_crash.txt:4413:10-28 19:56:26.336 13161 13161 E NIMH#i  : Invalid arcus sync 
+config. Returning default config c{firstSyncInterval=900000, 
+syncRepeatInterval=259200000, syncRetryInterval=900000, maxSyncDuration=60000, 
+maxRetryAttempts=1, analyzerRepeatInterval=172800000, 
+analyzerEchoRepeatInterval=43200000}
+  firetv_crash.txt:4414:10-28 19:56:26.342 13161 13161 I i       : Scheduling periodic 
+configuration syncing firstTriggerTime: 900000 repeat interval: 259200000
+  firetv_crash.txt:4415:10-28 19:56:26.349 13161 13161 I 
+com.amazon.adep/LocalKeyValueStore: Create DE shared preference, OS supports direct 
+boot.
+  firetv_crash.txt:4416:10-28 19:56:26.365 13161 13161 E NIMH#i  : Invalid arcus sync 
+config. Returning default config c{firstSyncInterval=900000, 
+syncRepeatInterval=259200000, syncRetryInterval=900000, maxSyncDuration=60000, 
+maxRetryAttempts=1, analyzerRepeatInterval=172800000, 
+analyzerEchoRepeatInterval=43200000}
+  firetv_crash.txt:4417:10-28 19:56:26.376 13161 13161 I 
+com.amazon.adep/LocalKeyValueStore: Create DE shared preference, OS supports direct 
+boot.
+  firetv_crash.txt:4418:10-28 19:56:26.391 13161 13161 E NIMH#i  : Invalid arcus sync 
+config. Returning default config c{firstSyncInterval=900000, 
+syncRepeatInterval=259200000, syncRetryInterval=900000, maxSyncDuration=60000, 
+maxRetryAttempts=1, analyzerRepeatInterval=172800000, 
+analyzerEchoRepeatInterval=43200000}
+  firetv_crash.txt:4419:10-28 19:56:26.397 13161 13161 I i       : init ADEP Analyzer 
+Scheduler with interval = 172800000
+  firetv_crash.txt:4420:10-28 19:56:31.015   275   275 I Zygote  : Process 13161 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4421:10-28 19:56:31.016   285  3683 I Binder  : Binder handle 105 
+died, dispatching death
+  firetv_crash.txt:4422:10-28 19:56:31.016   285  3683 I Binder  : Dispatching death 
+to 0xadc428b0 for handle 105
+> firetv_crash.txt:4423:10-28 19:56:31.017   525  2219 I ActivityManager: Process 
+com.amazon.adep (pid 13161) has died: cch+1CEM 
+  firetv_crash.txt:4424:10-28 19:56:31.018   525   546 W libprocessgroup: kill(-13161, 
+9) failed: No such process
+  firetv_crash.txt:4425:10-28 19:56:31.018   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10068 pid 13161 in 0ms
+  firetv_crash.txt:4426:10-28 19:56:31.026  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): is2g=0, is11ac=1, is11ax=0, chan_bw=80, nss=2, bcn_rssi=-43, 
+data_rssi=-49, tx_ok=589090, tx_failed=140223, cca_idle_pct=91
+  firetv_crash.txt:4427:10-28 19:56:31.026  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): last_tx_stats: sgi=0, pream=2, mcs=9, ss=2, bw=2
+  firetv_crash.txt:4428:10-28 19:56:31.026  1349  1349 I main.wifi_score: cca_idle 
+88%, bcn_rssi -43, data_rssi -49, per 4% (ok=63, failed=3), AC MCS 9, BW 2 SS 2  
+780mbps, AMPDU length 64, dur 1217us UDP tput 500mbps.
+  firetv_crash.txt:4429:10-28 19:56:31.026  1349  1349 I main.wifi_score: Score 6, mcs 
+90 (phyrate cur/min/avg/max= 780/80/779/780 mbps), expected  UDP throughput 
+cur/min/avg/max= 500/57/478/500 mbps.
+  firetv_crash.txt:4430:10-28 19:56:31.125  4951  4951 I Firebat : 
+TrimMemoryCommandLogger - level=MODERATE
+  firetv_crash.txt:4431:10-28 19:56:31.130  4951  4951 I Firebat : Reporting metric 
+[metricName=CommandRouter, metricSubName=TrimMemoryCommandLogger-ProcessingDuration, 
+value=6.00]
+  firetv_crash.txt:4432:10-28 19:56:31.168   285  3683 I Binder  : Binder handle 115 
+died, dispatching death
+  firetv_crash.txt:4433:10-28 19:56:31.168   285  3683 I Binder  : Dispatching death 
+to 0xadc42ab0 for handle 115
+> firetv_crash.txt:4434:10-28 19:56:31.168   525  2219 I ActivityManager: Process 
+com.amazon.ceviche (pid 12642) has died: cch+1CEM 
+  firetv_crash.txt:4435:10-28 19:56:31.170   525   546 W libprocessgroup: kill(-12642, 
+9) failed: No such process
+  firetv_crash.txt:4436:10-28 19:56:31.171   275   275 I Zygote  : Process 12642 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4437:10-28 19:56:31.200  4326  4453 I ImageTrimMemoryHandler: 
+Processing trimMemory level=60, availablePriority=2, cachedPriority=2, 
+bytesInMemoryCache=437 KB, bytesInUse=3 MB
+  firetv_crash.txt:4438:10-28 19:56:31.210   525   546 W libprocessgroup: kill(-12642, 
+9) failed: No such process
+  firetv_crash.txt:4439:10-28 19:56:31.210   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10078 pid 12642 in 41ms
+  firetv_crash.txt:4440:10-28 19:56:31.216  4326  4326 I BuellerApplication: Received 
+on trim from framework, level is 60
+  firetv_crash.txt:4441:10-28 19:56:31.224  4326  4326 I BuellerApplication:  should 
+trim frozen image false
+  firetv_crash.txt:4442:10-28 19:56:31.228  4326  4326 I BuellerApplication: 
+TRIM_MEMORY_MODERATE
+  firetv_crash.txt:4443:10-28 19:56:31.229  4326  4453 I ImagePriorityLru: Releasing 0 
+cached items, and 0 available items, bytesInUse=3 MB, bytesOnlyInCache=437 KB
+  firetv_crash.txt:4444:10-28 19:56:31.231  4326  4453 I ImagePriorityLru: Releasing 0 
+cached items, and 0 available items, bytesInUse=3 MB, bytesOnlyInCache=437 KB
+  firetv_crash.txt:4445:10-28 19:56:31.239  4326  4326 I MediaBrowseInMemoryCacheImpl: 
+Cache size before trim: 237
+  firetv_crash.txt:4446:10-28 19:56:31.239  4326  4326 I MediaBrowseInMemoryCacheImpl: 
+Cache size after trim: 237
+  firetv_crash.txt:4447:10-28 19:56:31.239  4326  4326 I BuellerApplication: Trim 
+memory has completed
+  firetv_crash.txt:4448:10-28 19:56:31.241   525   534 I system_server: Background 
+concurrent copying GC freed 84715(4MB) AllocSpace objects, 29(1348KB) LOS objects, 25% 
+free, 17MB/23MB, paused 359us total 329.710ms
+  firetv_crash.txt:4449:10-28 19:56:31.244  4326  4326 I MediaBrowseServiceImpl: 
+Received notice that MediaBrowseServiceImpl is to trim memory. Trim memory level: 60
+  firetv_crash.txt:4450:10-28 19:56:31.834  1609 13201 I SPCH-Cont_HealthLogger: 
+Current State = {"AlexaCaptionsEnabled":"false","Account":"valid","ProfileValidated":"t
+rue","ProfileType":"ADULT","AlexaCaptionsSupported":"true","memoryTotalPss":"15173","De
+viceFamily":"SMP","memoryTotalSharedDirty":"348","ActiveSpeechUI":"Classic","ReleaseVer
+sion":"662.0.0","AlexaLegalTermsAccepted":"true","AppVersion":"3.0.23518.0","AlexaExper
+ience":"FULL","SupportsFarField":"false","short_press_overlay_state":"{\"enabled\": 
+true, \"hintsEnabled\": true, \"isChild\": false, \"override\": 0, \"hasFullAlexa\": tr
+ue}","memoryAvailable":"242704384","Gateway":"avs-alexa-18-eu.amazon.com:443","RemoteSe
+ttingsStrategy":"VizArcus","memoryLow":"true","ConnectionState":"CONNECTED","OOBEComple
+ted":"true","memoryTotalPrivateDirty":"10398","str.auto_wake_up_always":"0"}
+  firetv_crash.txt:4451:10-28 19:56:32.244  4326  4453 I ImageTrimMemoryHandler: 
+Processed trimMemory level=60, bytesInMemoryCache=437 KB, bytesInUse=3 MB
+  firetv_crash.txt:4452:10-28 19:56:33.925  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): is2g=0, is11ac=1, is11ax=0, chan_bw=80, nss=2, bcn_rssi=-41, 
+data_rssi=-49, tx_ok=589118, tx_failed=140224, cca_idle_pct=91
+  firetv_crash.txt:4453:10-28 19:56:33.926  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): last_tx_stats: sgi=0, pream=2, mcs=9, ss=2, bw=2
+  firetv_crash.txt:4454:10-28 19:56:34.934   285  3683 I neo_service_coordinat..: 
+Begin launch-service com.amazon.device_remote_config_sync_service
+  firetv_crash.txt:4455:10-28 19:56:34.943   818  1392 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4456:10-28 19:56:34.960 13203 13203 I neo_init: Updating the OOM 
+score to: 800.
+  firetv_crash.txt:4457:10-28 19:56:34.983 13203 13203 E neo_init: Unable to dlopen 
+shared_lib: dlopen failed: library "/system/priv-app/DRCSService-arm/lib/arm/libcom_ama
+zon_device_remote_config_sync_service.so" not found. Exit.
+  firetv_crash.txt:4458:10-28 19:56:34.991 13203 13203 I neo_init: 
+libcom_amazon_device_remote_config_sync_service.so loaded from APK
+  firetv_crash.txt:4459:10-28 19:56:34.999 13203 13203 I com_amazon_device_rem..: 
+DRCS: Starting DeviceRemoteConfigSyncService
+  firetv_crash.txt:4460:10-28 19:56:35.052 13203 13203 I com_amazon_device_rem..: 
+DRCS: device property resolved: 
+working_directory=/data/user/0/com.amazon.device_remote_config_sync_service/drcs
+  firetv_crash.txt:4461:10-28 19:56:35.058 13203 13203 I com_amazon_device_rem..: 
+DRCS: ArcusManager initialized for 
+app_config_id=arn:aws:remote-config:us-west-2:294299890423:appConfig:ac74pnhk
+  firetv_crash.txt:4462:10-28 19:56:35.058 13203 13203 I com_amazon_device_rem..: 
+DRCS: WeblabProviderConfigManager initialized
+  firetv_crash.txt:4463:10-28 19:56:35.061   818 18588 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4464:10-28 19:56:35.062 13203 13203 I com_amazon_device_rem..: 
+DRCS: Registry created: 1 provider(s), 2 job route(s)
+  firetv_crash.txt:4543:10-28 19:56:43.901   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a19 srv_handle=27 is_bl_svc_primary=1 rpt_id=3 len=1
+  firetv_crash.txt:4544:10-28 19:56:43.902   793  3288 E bt_btif : 
+btif_hh_notify_battery_level level = 88
+  firetv_crash.txt:4545:10-28 19:56:43.913   793   947 E bt_btif : btif_hh_handle_evt 
+BTIF_HH_BATTERY_EVT
+  firetv_crash.txt:4546:10-28 19:56:43.913   793   947 E BluetoothHidHostServiceJni: 
+call to battery_notify_callback
+  firetv_crash.txt:4547:10-28 19:56:43.882   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+  firetv_crash.txt:4548:10-28 19:56:43.941   525   536 W BroadcastQueue: Background 
+execution not allowed: receiving Intent { 
+act=amazon.bluetooth.input.profile.action.BATTERY_LEVEL_UPDATE flg=0x4000010 (has 
+extras) } to com.amazon.device.rdmapplication/.services.RemoteBatteryLevelReceiver
+  firetv_crash.txt:4549:10-28 19:56:43.947  1339  1339 I ConnectivityCtrlService: 
+handle intent action:com.amazon.device.action.BATTERY_LEVEL
+  firetv_crash.txt:4550:10-28 19:56:43.949  1339  1355 I ConnectivityCtrlService: 
+handleRemoteBatteryEvent...device address [xx:xx:51:xx:xx:0B],newLevel:[88]
+  firetv_crash.txt:4551:10-28 19:56:43.950  1339  1355 I ConnectivityCtrlService: 
+Rechargeable battery category does not exits for PID : 1043 do not shown battery full 
+notification
+  firetv_crash.txt:4552:10-28 19:56:43.952   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4553:10-28 19:56:43.963   525  2210 W BroadcastQueue: Background 
+execution not allowed: receiving Intent { 
+act=amazon.bluetooth.input.profile.action.BATTERY_LEVEL_UPDATE flg=0x4000010 (has 
+extras) } to com.amazon.device.rdmapplication/.services.RemoteBatteryLevelReceiver
+  firetv_crash.txt:4554:10-28 19:56:43.966   275   275 I Zygote  : Process 12776 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4555:10-28 19:56:43.968   285  1389 I Binder  : Binder handle 116 
+died, dispatching death
+  firetv_crash.txt:4556:10-28 19:56:43.968   285  1389 I Binder  : Dispatching death 
+to 0xadc42df0 for handle 116
+  firetv_crash.txt:4557:10-28 19:56:43.969  1339  1339 I ConnectivityCtrlService: 
+handle intent action:com.amazon.device.action.BATTERY_LEVEL
+> firetv_crash.txt:4558:10-28 19:56:43.969   525  1134 I ActivityManager: Process 
+com.amazon.aca (pid 12776) has died: cch+2CEM 
+  firetv_crash.txt:4559:10-28 19:56:43.970   525   546 W libprocessgroup: kill(-12776, 
+9) failed: No such process
+  firetv_crash.txt:4560:10-28 19:56:43.971   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10063 pid 12776 in 0ms
+  firetv_crash.txt:4561:10-28 19:56:43.972  1339  1355 I ConnectivityCtrlService: 
+handleRemoteBatteryEvent...device address [xx:xx:51:xx:xx:0B],newLevel:[88]
+  firetv_crash.txt:4562:10-28 19:56:43.972  1339  1355 I ConnectivityCtrlService: 
+Rechargeable battery category does not exits for PID : 1043 do not shown battery full 
+notification
+  firetv_crash.txt:4563:10-28 19:56:43.972  1339  1355 E ConnectivityCtrlService: 
+Ignoring  battery level as it is same as current battery level
+  firetv_crash.txt:4564:10-28 19:56:44.003  1609  1609 I Vizzini:SimApplicationImpl: 
+onTrimMemory, 15
+  firetv_crash.txt:4565:10-28 19:56:44.004  1609  1609 I 
+Vizzini:ShortPressOverlayManager: Memory trim requested, level: 15
+  firetv_crash.txt:4566:10-28 19:56:44.004  1609  1609 I 
+Vizzini:ShortPressOverlayManager: Tearing down ShortPressOverlayManager with reason 
+DISMISS_MEMORY_LOW
+  firetv_crash.txt:4567:10-28 19:56:44.011   818   818 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4568:10-28 19:56:44.012   818   818 I CoordinatorUtils: Report 
+Trim-memory (level-15) to NSC
+  firetv_crash.txt:4569:10-28 19:56:44.012   818   818 I CoordinatorUtils: Neo 
+Trim-memory NSC notification (level-15) - done
+  firetv_crash.txt:4570:10-28 19:56:44.013  1454  2301 I com_amazon_devicecont..: 
+on_trim_memory: Releasing unused memory!
+  firetv_crash.txt:4571:10-28 19:56:44.019  1460  1460 I com_amazon_neo_minerv..: 
+Received on_trim_memory call - function FLAGS: 2
+  firetv_crash.txt:4572:10-28 19:56:44.020   818  1394 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4573:10-28 19:56:44.036 32356 32511 I com_amazon_neo_minerva: 
+Received on_trim_memory call - function FLAGS: 2
+  firetv_crash.txt:4574:10-28 19:56:44.036   285  1389 I Binder  : Binder handle 103 
+died, dispatching death
+  firetv_crash.txt:4575:10-28 19:56:44.036   285  1389 I Binder  : Dispatching death 
+to 0xadc426b0 for handle 103
+> firetv_crash.txt:4576:10-28 19:56:44.037   525   536 I ActivityManager: Process 
+com.amazon.venezia (pid 12962) has died: cch+1CEM 
+  firetv_crash.txt:4577:10-28 19:56:44.037   525   546 W libprocessgroup: kill(-12962, 
+9) failed: No such process
+> firetv_crash.txt:4578:10-28 19:56:44.037   215   215 E lowmemorykiller: Error 
+writing /proc/13025/oom_score_adj; errno=22
+  firetv_crash.txt:4579:10-28 19:56:44.038   275   275 I Zygote  : Process 12962 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4580:10-28 19:56:44.053  4951  4951 I Firebat : 
+TrimMemoryCommandLogger - level=COMPLETE
+  firetv_crash.txt:4581:10-28 19:56:44.054  4951  4951 I Firebat : Reporting metric 
+[metricName=CommandRouter, metricSubName=TrimMemoryCommandLogger-ProcessingDuration, 
+value=0.00]
+  firetv_crash.txt:4582:10-28 19:56:44.059   275   275 I Zygote  : Process 13025 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4583:10-28 19:56:44.060   285  1389 I Binder  : Binder handle 104 
+died, dispatching death
+  firetv_crash.txt:4584:10-28 19:56:44.060   285  1389 I Binder  : Dispatching death 
+to 0xadc427f0 for handle 104
+> firetv_crash.txt:4585:10-28 19:56:44.060   525   536 I ActivityManager: Process 
+com.amazon.prism.android.service (pid 13025) has died: fore SVC 
+  firetv_crash.txt:4586:10-28 19:56:44.079   525   546 W libprocessgroup: kill(-12962, 
+9) failed: No such process
+  firetv_crash.txt:4587:10-28 19:56:44.079   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10163 pid 12962 in 41ms
+  firetv_crash.txt:4588:10-28 19:56:44.079   525   546 W libprocessgroup: kill(-13025, 
+9) failed: No such process
+  firetv_crash.txt:4589:10-28 19:56:44.079   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10118 pid 13025 in 0ms
+  firetv_crash.txt:4590:10-28 19:56:44.079   525   730 W Eve     : MEMORY_LEVEL: 
+[13025,0][12962,901][12776,902]
+  firetv_crash.txt:4591:10-28 19:56:44.079   525   730 W Eve     :   
+top=com.example.sparrow/.MainActivity launching=false
+  firetv_crash.txt:4592:10-28 19:56:44.079   525   730 W Eve     :   
+prev=com.amazon.venezia/.pdi.AppLaunchActivity screen_on=true thermal=0
+  firetv_crash.txt:4593:10-28 19:56:44.079   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:4594:10-28 19:56:44.079   525   730 W Eve     :   memory=0 trim=15 
+available=182300KB free=53664KB
+  firetv_crash.txt:4595:10-28 19:56:44.359   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4596:10-28 19:56:44.519   322   322 I chatty  : uid=1000(system) 
+memtrack@1.0-se identical 2 lines
+  firetv_crash.txt:4597:10-28 19:56:44.715   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4598:10-28 19:56:44.881   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4599:10-28 19:56:44.883   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+  firetv_crash.txt:4600:10-28 19:56:44.884  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4601:10-28 19:56:44.884  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_RIGHT, code: 22, action: 0
+  firetv_crash.txt:4602:10-28 19:56:44.891   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4603:10-28 19:56:44.981   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4604:10-28 19:56:45.041   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4605:10-28 19:56:45.046  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4606:10-28 19:56:45.046  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_RIGHT, code: 22, action: 1
+  firetv_crash.txt:4607:10-28 19:56:45.221   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4608:10-28 19:56:45.274   322   322 W IMGMemtrackHAL: 
+hal_get_memory: memtrack cache rebuild was required
+  firetv_crash.txt:4609:10-28 19:56:45.281   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4610:10-28 19:56:45.282  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4611:10-28 19:56:45.282  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_RIGHT, code: 22, action: 0
+  firetv_crash.txt:4612:10-28 19:56:45.441   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4613:10-28 19:56:45.444  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4614:10-28 19:56:45.444  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_RIGHT, code: 22, action: 1
+  firetv_crash.txt:4615:10-28 19:56:45.681   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4663:10-28 19:56:49.161   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4664:10-28 19:56:49.163  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4665:10-28 19:56:49.163  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_LEFT, code: 21, action: 0
+  firetv_crash.txt:4666:10-28 19:56:49.167   285   292 I neo_service_coordinat..: 
+Coordinator-watchdog: Process com.amazon.device_remote_config_sync_service(pid=13203) 
+already exited
+  firetv_crash.txt:4667:10-28 19:56:49.301   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4668:10-28 19:56:49.302   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a19 srv_handle=27 is_bl_svc_primary=1 rpt_id=3 len=1
+  firetv_crash.txt:4669:10-28 19:56:49.305  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4670:10-28 19:56:49.305  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_LEFT, code: 21, action: 1
+  firetv_crash.txt:4671:10-28 19:56:49.319  1339  1339 I ConnectivityCtrlService: 
+handle intent action:com.amazon.device.action.BATTERY_LEVEL
+  firetv_crash.txt:4672:10-28 19:56:49.162   525   627 I chatty  : uid=1000(system) 
+InputReader identical 18 lines
+  firetv_crash.txt:4673:10-28 19:56:49.303   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+  firetv_crash.txt:4674:10-28 19:56:49.319   525   536 W BroadcastQueue: Background 
+execution not allowed: receiving Intent { 
+act=amazon.bluetooth.input.profile.action.BATTERY_LEVEL_UPDATE flg=0x4000010 (has 
+extras) } to com.amazon.device.rdmapplication/.services.RemoteBatteryLevelReceiver
+  firetv_crash.txt:4675:10-28 19:56:49.320  1339  1355 I ConnectivityCtrlService: 
+handleRemoteBatteryEvent...device address [xx:xx:51:xx:xx:0B],newLevel:[88]
+  firetv_crash.txt:4676:10-28 19:56:49.320  1339  1355 I ConnectivityCtrlService: 
+Rechargeable battery category does not exits for PID : 1043 do not shown battery full 
+notification
+  firetv_crash.txt:4677:10-28 19:56:49.320  1339  1355 E ConnectivityCtrlService: 
+Ignoring  battery level as it is same as current battery level
+> firetv_crash.txt:4678:10-28 19:56:49.349   525  3104 I ActivityManager: Process 
+com.android.providers.downloads (pid 13140) has died: cch+1CEM 
+  firetv_crash.txt:4679:10-28 19:56:49.349   525   546 W libprocessgroup: kill(-13140, 
+9) failed: No such process
+  firetv_crash.txt:4680:10-28 19:56:49.349   275   275 I Zygote  : Process 13140 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4681:10-28 19:56:49.354   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10030 pid 13140 in 4ms
+  firetv_crash.txt:4682:10-28 19:56:49.359  4326  4453 I ImageTrimMemoryHandler: 
+Processing trimMemory level=80, availablePriority=3, cachedPriority=3, 
+bytesInMemoryCache=437 KB, bytesInUse=3 MB
+  firetv_crash.txt:4683:10-28 19:56:49.361  4326  4326 I BuellerApplication: Received 
+on trim from framework, level is 80
+  firetv_crash.txt:4684:10-28 19:56:49.361  4326  4326 I BuellerApplication:  should 
+trim frozen image false
+  firetv_crash.txt:4685:10-28 19:56:49.362  4326  4326 W BuellerApplication: 
+TRIM_MEMORY_COMPLETE
+  firetv_crash.txt:4686:10-28 19:56:49.364  4326  4326 I MediaBrowseInMemoryCacheImpl: 
+Cache size before trim: 237
+  firetv_crash.txt:4687:10-28 19:56:49.368  4326  4326 I MediaBrowseInMemoryCacheImpl: 
+Cache size after trim: 237
+  firetv_crash.txt:4688:10-28 19:56:49.368  4326  4453 I ImagePriorityLru: Releasing 0 
+cached items, and 0 available items, bytesInUse=3 MB, bytesOnlyInCache=437 KB
+  firetv_crash.txt:4689:10-28 19:56:49.368  4326  4326 I BuellerApplication: Trim 
+memory has completed
+  firetv_crash.txt:4690:10-28 19:56:49.369  4326  4326 I MediaBrowseServiceImpl: 
+Received notice that MediaBrowseServiceImpl is to trim memory. Trim memory level: 80
+  firetv_crash.txt:4691:10-28 19:56:49.397  4326  4453 I ImagePriorityLru: Releasing 3 
+cached items, and 8 available items, bytesInUse=3 MB, bytesOnlyInCache=0 bytes
+  firetv_crash.txt:4692:10-28 19:56:49.709  4326  4473 I DiebusMetrics: Starting 
+reporting metrics
+  firetv_crash.txt:4693:10-28 19:56:49.719  4326  4473 I DiebusMetrics: End reporting 
+metrics
+  firetv_crash.txt:4694:10-28 19:56:49.828  4326  4434 I DiebusMetrics: Starting 
+reporting metrics
+  firetv_crash.txt:4695:10-28 19:56:49.862   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4696:10-28 19:56:49.863   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+  firetv_crash.txt:4697:10-28 19:56:49.864  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4698:10-28 19:56:49.865  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_DOWN, code: 20, action: 0
+  firetv_crash.txt:4699:10-28 19:56:49.887  4326  4434 I DiebusMetrics: End reporting 
+metrics
+  firetv_crash.txt:4700:10-28 19:56:50.021   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4701:10-28 19:56:50.023  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4702:10-28 19:56:50.023  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_DOWN, code: 20, action: 1
+  firetv_crash.txt:4703:10-28 19:56:50.428  4326  4453 I ImageTrimMemoryHandler: 
+Processed trimMemory level=80, bytesInMemoryCache=0 bytes, bytesInUse=36 KB
+  firetv_crash.txt:4704:10-28 19:56:50.441   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4705:10-28 19:56:50.444  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4706:10-28 19:56:50.444  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_CENTER, code: 23, action: 0
+  firetv_crash.txt:4707:10-28 19:56:50.601   793  1242 W bt_btif : 
+bta_hh_le_input_rpt_notify uuid=0x2a4d srv_handle=31 is_bl_svc_primary=1 rpt_id=1 len=8
+  firetv_crash.txt:4708:10-28 19:56:50.602  1454  2301 E amzn_neo_service_api:..: 
+handle_key_event_callback: Got empty key-event
+  firetv_crash.txt:4709:10-28 19:56:50.602  1454  2301 I com_amazon_devicecont..: 
+Received Key name: DPAD_CENTER, code: 23, action: 1
+  firetv_crash.txt:4710:10-28 19:56:51.026  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): is2g=0, is11ac=1, is11ax=0, chan_bw=80, nss=2, bcn_rssi=-45, 
+data_rssi=-45, tx_ok=589210, tx_failed=140244, cca_idle_pct=91
+  firetv_crash.txt:4711:10-28 19:56:51.026  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): last_tx_stats: sgi=0, pream=2, mcs=9, ss=2, bw=2
+  firetv_crash.txt:4712:10-28 19:56:51.626 12846 12856 I example.sparro: Background 
+concurrent copying GC freed 24323(1369KB) AllocSpace objects, 0(0B) LOS objects, 50% 
+free, 1529KB/2MB, paused 145us total 110.363ms
+  firetv_crash.txt:4713:10-28 19:56:52.039   275   275 I Zygote  : Process 3075 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4714:10-28 19:56:52.045   525   546 W libprocessgroup: kill(-3075, 
+9) failed: No such process
+  firetv_crash.txt:4715:10-28 19:56:52.045   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10168 pid 3075 in 1ms
+  firetv_crash.txt:4716:10-28 19:56:50.442   525   627 I chatty  : uid=1000(system) 
+InputReader identical 2 lines
+  firetv_crash.txt:4717:10-28 19:56:50.602   525   627 I AmazonProfileService: Event 
+is not filtered because it is not in filter key list.
+> firetv_crash.txt:4718:10-28 19:56:52.045   525   536 I ActivityManager: Process 
+com.amazon.whisperjoin.middleware.np (pid 3075) has died: svcb SVC 
+  firetv_crash.txt:4719:10-28 19:56:52.059   525   536 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.whisperjoin.middleware.np/com.amazon.whisperjoin.
+middleware.services.MiddlewareService in 5657600ms
+  firetv_crash.txt:4720:10-28 19:56:52.210   525   626 W InputDispatcher: channel 
+'5ba8b3d com.amazon.firetv.youtube/dev.cobalt.app.MainActivity (server)' ~ Consumer 
+closed input channel or an error occurred.  events=0x9
+  firetv_crash.txt:4721:10-28 19:56:52.210   525   626 E InputDispatcher: channel 
+'5ba8b3d com.amazon.firetv.youtube/dev.cobalt.app.MainActivity (server)' ~ Channel is 
+unrecoverably broken and will be disposed!
+  firetv_crash.txt:4722:10-28 19:56:52.212   525  3104 I WindowManager: WIN DEATH: 
+Window{5ba8b3d u0 com.amazon.firetv.youtube/dev.cobalt.app.MainActivity}
+  firetv_crash.txt:4723:10-28 19:56:52.213   525   546 W libprocessgroup: kill(-5332, 
+9) failed: No such process
+  firetv_crash.txt:4724:10-28 19:56:52.215   525  3104 W InputDispatcher: Attempted to 
+unregister already unregistered input channel '5ba8b3d 
+com.amazon.firetv.youtube/dev.cobalt.app.MainActivity (server)'
+  firetv_crash.txt:4725:10-28 19:56:52.216   275   275 I Zygote  : Process 5332 exited 
+due to signal 9 (Killed)
+> firetv_crash.txt:4726:10-28 19:56:52.222   525  3100 I ActivityManager: Process 
+com.amazon.firetv.youtube (pid 5332) has died: prev LAST
+  firetv_crash.txt:4727:10-28 19:56:52.244   285  1389 I Binder  : Binder handle 129 
+died, dispatching death
+  firetv_crash.txt:4728:10-28 19:56:52.245   285  1389 I Binder  : Dispatching death 
+to 0xadc52030 for handle 129
+  firetv_crash.txt:4729:10-28 19:56:52.254   525  2210 E AmazonHdmiService: Settings 
+client binder died.
+  firetv_crash.txt:4730:10-28 19:56:52.257   275   275 I Zygote  : Process 4951 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4731:10-28 19:56:52.264   525   546 W libprocessgroup: kill(-5332, 
+9) failed: No such process
+  firetv_crash.txt:4732:10-28 19:56:52.274  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionCommandQueue: Active Sessions changed: 0
+  firetv_crash.txt:4733:10-28 19:56:52.264   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10207 pid 5332 in 51ms
+> firetv_crash.txt:4734:10-28 19:56:52.277   525   536 I ActivityManager: Process 
+com.amazon.firebat (pid 4951) has died: prev CEM 
+  firetv_crash.txt:4735:10-28 19:56:52.278   525   546 W libprocessgroup: kill(-4951, 
+9) failed: No such process
+  firetv_crash.txt:4736:10-28 19:56:52.279   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10095 pid 4951 in 1ms
+  firetv_crash.txt:4737:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Resolve active controller
+  firetv_crash.txt:4738:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Update target media session.
+  firetv_crash.txt:4739:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: No new active media sessions 
+to target.
+  firetv_crash.txt:4740:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionCommandQueue: Active Sessions changed: 0
+  firetv_crash.txt:4741:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Resolve active controller
+  firetv_crash.txt:4742:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Update target media session.
+  firetv_crash.txt:4743:10-28 19:56:52.279  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: No new active media sessions 
+to target.
+  firetv_crash.txt:4744:10-28 19:56:52.283   793   793 W NewAvrcpMediaPlayerWrapper: 
+The session was destroyed com.amazon.firetv.youtube
+  firetv_crash.txt:4745:10-28 19:56:52.292  1609  1637 W ClientConnectionManager: 
+Binder of SimClient has died
+  firetv_crash.txt:4746:10-28 19:56:52.292  1609  1720 W ClientConnectionManager: 
+Binder of SimClient has died
+  firetv_crash.txt:4747:10-28 19:56:52.295   793  1250 I Avrcp   : Skipping update due 
+to invalid playback state
+  firetv_crash.txt:4748:10-28 19:56:52.297   525   551 W ActivityManager: 
+setHasOverlayUi called on unknown pid: 5332
+  firetv_crash.txt:4749:10-28 19:56:52.302   793  1250 I Avrcp   : Skipping update due 
+to invalid playback state
+  firetv_crash.txt:4750:10-28 19:56:52.304   379  1942 W MediaAnalyticsItem: Failed to 
+record: [1:drm.vendor.Google.WidevineCDM:1458:-1:com.amazon.firebat:0:-1:1:0:0:] 
+[forcenew=0]
+  firetv_crash.txt:4751:10-28 19:56:52.304   379  1942 E PluginMetricsReporting: 
+selfrecord() returned false. sessioId 1458
+  firetv_crash.txt:4752:10-28 19:56:52.305  1616  1616 I WhadService: 
+onActiveSessionsChanged:No active WHA media session, isConfident=true
+  firetv_crash.txt:4753:10-28 19:56:52.319  1609  1720 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4754:10-28 19:56:52.319  1609  1637 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4755:10-28 19:56:52.321  1609  1720 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+  firetv_crash.txt:4756:10-28 19:56:52.321  1609  1637 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+  firetv_crash.txt:4757:10-28 19:56:52.325  1616  1616 I whad-MediaSessionClient: 
+onActiveSessionsChanged: started, controllers=0
+  firetv_crash.txt:4758:10-28 19:56:52.325  1616  1616 I whad-MediaSessionClient: 
+onActiveSessionsChanged: started, controllers=0
+  firetv_crash.txt:4759:10-28 19:56:52.325  1616  1616 I WhadService: 
+onActiveSessionsChanged:No active WHA media session, isConfident=true
+  firetv_crash.txt:4760:10-28 19:56:52.330  1609  2506 I SPCH-SIM_SettingsManager: 
+Remove and disable callback from setting: speaking
+  firetv_crash.txt:4761:10-28 19:56:52.337  1609  2506 I SPCH-SIM_SettingsManager: 
+Disable setting speaking
+  firetv_crash.txt:4762:10-28 19:56:52.356  1616  2328 I WhadWrapper: 
+whadOnClusterPlaybackStateChangedCallback, isPlaying=false, deviceCount=1
+  firetv_crash.txt:4763:10-28 19:56:52.359  1616  2328 I whad    : AudioDistributionMan
+ager:processClusterPlaybackStateChanged:outputDeviceType=3,isPlaying=0,mIsPlaying=0, 
+isconfident=1
+  firetv_crash.txt:4764:10-28 19:56:52.359  1616  2328 I whad    : 
+ActiveClientStateManager:onPlaybackSessionEnded:Potential duplicate call, skipping 
+active client reset
+  firetv_crash.txt:4788:10-28 19:56:54.405  1609  1725 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4789:10-28 19:56:54.405  1609  4306 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4790:10-28 19:56:54.405  1609  1720 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4791:10-28 19:56:54.405  1609  1725 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+  firetv_crash.txt:4792:10-28 19:56:54.405  1609  4306 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+  firetv_crash.txt:4793:10-28 19:56:54.405  1609  1720 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+  firetv_crash.txt:4794:10-28 19:56:54.405   285  4178 I Binder  : Binder handle 79 
+died, dispatching death
+  firetv_crash.txt:4795:10-28 19:56:54.405   285  4178 I Binder  : Dispatching death 
+to 0xadc42570 for handle 79
+  firetv_crash.txt:4796:10-28 19:56:54.405   285  4178 I Binder  : Binder handle 46 
+died, dispatching death
+  firetv_crash.txt:4797:10-28 19:56:54.405   285  4178 I Binder  : Dispatching death 
+to 0xadc42670 for handle 46
+  firetv_crash.txt:4798:10-28 19:56:54.408  1609  1712 W ClientConnectionManager: 
+Binder of SimClient has died
+  firetv_crash.txt:4799:10-28 19:56:54.409  1609  1712 I SPCH-SIM_SimSettingsContract: 
+onClientDied 
+  firetv_crash.txt:4800:10-28 19:56:54.408  1609  1630 W ClientConnectionManager: 
+Binder of SimClient has died
+  firetv_crash.txt:4801:10-28 19:56:54.410   525  2210 I WindowManager: WIN DEATH: 
+Window{70943d1 u0 com.amazon.tv.launcher/com.amazon.tv.launcher.ui.HomeActivity_vNext}
+  firetv_crash.txt:4802:10-28 19:56:54.410  1609  1712 I SPCH-SIM_SettingsManager: 
+clearCallbacksForBinder
+> firetv_crash.txt:4803:10-28 19:56:54.411   525  2169 I ActivityManager: Process 
+com.amazon.tv.launcher (pid 4326) has died: home HOME
+  firetv_crash.txt:4804:10-28 19:56:54.411   525  2210 W InputDispatcher: Attempted to 
+unregister already unregistered input channel '70943d1 
+com.amazon.tv.launcher/com.amazon.tv.launcher.ui.HomeActivity_vNext (server)'
+  firetv_crash.txt:4805:10-28 19:56:54.411   525   546 W libprocessgroup: kill(-4326, 
+9) failed: No such process
+  firetv_crash.txt:4806:10-28 19:56:54.413  1609  1630 I BaseContextManager: Clearing 
+DeviceContext for client: com.amazon.tv.launcher
+  firetv_crash.txt:4807:10-28 19:56:54.437   285  4178 I neo_service_coordinat..: 
+removed service(com.amazon.tv.launcher.tile_metadata_service, User(0))
+> firetv_crash.txt:4808:10-28 19:56:54.447   215   215 E lowmemorykiller: Error 
+writing /proc/4812/oom_score_adj; errno=22
+  firetv_crash.txt:4809:10-28 19:56:54.448   525   546 W libprocessgroup: kill(-4326, 
+9) failed: No such process
+  firetv_crash.txt:4810:10-28 19:56:54.453   818  1395 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4811:10-28 19:56:54.489   525   546 W libprocessgroup: kill(-4326, 
+9) failed: No such process
+  firetv_crash.txt:4812:10-28 19:56:54.492  1609  2506 I SPCH-SIM_SettingsManager: 
+Remove and disable callback from setting: Alexa.Entitlements.RemarkableAlexa.Benefits
+  firetv_crash.txt:4813:10-28 19:56:54.503   275   275 I Zygote  : Process 4326 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4814:10-28 19:56:54.515   275   275 I Zygote  : Process 4812 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4815:10-28 19:56:54.528   525   546 W libprocessgroup: kill(-4326, 
+9) failed: No such process
+  firetv_crash.txt:4816:10-28 19:56:54.528   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10152 pid 4326 in 117ms
+  firetv_crash.txt:4817:10-28 19:56:54.609  1609  1609 I 
+AlexaAppAgent_4.0.34653.0_AlexaAndroidApplicationAgent: Agent tearing down.
+  firetv_crash.txt:4818:10-28 19:56:54.632   525   551 W ActivityManager: 
+setHasOverlayUi called on unknown pid: 4326
+> firetv_crash.txt:4819:10-28 19:56:54.633   525   536 I ActivityManager: Process 
+com.amazon.accessoryconfigservice (pid 4812) has died: fore SVC 
+  firetv_crash.txt:4820:10-28 19:56:54.634   525   546 W libprocessgroup: kill(-4812, 
+9) failed: No such process
+  firetv_crash.txt:4821:10-28 19:56:54.635   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10008 pid 4812 in 1ms
+  firetv_crash.txt:4822:10-28 19:56:54.877   525   730 W Eve     : MEMORY_LEVEL: 
+[4812,0][4326,600][4951,700][5332,700][3075,800]
+  firetv_crash.txt:4823:10-28 19:56:54.877   525   730 W Eve     :   
+top=com.example.sparrow/.MainActivity launching=false
+  firetv_crash.txt:4824:10-28 19:56:54.877   525   730 W Eve     :   
+prev=com.amazon.venezia/.pdi.AppLaunchActivity screen_on=true thermal=0
+  firetv_crash.txt:4825:10-28 19:56:54.877   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:4826:10-28 19:56:54.877   525   730 W Eve     :   memory=0 trim=15 
+available=37820KB free=22604KB
+  firetv_crash.txt:4827:10-28 19:56:54.899  1609  1720 W ClientConnectionManager: 
+Binder of SimClient has died
+  firetv_crash.txt:4828:10-28 19:56:54.899  1609  1720 I BaseContextManager: Clearing 
+DeviceContext for client: com.amazon.alexamediaplayer.runtime.ftv
+  firetv_crash.txt:4829:10-28 19:56:54.900  1609  4306 W ClientConnectionManager: 
+Binder of SimClient has died
+> firetv_crash.txt:4830:10-28 19:56:54.900   525  3102 I ActivityManager: Process 
+com.amazon.alexamediaplayer.runtime.ftv (pid 6012) has died: svc  SVC 
+  firetv_crash.txt:4831:10-28 19:56:54.900  1609  4306 I 
+AlexaFocusClientDeathCallback: Client (com.amazon.alexamediaplayer.runtime.ftv) died
+  firetv_crash.txt:4832:10-28 19:56:54.900   285  4178 I Binder  : Binder handle 101 
+died, dispatching death
+  firetv_crash.txt:4833:10-28 19:56:54.901   285  4178 I Binder  : Dispatching death 
+to 0xadc425b0 for handle 101
+  firetv_crash.txt:4834:10-28 19:56:54.901   525   546 W libprocessgroup: kill(-6012, 
+9) failed: No such process
+  firetv_crash.txt:4835:10-28 19:56:54.902   525  3102 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.alexamediaplayer.runtime.ftv/com.amazon.wha.media
+browserservice.MRMMediaBrowserService in 1024000ms
+  firetv_crash.txt:4836:10-28 19:56:54.908   275   275 I Zygote  : Process 6012 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4837:10-28 19:56:54.911  1609  4306 I AlexaFocusInFocusChannel: 
+Releasing all system focus for com.amazon.alexamediaplayer.runtime.ftv with client 
+3f46660
+  firetv_crash.txt:4838:10-28 19:56:54.912  1609  4306 I AlexaFocusInFocusChannel: No 
+system focus to release for com.amazon.alexamediaplayer.runtime.ftv with client 3f46660
+  firetv_crash.txt:4839:10-28 19:56:54.938   525   546 W libprocessgroup: kill(-6012, 
+9) failed: No such process
+  firetv_crash.txt:4840:10-28 19:56:54.938   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10067 pid 6012 in 36ms
+  firetv_crash.txt:4841:10-28 19:56:54.949  1616  1616 I whad-MediaSessionClient: 
+onActiveSessionsChanged: started, controllers=0
+  firetv_crash.txt:4842:10-28 19:56:54.952   793  1250 I Avrcp   : Skipping update due 
+to invalid playback state
+  firetv_crash.txt:4843:10-28 19:56:54.952  1616  1616 I WhadService: 
+onActiveSessionsChanged:No active WHA media session, isConfident=true
+  firetv_crash.txt:4844:10-28 19:56:54.955  1616  2328 I WhadWrapper: 
+whadOnClusterPlaybackStateChangedCallback, isPlaying=false, deviceCount=1
+  firetv_crash.txt:4845:10-28 19:56:54.956  1616  2328 I whad    : AudioDistributionMan
+ager:processClusterPlaybackStateChanged:outputDeviceType=3,isPlaying=0,mIsPlaying=0, 
+isconfident=1
+  firetv_crash.txt:4846:10-28 19:56:54.956  1616  2328 I whad    : 
+ActiveClientStateManager:onPlaybackSessionEnded:Potential duplicate call, skipping 
+active client reset
+  firetv_crash.txt:4847:10-28 19:56:54.965  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionCommandQueue: Active Sessions changed: 0
+  firetv_crash.txt:4848:10-28 19:56:54.965  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Resolve active controller
+  firetv_crash.txt:4849:10-28 19:56:54.965  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: Update target media session.
+  firetv_crash.txt:4850:10-28 19:56:54.965  1609  2897 I 
+Vizzini:MediaSessionLib.MediaSessionControllerStateMgr: No new active media sessions 
+to target.
+  firetv_crash.txt:4851:10-28 19:56:54.989   525   525 W TelecomManager: Telecom 
+Service not found.
+  firetv_crash.txt:4852:10-28 19:56:55.038   370   370 I perfmonitord:StatUtil: 
+CPUUtilization now below 95%. Usage - 94%. Total milliseconds above threshold - 1000
+  firetv_crash.txt:4853:10-28 19:56:55.128   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:4854:10-28 19:56:55.334   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:4855:10-28 19:56:55.341   525   636 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:4856:10-28 19:56:55.581   525   626 W InputDispatcher: channel 
+'20bdd40 InputMethod (server)' ~ Consumer closed input channel or an error occurred.  
+events=0x9
+  firetv_crash.txt:4857:10-28 19:56:55.582   525   626 E InputDispatcher: channel 
+'20bdd40 InputMethod (server)' ~ Channel is unrecoverably broken and will be disposed!
+  firetv_crash.txt:4858:10-28 19:56:55.583   285  4178 I Binder  : Binder handle 112 
+died, dispatching death
+  firetv_crash.txt:4859:10-28 19:56:55.583   285  4178 I Binder  : Dispatching death 
+to 0xadc42a30 for handle 112
+> firetv_crash.txt:4860:10-28 19:56:55.586   525   535 I ActivityManager: Process 
+com.amazon.tv.ime (pid 355) has died: prcp IMPB
+  firetv_crash.txt:4861:10-28 19:56:55.587   525   801 I WindowManager: WIN DEATH: 
+Window{20bdd40 u0 InputMethod}
+  firetv_crash.txt:4862:10-28 19:56:55.587   525   801 W InputDispatcher: Attempted to 
+unregister already unregistered input channel '20bdd40 InputMethod (server)'
+  firetv_crash.txt:4863:10-28 19:56:55.593   525   535 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.tv.ime/.FireTVIME in 16000ms
+  firetv_crash.txt:4864:10-28 19:56:55.598   275   275 I Zygote  : Process 355 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4865:10-28 19:56:55.606   525   546 W libprocessgroup: kill(-355, 
+9) failed: No such process
+  firetv_crash.txt:4866:10-28 19:56:55.608   525   546 W libprocessgroup: kill(355, 9) 
+failed: No such process
+  firetv_crash.txt:4867:10-28 19:56:55.651   525   546 W libprocessgroup: kill(-355, 
+9) failed: No such process
+  firetv_crash.txt:4868:10-28 19:56:55.655   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10150 pid 355 in 69ms
+  firetv_crash.txt:4869:10-28 19:56:55.697   525   551 W ActivityManager: 
+setHasOverlayUi called on unknown pid: 355
+  firetv_crash.txt:4870:10-28 19:56:55.752   525   544 W Looper  : Slow dispatch took 
+108ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=53
+  firetv_crash.txt:4871:10-28 19:56:55.816   275   275 I Zygote  : Process 1339 exited 
+due to signal 9 (Killed)
+> firetv_crash.txt:4872:10-28 19:56:55.849   525  2136 I ActivityManager: Process 
+com.amazon.connectivitycontroller (pid 1339) has died: prcp TRNB
+  firetv_crash.txt:4873:10-28 19:56:55.855   525   546 W libprocessgroup: kill(-1339, 
+9) failed: No such process
+  firetv_crash.txt:4874:10-28 19:56:55.855   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10016 pid 1339 in 5ms
+  firetv_crash.txt:4875:10-28 19:56:55.867   525  2136 W ActivityManager: Scheduling 
+restart of crashed service 
+com.amazon.connectivitycontroller/.service.ConnectivityControllerService in 25725ms
+  firetv_crash.txt:4876:10-28 19:56:55.928   525   535 I AmazonInputManagerService: 
+cleaning up because process died
+  firetv_crash.txt:4877:10-28 19:56:56.041   370   370 I perfmonitord:StatUtil: 
+MemoryUtilization crossed 95%. Current - 97%
+  firetv_crash.txt:4878:10-28 19:56:56.105   818   818 I SaleDatabase: calling 
+notifyChange for (content://com.amazon.device.sale.provider/notification)
+  firetv_crash.txt:4879:10-28 19:56:56.203   525   525 W InputMethodManagerService: 
+Session failed to close due to remote exception
+  firetv_crash.txt:4880:10-28 19:56:56.203   525   525 W InputMethodManagerService: 
+android.os.DeadObjectException
+  firetv_crash.txt:4881:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.os.BinderProxy.transactNative(Native Method)
+  firetv_crash.txt:4882:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.os.BinderProxy.transact(Binder.java:1243)
+  firetv_crash.txt:4883:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.internal.view.IInputMethodSession$Stub$Proxy.finishSession(IInputMethodS
+ession.java:309)
+  firetv_crash.txt:4884:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.InputMethodManagerService.finishSessionLocked(InputMethodManagerS
+ervice.java:2161)
+  firetv_crash.txt:4885:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.InputMethodManagerService.clearClientSessionLocked(InputMethodMan
+agerService.java:2152)
+  firetv_crash.txt:4886:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.InputMethodManagerService.clearCurMethodLocked(InputMethodManager
+Service.java:2178)
+  firetv_crash.txt:4887:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.InputMethodManagerService.onServiceDisconnected(InputMethodManage
+rService.java:2205)
+  firetv_crash.txt:4888:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.app.LoadedApk$ServiceDispatcher.doDeath(LoadedApk.java:1780)
+  firetv_crash.txt:4889:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.app.LoadedApk$ServiceDispatcher$RunConnection.run(LoadedApk.java:1795)
+  firetv_crash.txt:4890:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.os.Handler.handleCallback(Handler.java:873)
+  firetv_crash.txt:4891:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.os.Handler.dispatchMessage(Handler.java:99)
+  firetv_crash.txt:4892:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at android.os.Looper.loop(Looper.java:211)
+  firetv_crash.txt:4893:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.SystemServer.run(SystemServer.java:471)
+  firetv_crash.txt:4894:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.server.SystemServer.main(SystemServer.java:307)
+  firetv_crash.txt:4895:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at java.lang.reflect.Method.invoke(Native Method)
+  firetv_crash.txt:4896:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+  firetv_crash.txt:4897:10-28 19:56:56.203   525   525 W InputMethodManagerService: 	
+at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:838)
+  firetv_crash.txt:4898:10-28 19:56:56.216   525   525 W Looper  : Slow dispatch took 
+629ms main h=android.app.ActivityThread$H 
+c=android.app.LoadedApk$ServiceDispatcher$RunConnection@4e2d3b6 m=0
+  firetv_crash.txt:4899:10-28 19:56:56.217   525   525 W Looper  : Slow delivery took 
+617ms main h=android.os.Handler 
+c=com.android.server.statusbar.StatusBarManagerService$4@5d9c8b7 m=0
+  firetv_crash.txt:4900:10-28 19:56:56.261   525   525 I AmazonAutoPairService: Remote 
+service disconnected
+  firetv_crash.txt:4901:10-28 19:56:56.627   525   525 W Looper  : Drained
+  firetv_crash.txt:4902:10-28 19:56:56.633   389   491 E storaged: getDiskStats failed 
+with result NOT_SUPPORTED and size 0
+  firetv_crash.txt:4903:10-28 19:56:56.693   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+> firetv_crash.txt:4904:10-28 19:56:56.715   525  2136 I ActivityManager: Process 
+com.amazon.device.rdmapplication (pid 1387) has died: cch+1CEM 
+  firetv_crash.txt:4905:10-28 19:56:56.733   525   546 W libprocessgroup: kill(-1387, 
+9) failed: No such process
+  firetv_crash.txt:4906:10-28 19:56:56.734   275   275 I Zygote  : Process 1387 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:4907:10-28 19:56:56.778   525   546 W libprocessgroup: kill(-1387, 
+9) failed: No such process
+  firetv_crash.txt:4908:10-28 19:56:56.778   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10045 pid 1387 in 62ms
+  firetv_crash.txt:4909:10-28 19:56:56.785   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:4910:10-28 19:56:56.806   525   636 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:4911:10-28 19:56:56.889   525   730 W Eve     : MEMORY_LEVEL: 
+[1387,901][1339,200][355,200][6012,500][4812,0]
+  firetv_crash.txt:4912:10-28 19:56:56.889   525   730 W Eve     :   
+top=com.example.sparrow/.MainActivity launching=false
+  firetv_crash.txt:4913:10-28 19:56:56.889   525   730 W Eve     :   
+prev=com.amazon.venezia/.pdi.AppLaunchActivity screen_on=true thermal=0
+  firetv_crash.txt:4914:10-28 19:56:56.889   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:4915:10-28 19:56:56.889   525   730 W Eve     :   memory=0 trim=15 
+available=52208KB free=44688KB
+  firetv_crash.txt:4916:10-28 19:56:56.917   275   275 I Zygote  : Process 12407 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:4917:10-28 19:56:56.918   525   546 W libprocessgroup: kill(-12407, 
+9) failed: No such process
+  firetv_crash.txt:4918:10-28 19:56:56.918   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10085 pid 12407 in 0ms
+> firetv_crash.txt:4919:10-28 19:56:56.922   525  2136 I ActivityManager: Process 
+com.amazon.device.blepa (pid 12407) has died: cch+1CEM 
+  firetv_crash.txt:4920:10-28 19:56:57.004   285  4178 I Binder  : Binder handle 65 
+died, dispatching death
+  firetv_crash.txt:4921:10-28 19:56:57.004   285  4178 I Binder  : Dispatching death 
+to 0xadc41ab0 for handle 65
+  firetv_crash.txt:4922:10-28 19:56:57.004   285  4174 I Binder  : Binder handle 92 
+died, dispatching death
+  firetv_crash.txt:4923:10-28 19:56:57.004   285  4174 I Binder  : Dispatching death 
+to 0xadc41ff0 for handle 92
+  firetv_crash.txt:4924:10-28 19:56:57.004   285  4130 I Binder  : Binder handle 95 
+died, dispatching death
+  firetv_crash.txt:4925:10-28 19:56:57.005   285  4130 I Binder  : Dispatching death 
+to 0xadc42070 for handle 95
+  firetv_crash.txt:4926:10-28 19:56:57.005   285  4087 I Binder  : Binder handle 49 
+died, dispatching death
+  firetv_crash.txt:4927:10-28 19:56:57.005   285  4087 I Binder  : Dispatching death 
+to 0xadc424f0 for handle 49
+  firetv_crash.txt:4928:10-28 19:56:57.005   285   285 I Binder  : Binder handle 51 
+died, dispatching death
+  firetv_crash.txt:4929:10-28 19:56:57.005   285   285 I Binder  : Dispatching death 
+to 0xadc42530 for handle 51
+  firetv_crash.txt:4930:10-28 19:56:57.005   285   415 I Binder  : Binder handle 97 
+died, dispatching death
+  firetv_crash.txt:4931:10-28 19:56:57.005   285   415 I Binder  : Dispatching death 
+to 0xadc42130 for handle 97
+  firetv_crash.txt:4932:10-28 19:56:57.005   285  3683 I Binder  : Binder handle 66 
+died, dispatching death
+  firetv_crash.txt:4933:10-28 19:56:57.005   285  3683 I Binder  : Dispatching death 
+to 0xadc41af0 for handle 66
+  firetv_crash.txt:4934:10-28 19:56:57.005   285  3684 I Binder  : Binder handle 75 
+died, dispatching death
+  firetv_crash.txt:4935:10-28 19:56:57.005   285  3684 I Binder  : Dispatching death 
+to 0xadc41b70 for handle 75
+  firetv_crash.txt:4936:10-28 19:56:57.006  1460  1460 I Binder  : Binder handle 2 
+died, dispatching death
+  firetv_crash.txt:4937:10-28 19:56:57.007  1460  1460 I Binder  : Dispatching death 
+to 0xb28083fc for handle 2
+  firetv_crash.txt:4938:10-28 19:56:57.009   285  1389 I Binder  : Binder handle 73 
+died, dispatching death
+  firetv_crash.txt:4939:10-28 19:56:57.009   285  1389 I Binder  : Dispatching death 
+to 0xadc41b30 for handle 73
+  firetv_crash.txt:4940:10-28 19:56:57.008   818 19782 I NEODelegate: Binder death 
+detected. Unregistering dead service for secure setting USAGE_METRICS_UPLOAD_ENABLED
+  firetv_crash.txt:4941:10-28 19:56:57.015  1460  1460 E com_amazon_neo_minerv..: 
+Minerva service died - link_to_death callback fired
+  firetv_crash.txt:4942:10-28 19:56:57.020   285   415 I neo_service_coordinat..: 
+removed service(com.amazon.neo.minerva, User(0))
+  firetv_crash.txt:4943:10-28 19:56:57.022   818  4338 I NEODelegate: Binder death 
+detected. Unregistering dead service from intent 
+[android.intent.action.ACTION_SHUTDOWN]
+  firetv_crash.txt:4944:10-28 19:56:57.072   525  2136 I AmazonProfileService: 
+Unregistering callback
+  firetv_crash.txt:4945:10-28 19:56:57.086   818  1392 W NativeMinervaService: 
+com.amazon.neodelegate record: com.amazon.neo.minerva not yet bound. Buffered Metric 
+Event. Buffer Size: 1
+  firetv_crash.txt:4946:10-28 19:56:57.086   818 18588 E AmazonProfileManager: 
+programIdList cannot be null or empty. Please use 
+registerActiveProfileEventCallbackAllPrograms if registering for all programs
+  firetv_crash.txt:4947:10-28 19:56:57.088   818 19782 W NativeMinervaService: 
+com.amazon.neodelegate record: com.amazon.neo.minerva not yet bound. Buffered Metric 
+Event. Buffer Size: 2
+  firetv_crash.txt:4948:10-28 19:56:57.088   818 19782 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:4949:10-28 19:56:57.088   818  1392 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:5041:10-28 19:56:57.758   285   415 I Binder  : Binder handle 66 
+died, dispatching death
+  firetv_crash.txt:5042:10-28 19:56:57.758   285   415 I Binder  : Dispatching death 
+to 0xadc41b70 for handle 66
+  firetv_crash.txt:5043:10-28 19:56:57.933   818   845 I device.service: Background 
+concurrent copying GC freed 46504(2MB) AllocSpace objects, 4(80KB) LOS objects, 50% 
+free, 3MB/6MB, paused 380us total 594.105ms
+  firetv_crash.txt:5044:10-28 19:56:57.988  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): is2g=0, is11ac=1, is11ax=0, chan_bw=80, nss=2, bcn_rssi=-42, 
+data_rssi=-48, tx_ok=591980, tx_failed=140333, cca_idle_pct=91
+  firetv_crash.txt:5045:10-28 19:56:57.989  1349  1349 I main.wifi_score: 
+dump_wifi_score_ctxt(): last_tx_stats: sgi=0, pream=2, mcs=9, ss=2, bw=2
+  firetv_crash.txt:5046:10-28 19:56:58.044   370   370 I perfmonitord:StatUtil: 
+CPUUtilization crossed 95%. Current - 99%
+  firetv_crash.txt:5047:10-28 19:56:58.080   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:5048:10-28 19:56:58.184   525   635 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:5049:10-28 19:56:58.193   525   636 W BestClock: 
+java.time.DateTimeException: Missing NTP fix
+  firetv_crash.txt:5050:10-28 19:56:59.051   370   370 I perfmonitord:StatUtil: 
+CPUUtilization now below 95%. Usage - 85%. Total milliseconds above threshold - 1000
+  firetv_crash.txt:5051:10-28 19:56:59.181   525   549 W Looper  : Slow dispatch took 
+285ms android.fg h=android.os.Handler 
+c=com.android.server.Watchdog$HandlerChecker@f17cf07 m=0
+  firetv_crash.txt:5052:10-28 19:56:59.368   275   275 I Zygote  : Process 32524 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:5053:10-28 19:56:59.506   525   546 W libprocessgroup: kill(-32524, 
+9) failed: No such process
+  firetv_crash.txt:5054:10-28 19:56:59.506   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10024 pid 32524 in 8ms
+  firetv_crash.txt:5055:10-28 19:56:59.518   525   525 I cloud_pairing_sys_service: 
+s2dm agent service is disconnected
+> firetv_crash.txt:5056:10-28 19:56:59.553   525   798 I ActivityManager: Process 
+com.amazon.device.messaging (pid 32524) has died: vis  IMPF
+  firetv_crash.txt:5057:10-28 19:56:59.569   275   275 I Zygote  : Process 2844 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:5058:10-28 19:56:59.608   263  1288 I cloud_pairing_osal: 
+cloudPairingOsal_s2dmBinderStateChangedCallback(L176): s2dm connection is OFF
+  firetv_crash.txt:5059:10-28 19:56:59.618   926  9087 W TComm.ServiceSideMessag: 
+onBinderDied - binder died; channel: 484, uid: 10024
+  firetv_crash.txt:5060:10-28 19:56:59.623   926  4021 W TComm.ServiceSideMessag: 
+onBinderDied - binder died; channel: 488, uid: 10024
+  firetv_crash.txt:5061:10-28 19:56:59.648   275   275 I Zygote  : Process 5746 exited 
+due to signal 9 (Killed)
+  firetv_crash.txt:5062:10-28 19:56:59.674   525   525 W Looper  : Slow dispatch took 
+102ms main h=com.amazon.cloudpairing.CloudPairingAgentSystemService$1 c=null m=2
+  firetv_crash.txt:5063:10-28 19:56:59.691   926  9087 I TComm.MessageRouterImpl: 
+deregisterMessageHandler - removed route; channel: 484, handler: 
+com.amazon.communication.ServiceSideMessageRouter$RemoteMessageHandler@bd5a346
+  firetv_crash.txt:5064:10-28 19:56:59.696   926  4021 I TComm.MessageRouterImpl: 
+deregisterMessageHandler - removed route; channel: 488, handler: 
+com.amazon.communication.ServiceSideMessageRouter$RemoteMessageHandler@fda0907
+  firetv_crash.txt:5065:10-28 19:56:59.800   818   818 I NEODelegate: 
+AmazonSystemNoticesManager disconnected
+  firetv_crash.txt:5066:10-28 19:57:00.004   525   798 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.device.messaging/.CloudMessagingService in 
+31628ms
+  firetv_crash.txt:5067:10-28 19:57:00.238   525   730 W Eve     : MEMORY_LEVEL: 
+[32524,100][12407,901][1387,901][1339,200][355,200]
+  firetv_crash.txt:5068:10-28 19:57:00.238   525   730 W Eve     :   
+top=com.example.sparrow/.MainActivity launching=false
+  firetv_crash.txt:5069:10-28 19:57:00.238   525   730 W Eve     :   
+prev=com.amazon.venezia/.pdi.AppLaunchActivity screen_on=true thermal=0
+  firetv_crash.txt:5070:10-28 19:57:00.238   525   730 W Eve     :   adb=true 
+downloading=false
+  firetv_crash.txt:5071:10-28 19:57:00.238   525   730 W Eve     :   memory=100 
+trim=15 available=32452KB free=19336KB
+  firetv_crash.txt:5072:10-28 19:57:00.261   525   626 W InputDispatcher: channel 
+'516308b com.example.sparrow/com.example.sparrow.MainActivity (server)' ~ Consumer 
+closed input channel or an error occurred.  events=0x9
+  firetv_crash.txt:5073:10-28 19:57:00.261   525   626 E InputDispatcher: channel 
+'516308b com.example.sparrow/com.example.sparrow.MainActivity (server)' ~ Channel is 
+unrecoverably broken and will be disposed!
+  firetv_crash.txt:5074:10-28 19:57:00.264   275   275 I Zygote  : Process 12846 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:5075:10-28 19:57:00.466   525  3110 I WindowManager: WIN DEATH: 
+Window{516308b u0 com.example.sparrow/com.example.sparrow.MainActivity}
+  firetv_crash.txt:5076:10-28 19:57:00.466   525  3110 W InputDispatcher: Attempted to 
+unregister already unregistered input channel '516308b 
+com.example.sparrow/com.example.sparrow.MainActivity (server)'
+> firetv_crash.txt:5077:10-28 19:57:00.480   525   969 I ActivityManager: Process 
+android.ext.services (pid 2844) has died: vis  BFGS
+  firetv_crash.txt:5078:10-28 19:57:00.480   525   546 W libprocessgroup: kill(-2844, 
+9) failed: No such process
+  firetv_crash.txt:5079:10-28 19:57:00.480   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10026 pid 2844 in 0ms
+  firetv_crash.txt:5080:10-28 19:57:00.482   525   969 W ActivityManager: Scheduling 
+restart of crashed service android.ext.services/.notification.Assistant in 41146ms
+> firetv_crash.txt:5081:10-28 19:57:00.497   525  3106 I ActivityManager: Process 
+com.amazon.systemnotices (pid 5746) has died: vis  IMPF
+  firetv_crash.txt:5082:10-28 19:57:00.497   525   546 W libprocessgroup: kill(-5746, 
+9) failed: No such process
+  firetv_crash.txt:5083:10-28 19:57:00.497   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10183 pid 5746 in 0ms
+  firetv_crash.txt:5084:10-28 19:57:00.498   525  3106 W ActivityManager: Scheduling 
+restart of crashed service com.amazon.systemnotices/.AmazonSystemNoticesService in 
+51130ms
+> firetv_crash.txt:5085:10-28 19:57:00.569   525  2401 I ActivityManager: Process 
+com.example.sparrow (pid 12846) has died: fore TOP 
+  firetv_crash.txt:5086:10-28 19:57:00.570   525   546 W libprocessgroup: kill(-12846, 
+9) failed: No such process
+  firetv_crash.txt:5087:10-28 19:57:00.570   525   546 I libprocessgroup: Successfully 
+killed process cgroup uid 10229 pid 12846 in 0ms
+  firetv_crash.txt:5088:10-28 19:57:00.580   525  2401 W ActivityManager: Force 
+removing ActivityRecord{94034c6 u0 com.example.sparrow/.MainActivity t1996}: app died, 
+no saved state
+  firetv_crash.txt:5089:10-28 19:57:00.611   343   598 W SurfaceFlinger: Attempting to 
+destroy on removed layer: AppWindowToken{3cd7b4 token=Token{78efc87 
+ActivityRecord{94034c6 u0 com.example.sparrow/.MainActivity t1996}}}#0
+  firetv_crash.txt:5090:10-28 19:57:00.649   525  2401 W Process : Unable to open 
+/proc/0/status
+  firetv_crash.txt:5091:10-28 19:57:00.661   525   544 W Looper  : Slow dispatch took 
+591ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=53
+  firetv_crash.txt:5092:10-28 19:57:00.663   525   544 W Looper  : Slow delivery took 
+360ms android.ui h=com.android.server.policy.PhoneWindowManager$PolicyHandler 
+c=com.android.server.policy.PhoneWindowManager$20@71e1345 m=0
+  firetv_crash.txt:5093:10-28 19:57:00.668   525   551 W ActivityManager: 
+setHasOverlayUi called on unknown pid: 12846
+  firetv_crash.txt:5094:10-28 19:57:00.668   525   549 W Looper  : Slow dispatch took 
+163ms android.fg h=com.android.server.AppStateTracker$MyHandler c=null m=0
+  firetv_crash.txt:5095:10-28 19:57:00.670   525 13287 W Binder  : Outgoing 
+transactions from this process must be FLAG_ONEWAY
+  firetv_crash.txt:5096:10-28 19:57:00.670   525 13287 W Binder  : java.lang.Throwable
+  firetv_crash.txt:5097:10-28 19:57:00.670   525 13287 W Binder  : 	at 
+android.os.BinderProxy.transact(Binder.java:1220)
+  firetv_crash.txt:5098:10-28 19:57:00.670   525 13287 W Binder  : 	at com.amazon.neo.s
+ervice.framework.api.BinderUtils.getServiceByHandle(BinderUtils.java:309)
+  firetv_crash.txt:5099:10-28 19:57:00.670   525 13287 W Binder  : 	at com.amazon.neo.s
+ervice.framework.api.BinderUtils.getPrivilegedService(BinderUtils.java:168)
+  firetv_crash.txt:5100:10-28 19:57:00.670   525 13287 W Binder  : 	at com.amazon.miner
+va.client.neo.NativeMinervaService.connectToService(NativeMinervaService.java:161)
+  firetv_crash.txt:5101:10-28 19:57:00.670   525 13287 W Binder  : 	at com.amazon.miner
+va.client.neo.NativeMinervaService.access$600(NativeMinervaService.java:34)
+  firetv_crash.txt:5102:10-28 19:57:00.670   525 13287 W Binder  : 	at com.amazon.miner
+va.client.neo.NativeMinervaService$ConnectTask.run(NativeMinervaService.java:111)
+  firetv_crash.txt:5103:10-28 19:57:00.670   525 13287 W Binder  : 	at 
+java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+  firetv_crash.txt:5104:10-28 19:57:00.670   525 13287 W Binder  : 	at 
+java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+  firetv_crash.txt:5105:10-28 19:57:00.670   525 13287 W Binder  : 	at 
+java.lang.Thread.run(Thread.java:764)
+  firetv_crash.txt:5106:10-28 19:57:00.684   285  4178 I neo_service_coordinat..: 
+Begin launch-service com.amazon.neo.minerva
+  firetv_crash.txt:5107:10-28 19:57:00.699   818  1391 W NativeMinervaService: 
+com.amazon.neodelegate record: com.amazon.neo.minerva not yet bound. Buffered Metric 
+Event. Buffer Size: 19
+  firetv_crash.txt:5108:10-28 19:57:00.701   818  1391 I NativeMinervaKPIReporter: 
+Shutdown was invoked, flushing KPIs.
+  firetv_crash.txt:5109:10-28 19:57:00.716   525   545 W ActivityManager: Slow 
+operation: 79ms so far, now at startProcess: returned from zygote!
+  firetv_crash.txt:5110:10-28 19:57:00.717   525   545 W ActivityManager: Slow 
+operation: 79ms so far, now at startProcess: done updating battery stats
+  firetv_crash.txt:5111:10-28 19:57:00.718   525   545 W ActivityManager: Slow 
+operation: 81ms so far, now at startProcess: building log message
+  firetv_crash.txt:5112:10-28 19:57:00.718   525   545 I ActivityManager: Start proc 
+13289:com.amazon.tv.launcher/u0a152 for activity 
+com.amazon.tv.launcher/.ui.HomeActivity_vNext
+  firetv_crash.txt:5113:10-28 19:57:00.718   525   545 W ActivityManager: Slow 
+operation: 81ms so far, now at startProcess: starting to update pids map
+  firetv_crash.txt:5114:10-28 19:57:00.718   525   545 W ActivityManager: Slow 
+operation: 81ms so far, now at startProcess: done updating pids map
+  firetv_crash.txt:5115:10-28 19:57:00.764 13294 13294 I neo_init: Updating the OOM 
+score to: 800.
+  firetv_crash.txt:11810:10-28 19:57:27.729 14454 14454 W .tv.settings.v: 
+  firetv_crash.txt:11811:10-28 19:57:27.734 13289 13400 I ImageTrimMemoryHandler: 
+Processed trimMemory level=40, bytesInMemoryCache=5 MB, bytesInUse=6 MB
+  firetv_crash.txt:11812:10-28 19:57:27.882 14454 14454 I .tv.settings.v: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:11813:10-28 19:57:27.906 14454 14454 I .tv.settings.v: The 
+ClassLoaderContext is a special shared library.
+  firetv_crash.txt:11814:10-28 19:57:27.929 13964 14181 W MPB_DRM : [MPB_DRM:MPB DRM 
+MML callback] [FtvMpb Internal] MediaCodecQuerier.executeVideoQuery 
+CodecQuery(mimeType=MEDIA_VIDEO, mimeSubType=mp4, attributes={CODECS=hev1.2.4.L150.90, 
+WIDTH=3840, HEIGHT=2160, BITRATE=25000000, FRAMERATE=30.0, PROFILE=Main10, LEVEL=5.0, 
+HDR_METADATA_TYPE=smpteSt2086, COLOR_GAMUT=rec2020, TRANSFER_FUNCTION=pq}), 
+CodecQueryResult(isSupported=false, isSmooth=false, isHardwareAccelerated=false), 
+resolved codec: null, hdr supported: false
+  firetv_crash.txt:11815:10-28 19:57:27.977 13964 14181 W MPB_DRM : [MPB_DRM:MPB DRM 
+MML callback] [FtvMpb Internal] MediaCodecQuerier.executeVideoQuery 
+CodecQuery(mimeType=MEDIA_VIDEO, mimeSubType=mp4, attributes={CODECS=hev1.2.4.L150.90, 
+WIDTH=3840, HEIGHT=2160, BITRATE=25000000, FRAMERATE=30.0, PROFILE=Main10, LEVEL=5.0, 
+HDR_METADATA_TYPE=smpteSt2094-40, COLOR_GAMUT=rec2020, TRANSFER_FUNCTION=pq}), 
+CodecQueryResult(isSupported=false, isSmooth=false, isHardwareAccelerated=false), 
+resolved codec: null, hdr supported: false
+  firetv_crash.txt:11816:10-28 19:57:27.984 13964 14034 I Firebat : Fetch cognito 
+credential from region-us-west-2
+  firetv_crash.txt:11817:10-28 19:57:28.006   525   785 E TaskPersister: File error 
+accessing recents directory (directory doesn't exist?).
+  firetv_crash.txt:11818:10-28 19:57:28.043 14401 14409 W System  : A resource failed 
+to call close. 
+  firetv_crash.txt:11819:10-28 19:57:28.155 13964 14181 W MPB_DRM : [MPB_DRM:MPB DRM 
+MML callback] [FtvMpb Internal] MediaCodecQuerier.executeVideoQuery 
+CodecQuery(mimeType=MEDIA_VIDEO, mimeSubType=mp4, attributes={CODECS=dvhe.05.07, 
+WIDTH=3840, HEIGHT=2160, BITRATE=25000000, FRAMERATE=30.0, PROFILE=dvhe.stn, 
+LEVEL=07}), CodecQueryResult(isSupported=false, isSmooth=false, 
+isHardwareAccelerated=false), resolved codec: null, hdr supported: false
+  firetv_crash.txt:11820:10-28 19:57:28.280   525   525 W Looper  : Slow dispatch took 
+151ms main h=com.android.server.job.JobSchedulerService$JobHandler c=null m=4
+  firetv_crash.txt:11821:10-28 19:57:28.299 14186 14195 W com_amazon_device_rem..: 
+DRCS: Weblab: [weblab_external_plugin::client::provider:475] message = Encountered an 
+error while getting treatment for weblab: Weblab has not been exposed 
+FTV_METRIC_REPORTING_SCREEN_CHECK_1363758; 
+  firetv_crash.txt:11822:10-28 19:57:28.312 14454 14454 W .tv.settings.v: 
+resources.arsc in APK '/system/priv-app/DeviceClientPlatformContractsFramework/DeviceCl
+ientPlatformContractsFramework.apk' is compressed.
+  firetv_crash.txt:11823:10-28 19:57:28.338   285  4087 I Binder  : Binder handle 112 
+died, dispatching death
+  firetv_crash.txt:11824:10-28 19:57:28.338   285  4087 I Binder  : Dispatching death 
+to 0xadc42a30 for handle 112
+> firetv_crash.txt:11825:10-28 19:57:28.339   525  3099 I ActivityManager: Process 
+com.amazon.venezia (pid 13694) has died: cch+3CEM 
+  firetv_crash.txt:11826:10-28 19:57:28.340   525   546 W libprocessgroup: 
+kill(-13694, 9) failed: No such process
+  firetv_crash.txt:11827:10-28 19:57:28.341   275   275 I Zygote  : Process 13694 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:11828:10-28 19:57:28.362 14340 14497 I starboard: Returning IfA 
+LimitedAdTrackingEnabled: false
+  firetv_crash.txt:11829:10-28 19:57:28.363 14340 14497 I starboard: Successfully 
+retrieved Advertising ID (IfA).
+  firetv_crash.txt:11830:10-28 19:57:28.364 14340 14497 I starboard: Returning IfA 
+LimitedAdTrackingEnabled: false
+  firetv_crash.txt:11831:10-28 19:57:28.378   525   546 W libprocessgroup: 
+kill(-13694, 9) failed: No such process
+  firetv_crash.txt:11832:10-28 19:57:28.378   525   546 I libprocessgroup: 
+Successfully killed process cgroup uid 10163 pid 13694 in 38ms
+  firetv_crash.txt:11833:10-28 19:57:28.441 14454 14454 I DeviceInfo: DeviceInfo 
+shutdown hook registered successfully
+  firetv_crash.txt:11834:10-28 19:57:28.441 14454 14454 I DeviceInfo: Created shared 
+background ExecutorService for DeviceInfo
+  firetv_crash.txt:11835:10-28 19:57:28.520 14454 14535 I AmazonHdmiServiceManager: 
+AmazonHdmiServiceManager created
+  firetv_crash.txt:11836:10-28 19:57:28.521   525  3099 I AmazonHdmiService: Get 
+Current HDCP Version
+  firetv_crash.txt:11837:10-28 19:57:28.522 14454 14535 I DeviceInfo: utlraHD Support 
+determination:UNAVAILABLE hdcp2.2:true
+  firetv_crash.txt:11838:10-28 19:57:28.522 14454 14535 I DeviceInfo: Initializing 
+persistent UltraHD support to UNAVAILABLE
+  firetv_crash.txt:11839:10-28 19:57:28.560 13964 14058 I DEVICE_LAYER: 
+[DEVICE_LAYER:DisplayContext::delete_graphics_context] 
+DisplayContext::delete_graphics_context(): display=0x1 context=0x89cfddc0 
+android_surface=0x0 window=0x0 egl_surface=0x9e81c6e0
+  firetv_crash.txt:11840:10-28 19:57:28.560 13964 14058 I DEVICE_LAYER: 
+[DEVICE_LAYER:eglDestroyContext] Calling eglDestroyContext(0x1, 0x89cfddc0)
+  firetv_crash.txt:11841:10-28 19:57:28.567 14454 14454 I 
+com.amazon.tv.settings.v2/MAPInit: Initializing MAP (130050002 / 
+MAPAndroidLib-1.3.58932.0) for app com.amazon.tv.settings.v2. MAP release version: 
+20260630N
+  firetv_crash.txt:11842:10-28 19:57:28.576 13964 14058 I DEVICE_LAYER: 
+[DEVICE_LAYER:DisplayContext::destroy_egl_surface] 
+DisplayContext::destroy_egl_surface(): display=0x1 context=0x0 android_surface=0x0 
+window=0x0 egl_surface=0x9e81c6e0
+  firetv_crash.txt:11843:10-28 19:57:28.576 13964 14058 I DEVICE_LAYER: 
+[DEVICE_LAYER:eglDestroySurface] Calling eglDestroySurface(0x1, 0x9e81c6e0)
+  firetv_crash.txt:11844:10-28 19:57:28.593 13964 14083 W DOWNLOADER: 
+[DOWNLOADER:DownloaderError] _65_ Could not fetch url - CURL error code: 7, HTTP code: 
+0, host: localhost, response body: 
+  firetv_crash.txt:11845:10-28 19:57:28.608 14454 14454 I 
+com.amazon.tv.settings.v2/MetricsHelper: FireOS Minerva metrics is supported
+  firetv_crash.txt:11846:10-28 19:57:28.618 14454 14454 I 
+com.amazon.tv.settings.v2/MAPInit: Running MAPInit on main thread: true
+  firetv_crash.txt:11847:10-28 19:57:28.631 14454 14454 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11848:10-28 19:57:28.637 14454 14454 I chatty  : 
+uid=10161(com.amazon.tv.settings.v2) identical 2 lines
+  firetv_crash.txt:11849:10-28 19:57:28.639 14454 14454 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11850:10-28 19:57:28.642 14454 14454 I 
+com.amazon.tv.settings.v2/IsolatedModeSwitcher: App does not support client driven 
+runtime isolation.
+  firetv_crash.txt:11851:10-28 19:57:28.643 14454 14454 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11852:10-28 19:57:28.645 14454 14454 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11853:10-28 19:57:28.646 14454 14454 I 
+com.amazon.tv.settings.v2/FeatureSetCache: Caching feature IsolateApplication as false
+  firetv_crash.txt:11854:10-28 19:57:28.648 14454 14454 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11855:10-28 19:57:28.659 14454 14537 E 
+com.amazon.tv.settings.v2/PlatformUtils: Could not initialize 
+FidoAuthenticatorJSBridge because Fido client could not be initialized
+  firetv_crash.txt:11873:10-28 19:57:28.805   328 17385 I 
+AudioALSAPlaybackHandlerHDMI: -close()
+  firetv_crash.txt:11874:10-28 19:57:28.806   328 17385 I AudioALSAStreamManager: 
++destroyPlaybackHandler(), mode = 0, pPlaybackHandler = 0xb2ed5280
+  firetv_crash.txt:11875:10-28 19:57:28.806   328 17385 I 
+AudioALSAPlaybackHandlerHDMI: ~AudioALSAPlaybackHandlerHDMI()
+  firetv_crash.txt:11876:10-28 19:57:28.806   328 17385 I AudioALSAStreamManager: 
+-destroyPlaybackHandler(), mPlaybackHandlerVector.size() = 0
+  firetv_crash.txt:11877:10-28 19:57:28.807   328 17385 I AudioALSAStreamOut: 
+[hdmi_stereo] +resetDeviceSuspendDynamicly() Tag Swt_Dyc
+  firetv_crash.txt:11878:10-28 19:57:28.807   328 17385 I AudioALSAStreamOut: 
+[hdmi_stereo] -resetDeviceSuspendDynamicly() Tag Swt_Dyc
+  firetv_crash.txt:11879:10-28 19:57:28.807   328 17385 I AudioALSAGenericStreamOut: 
+[hdmi_stereo] -standby() mPriority 1
+  firetv_crash.txt:11880:10-28 19:57:28.808   328 17385 I EurorackThread: 
+setSuspendState() state:1
+  firetv_crash.txt:11881:10-28 19:57:28.809 14454 14541 I 
+com.amazon.tv.settings.v2/DataStorageFactoryImpl: Creating new DataStorageFactoryImpl
+  firetv_crash.txt:11882:10-28 19:57:28.809 14454 14541 I 
+com.amazon.tv.settings.v2/MAPInitTasks: Get DataStorage instance for initialization
+  firetv_crash.txt:11883:10-28 19:57:28.811 14454 14541 I 
+com.amazon.tv.settings.v2/DataStorageFactoryImpl: Initializing new DataStorage
+  firetv_crash.txt:11884:10-28 19:57:28.814 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11885:10-28 19:57:28.819 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11886:10-28 19:57:28.821   285  4087 I Binder  : Binder handle 101 
+died, dispatching death
+  firetv_crash.txt:11887:10-28 19:57:28.821   285  4087 I Binder  : Dispatching death 
+to 0xadc427f0 for handle 101
+> firetv_crash.txt:11888:10-28 19:57:28.821   525  3110 I ActivityManager: Process 
+com.amazon.bueller.photos (pid 14096) has died: cch+3CEM 
+  firetv_crash.txt:11889:10-28 19:57:28.822   525   546 W libprocessgroup: 
+kill(-14096, 9) failed: No such process
+  firetv_crash.txt:11890:10-28 19:57:28.823 14454 14541 I 
+com.amazon.tv.settings.v2/IsolatedModeSwitcher: App does not support client driven 
+runtime isolation.
+  firetv_crash.txt:11891:10-28 19:57:28.826 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11892:10-28 19:57:28.830 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11893:10-28 19:57:28.832   275   275 I Zygote  : Process 14096 
+exited due to signal 9 (Killed)
+  firetv_crash.txt:11894:10-28 19:57:28.848 13964 14058 I DEVICE_LAYER: 
+[DEVICE_LAYER:DisplayContext::process_ignition_event] 
+DisplayContext::process_ignition_event(ignitionEvent->type=129 
+(AV_DISPLAY_DID_ENTER_BACKGROUND))
+  firetv_crash.txt:11895:10-28 19:57:28.852 14454 14541 I 
+com.amazon.tv.settings.v2/DeviceAttributeCache: Setting device attribute CentralAPK to 
+true
+  firetv_crash.txt:11896:10-28 19:57:28.854 14454 14541 I 
+com.amazon.tv.settings.v2/DataStorageFactoryImpl: Creating and using new 
+NonCanonicalDataStorage
+  firetv_crash.txt:11897:10-28 19:57:28.858 14454 14541 I 
+com.amazon.tv.settings.v2/LocalKeyValueStore: Create DE shared preference, OS supports 
+direct boot.
+  firetv_crash.txt:11898:10-28 19:57:28.861 14454 14541 I 
+com.amazon.tv.settings.v2/MAPInitTasks: Initialize DataStorage instance
+  firetv_crash.txt:11899:10-28 19:57:28.861 14454 14541 I 
+com.amazon.tv.settings.v2/MAPInitTasks: Setup DataStorage instance
+  firetv_crash.txt:11900:10-28 19:57:28.863 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11901:10-28 19:57:28.865 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11902:10-28 19:57:28.868   525   546 W libprocessgroup: 
+kill(-14096, 9) failed: No such process
+  firetv_crash.txt:11903:10-28 19:57:28.868   525   546 I libprocessgroup: 
+Successfully killed process cgroup uid 10076 pid 14096 in 46ms
+  firetv_crash.txt:11904:10-28 19:57:28.865 14454 14454 W .tv.settings.v2: type=1400 
+audit(0.0:13329): avc: denied { read } for name="u:object_r:vendor_default_prop:s0" 
+dev="tmpfs" ino=13421 scontext=u:r:amazon_app:s0 
+tcontext=u:object_r:vendor_default_prop:s0 tclass=file permissive=0
+  firetv_crash.txt:11905:10-28 19:57:28.869 14454 14454 E libc    : Access denied 
+finding property "ro.vendor.wpc.support"
+  firetv_crash.txt:11906:10-28 19:57:28.874 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11907:10-28 19:57:28.880 14454 14541 I chatty  : 
+uid=10161(com.amazon.tv.settings.v2) MAPCommonThread identical 1 line
+  firetv_crash.txt:11908:10-28 19:57:28.884 14454 14541 I 
+com.amazon.tv.settings.v2/ClientToCentralTrustLogicImpl: Current package is: 
+com.amazon.tv.settings.v2. Directly trust central package: com.amazon.imp, since it is 
+system MAP library
+  firetv_crash.txt:11909:10-28 19:57:28.889 14454 14541 I 
+com.amazon.tv.settings.v2/IsolatedModeSwitcher: App does not support client driven 
+runtime isolation.
+  firetv_crash.txt:11910:10-28 19:57:28.914 14454 14543 I ArcusConfigManager: 
+RemoteConfiguration Initialized
+  firetv_crash.txt:11911:10-28 19:57:28.925 14454 14454 I 
+com.amazon.tv.settings.v2/LocalKeyValueStore: Create DE shared preference, OS supports 
+direct boot.
+  firetv_crash.txt:11912:10-28 19:57:28.936  1609 17793 I 
+Vizzini:AlexaSettingsProvider: Init under uri 
+'content://com.amazon.vizzini/alexa_locale_setting'
+  firetv_crash.txt:11913:10-28 19:57:28.937 14454 14541 I 
+com.amazon.tv.settings.v2/AmazonSerialNumber: MAP Client side on FireOS 7+ calls IPC 
+to get the DSN.
+  firetv_crash.txt:11914:10-28 19:57:28.945 14454 14547 I LocaleSettingManager: 
+Initial value: LocaleSetting(primaryLocale=en_US, secondaryLocales=null)
+  firetv_crash.txt:11915:10-28 19:57:28.945 14454 14543 I ConfigManagerProvider: 
+Notifying listeners of config change.
+  firetv_crash.txt:11916:10-28 19:57:28.945 14454 14543 I ConfigManagerProvider: No 
+listeners to notify.
+  firetv_crash.txt:11917:10-28 19:57:28.952 14454 14454 I ST-WeblabManager: Session ID 
+: 165-7211864-1610206
+  firetv_crash.txt:11918:10-28 19:57:28.960 14454 14454 I ST-WeblabManager: 
+OS_VERSION:28 appVersionCode:641755610.0.0.0
+
+

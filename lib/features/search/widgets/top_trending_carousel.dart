@@ -71,8 +71,6 @@ class TopTrendingCarousel extends ConsumerWidget {
                 );
               }
 
-              final qualityBadges = ['4K HDR', 'IMAX 4K', 'REMUX', 'DOLBY'];
-
               Widget list = ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -96,7 +94,6 @@ class TopTrendingCarousel extends ConsumerWidget {
                     isAdult: movie['adult'] as bool? ?? false,
                     rating: (movie['vote_average'] as num?)?.toDouble(),
                     ratingCount: movie['vote_count']?.toString(),
-                    bottomBadge: qualityBadges[index % qualityBadges.length],
                     releaseDate: movie['release_date'] as String?,
                   );
 

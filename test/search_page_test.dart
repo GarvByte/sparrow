@@ -182,7 +182,7 @@ void main() {
 
         expect(find.text('Neon Horizon 2099'), findsOneWidget);
         expect(find.text('#1'), findsOneWidget);
-        expect(find.text('4K HDR'), findsOneWidget);
+        expect(find.text('4K HDR'), findsNothing);
         expect(find.text('9.1'), findsOneWidget);
         expect(find.text('Sci-Fi • 2024'), findsOneWidget);
       },

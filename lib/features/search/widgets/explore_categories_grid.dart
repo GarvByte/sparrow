@@ -175,12 +175,13 @@ class _CategoryCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Background Artwork
+              // Background Artwork with bounded memory decoding
               Opacity(
                 opacity: 0.38,
                 child: CachedNetworkImage(
                   imageUrl: category.imageUrl,
                   fit: BoxFit.cover,
+                  memCacheWidth: 200,
                   errorWidget: (context, url, error) =>
                       Container(color: ColorPalette.surfaceContainerHigh),
                 ),

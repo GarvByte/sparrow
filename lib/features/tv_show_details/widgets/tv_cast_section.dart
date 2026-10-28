@@ -210,6 +210,7 @@ class _TvCastCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: actor.profileUrl,
                       fit: BoxFit.cover,
+                      memCacheWidth: 150,
                       fadeInDuration: const Duration(milliseconds: 200),
                       fadeOutDuration: const Duration(milliseconds: 200),
                       placeholder: (context, url) => Container(

@@ -105,20 +105,24 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onQuerySubmitted(String query) {
     _debounceTimer?.cancel();
     final clean = query.trim();
-    if (!context.responsive.isTvOrDesktop) {
-      _searchScopeNode.requestScopeFocus();
-    }
-    _searchScopeNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    _searchFocusNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    FocusManager.instance.primaryFocus?.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-
     final isTv = context.responsive.isTvOrDesktop;
+
+    if (!isTv) {
+      _searchScopeNode.requestScopeFocus();
+      _searchScopeNode.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+      _searchFocusNode.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+      FocusManager.instance.primaryFocus?.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+    } else {
+      _searchScopeNode.unfocus();
+      _searchFocusNode.unfocus();
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
 
     if (clean.isEmpty) {
       if (!isTv) {
@@ -138,6 +142,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           _searchFocusNode.unfocus();
           FocusManager.instance.primaryFocus?.unfocus();
         }
+      }).catchError((_) {
+        if (mounted) {
+          _isNavigatingToTvResults = false;
+        }
       });
       return;
     }
@@ -154,18 +162,24 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     ref.read(searchQueryProvider.notifier).clear();
     ref.read(selectedCategoryProvider.notifier).clear();
     ref.read(searchResultsNotifier.notifier).clear();
-    if (mounted && !context.responsive.isTvOrDesktop) {
-      _searchScopeNode.requestScopeFocus();
+    if (mounted) {
+      if (!context.responsive.isTvOrDesktop) {
+        _searchScopeNode.requestScopeFocus();
+        _searchScopeNode.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+        _searchFocusNode.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+        FocusManager.instance.primaryFocus?.unfocus(
+          disposition: UnfocusDisposition.previouslyFocusedChild,
+        );
+      } else {
+        _searchScopeNode.unfocus();
+        _searchFocusNode.unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      }
     }
-    _searchScopeNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    _searchFocusNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    FocusManager.instance.primaryFocus?.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
   }
 
   bool get _isTopRoute {
@@ -176,29 +190,34 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   void _navigateToDetails(dynamic item) {
-    if (!context.responsive.isTvOrDesktop) {
+    final isTv = context.responsive.isTvOrDesktop;
+    if (!isTv) {
       _searchScopeNode.requestScopeFocus();
+      _searchScopeNode.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+      _searchFocusNode.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+      FocusManager.instance.primaryFocus?.unfocus(
+        disposition: UnfocusDisposition.previouslyFocusedChild,
+      );
+    } else {
+      _searchScopeNode.unfocus();
+      _searchFocusNode.unfocus();
+      FocusManager.instance.primaryFocus?.unfocus();
     }
-    _searchScopeNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    _searchFocusNode.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
-    FocusManager.instance.primaryFocus?.unfocus(
-      disposition: UnfocusDisposition.previouslyFocusedChild,
-    );
 
     setState(() {
       _isSubrouteActive = true;
     });
 
-    final isTv = item is MediaItem
+    final isItemTv = item is MediaItem
         ? item.isTvShow
         : (item is Map &&
             (item['media_type'] == 'tv' || item['is_tv'] == true));
 
-    final Future<dynamic> future = isTv
+    final Future<dynamic> future = isItemTv
         ? openTvShowDetails(context, item)
         : openMovieDetails(context, item);
 
@@ -206,16 +225,26 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       if (mounted) {
         if (!context.responsive.isTvOrDesktop) {
           _searchScopeNode.requestScopeFocus();
+          _searchScopeNode.unfocus(
+            disposition: UnfocusDisposition.previouslyFocusedChild,
+          );
+          _searchFocusNode.unfocus(
+            disposition: UnfocusDisposition.previouslyFocusedChild,
+          );
+          FocusManager.instance.primaryFocus?.unfocus(
+            disposition: UnfocusDisposition.previouslyFocusedChild,
+          );
+        } else {
+          _searchScopeNode.unfocus();
+          _searchFocusNode.unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
         }
-        _searchScopeNode.unfocus(
-          disposition: UnfocusDisposition.previouslyFocusedChild,
-        );
-        _searchFocusNode.unfocus(
-          disposition: UnfocusDisposition.previouslyFocusedChild,
-        );
-        FocusManager.instance.primaryFocus?.unfocus(
-          disposition: UnfocusDisposition.previouslyFocusedChild,
-        );
+        setState(() {
+          _isSubrouteActive = false;
+        });
+      }
+    }).catchError((_) {
+      if (mounted) {
         setState(() {
           _isSubrouteActive = false;
         });
@@ -400,6 +429,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                                           _searchFocusNode.unfocus();
                                           FocusManager.instance.primaryFocus
                                               ?.unfocus();
+                                        }
+                                      })
+                                      .catchError((_) {
+                                        if (mounted) {
+                                          _isNavigatingToTvResults = false;
                                         }
                                       });
                                   return;

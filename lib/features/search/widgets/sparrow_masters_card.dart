@@ -174,6 +174,8 @@ class MasterShowcase extends StatelessWidget {
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
+                    memCacheWidth: 780,
+                    memCacheHeight: 440,
                     errorWidget: (context, url, error) =>
                         const ErrorImagePlaceholder(),
                   ),
@@ -196,7 +198,7 @@ class MasterShowcase extends StatelessWidget {
                   ),
                 ),
 
-                // Top-Left Chips: ORIGINAL & 4K UHD
+                // Top-Left Chip: Badge Text
                 Positioned(
                   top: 12,
                   left: 12,
@@ -338,39 +340,13 @@ class MasterShowcase extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Bottom Row: Quality Chips & Bookmark Button
+                  // Bottom Row: Genre Chips
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: movie.genres
-                            .map<Widget>(
-                              (genre) => _MetaChip(text: genre.toString()),
-                            )
-                            .toList(),
-                      ),
-                      InkWell(
-                        onTap: () {},
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: ColorPalette.surfaceContainerHigh,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: ColorPalette.ghostBorder,
-                              width: 0.5,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.bookmark_add_outlined,
-                            size: 18,
-                            color: ColorPalette.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
+                    children: movie.genres
+                        .map<Widget>(
+                          (genre) => _MetaChip(text: genre.toString()),
+                        )
+                        .toList(),
                   ),
                 ],
               ),

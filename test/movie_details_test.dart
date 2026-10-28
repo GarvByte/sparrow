@@ -186,7 +186,8 @@ void main() {
       expect(find.text('Dune: Part Two'), findsOneWidget);
       expect(find.text('Watch Now'), findsOneWidget);
       expect(find.text('My List'), findsOneWidget);
-      expect(find.text('Audio: Original Audio'), findsOneWidget);
+      // Audio dropdown is commented out per TV memory & UI cleanup requirements
+      expect(find.text('Audio: Original Audio'), findsNothing);
       expect(find.text('Synopsis'), findsOneWidget);
       expect(find.text('Movie Information'), findsOneWidget);
     });
@@ -207,7 +208,8 @@ void main() {
 
       expect(find.text('Dune: Part Two'), findsOneWidget);
       expect(find.text('Watch Now'), findsOneWidget);
-      expect(find.text('Audio: Original Audio'), findsOneWidget);
+      // Audio dropdown is commented out per TV memory & UI cleanup requirements
+      expect(find.text('Audio: Original Audio'), findsNothing);
       expect(find.text('SYNOPSIS'), findsOneWidget);
       expect(find.text('Production Matrix'), findsOneWidget);
     });

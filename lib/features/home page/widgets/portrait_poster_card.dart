@@ -39,10 +39,11 @@ class PortraitPosterCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Poster Image
+            // Poster Image with bounded memory decoding
             CachedNetworkImage(
               imageUrl: item.imageUrl,
               fit: BoxFit.cover,
+              memCacheWidth: 260,
               fadeInDuration: const Duration(milliseconds: 200),
               fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) => const ErrorImagePlaceholder(),

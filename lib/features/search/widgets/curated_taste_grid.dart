@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/search/providers/curated_taste_provider.dart';
@@ -15,6 +16,7 @@ class CuratedTasteGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final curatedAsync = ref.watch(curatedTasteProvider);
 
     return Padding(
@@ -53,7 +55,6 @@ class CuratedTasteGrid extends ConsumerWidget {
           // Responsive Adaptive Poster Grid
           curatedAsync.when(
             data: (movies) {
-              //debugPrintt("Data movies = $movies");
               if (movies.isEmpty) {
                 return const Center(
                   child: Padding(
@@ -80,7 +81,7 @@ class CuratedTasteGrid extends ConsumerWidget {
 
                   final spacing = responsive.scale(10, min: 8, max: 14);
 
-                  return GridView.builder(
+                  Widget grid = GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
@@ -93,14 +94,16 @@ class CuratedTasteGrid extends ConsumerWidget {
                     itemCount: movies.length,
                     itemBuilder: (context, index) {
                       final movie = movies[index];
+                      final poster = movie['poster_path'] as String?;
                       final item = MediaItem(
                         id: movie['id'].toString(),
                         title: movie['title'].toString(),
-                        imageUrl: imageBaseUrl + movie['poster_path'],
-                        genres: movie['genre'],
+                        imageUrl: poster != null && poster.isNotEmpty
+                            ? imageBaseUrl + poster
+                            : '',
+                        genres: movie['genre'] is List ? movie['genre'] : [],
                         isAdult: movie['adult'] as bool? ?? false,
                       );
-                      //debugPrintt("item i = $item");
                       return DiscoverPosterCard(
                         item: item,
                         showRank: false,
@@ -108,6 +111,15 @@ class CuratedTasteGrid extends ConsumerWidget {
                       );
                     },
                   );
+
+                  if (isTv) {
+                    grid = DpadRegion(
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: grid,
+                    );
+                  }
+
+                  return grid;
                 },
               );
             },
@@ -130,7 +142,7 @@ class CuratedTasteGrid extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Failed to load recommendations $err in $stack',
+                      'Failed to load recommendations',
                       style: TextStyle(
                         color: ColorPalette.error,
                         fontSize: responsive.sp(12, min: 10, max: 14),

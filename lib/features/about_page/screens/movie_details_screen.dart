@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/about_page/data/movie_detail_info.dart';
 import 'package:sparrow/features/about_page/providers/movie_details_provider.dart';
-import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
+// import 'package:sparrow/features/about_page/widgets/movie_audio_dropdown.dart';
 import 'package:sparrow/features/about_page/widgets/movie_cast_section.dart';
 import 'package:sparrow/features/about_page/widgets/movie_info_matrix.dart';
 import 'package:sparrow/features/about_page/widgets/similar_movies_section.dart';
@@ -242,9 +242,9 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               _buildPrimaryActionRow(context, info, item, isBookmarked),
               const SizedBox(height: 16),
 
-              // Mandatory Audio Stream Dropdown
-              MovieAudioDropdown(isTvOrDesktop: false),
-              const SizedBox(height: 18),
+              // Audio Stream Dropdown (inactivated while preserving implementation for future use)
+              // MovieAudioDropdown(isTvOrDesktop: false),
+              // const SizedBox(height: 18),
 
               // Synopsis Section
               _buildSynopsisSection(context, info),
@@ -295,6 +295,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               imageUrl: posterUrl,
               fit: BoxFit.cover,
               alignment: alignment,
+              memCacheWidth: 400,
               fadeInDuration: const Duration(milliseconds: 200),
               fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) =>
@@ -309,7 +310,8 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
               imageUrl: backdropUrl,
               fit: BoxFit.cover,
               alignment: alignment,
-              memCacheWidth: 1920,
+              memCacheWidth: 1280,
+              memCacheHeight: 720,
               fadeInDuration: const Duration(milliseconds: 400),
               fadeOutDuration: const Duration(milliseconds: 200),
               placeholder: (context, url) => const SizedBox.shrink(),
@@ -591,10 +593,9 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                         isSelected: isBookmarked,
                         onTap: () => _toggleWatchlist(info, item),
                       ),
-                      const SizedBox(width: 16),
-
-                      // TV Audio Dropdown
-                      MovieAudioDropdown(isTvOrDesktop: true),
+                      // TV Audio Dropdown (inactivated while preserving implementation for future use)
+                      // const SizedBox(width: 16),
+                      // MovieAudioDropdown(isTvOrDesktop: true),
                     ],
                   ),
                 ],
@@ -636,6 +637,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                             ? CachedNetworkImage(
                                 imageUrl: info.posterUrl!,
                                 fit: BoxFit.cover,
+                                memCacheWidth: 360,
                                 fadeInDuration: const Duration(
                                   milliseconds: 200,
                                 ),
@@ -650,7 +652,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                     ),
                     const SizedBox(width: 24),
 
-                    // Synopsis & Telemetry Chips
+                    // Synopsis & Content
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -687,30 +689,6 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                               fontSize: 15,
                               height: 1.6,
                             ),
-                          ),
-                          const SizedBox(height: 18),
-
-                          // TV Feature Telemetry Metric Badges
-                          Row(
-                            children: [
-                              _buildTvTelemetryBadge(
-                                'ASPECT RATIO',
-                                '1.43 : 1',
-                                'IMAX NATIVE',
-                              ),
-                              const SizedBox(width: 12),
-                              _buildTvTelemetryBadge(
-                                'DYNAMIC RANGE',
-                                '1,000 NITS',
-                                'DOLBY VISION',
-                              ),
-                              const SizedBox(width: 12),
-                              _buildTvTelemetryBadge(
-                                'TIER',
-                                'ULTRA 4K',
-                                'ZERO LOSS',
-                              ),
-                            ],
                           ),
                         ],
                       ),
@@ -802,11 +780,12 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                     isBookmarked: isBookmarked,
                     onTap: () => _toggleWatchlist(info, item),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 3,
-                    child: MovieAudioDropdown(isTvOrDesktop: false),
-                  ),
+                  // Audio Stream Dropdown (inactivated while preserving implementation for future use)
+                  // const SizedBox(width: 16),
+                  // Expanded(
+                  //   flex: 3,
+                  //   child: MovieAudioDropdown(isTvOrDesktop: false),
+                  // ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -908,10 +887,6 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             ],
           ),
         ),
-        _buildDot(),
-        _buildBadge('IMAX 4K', isPrimary: true),
-        _buildDot(),
-        _buildBadge('Dolby Atmos'),
       ],
     );
   }
@@ -984,9 +959,6 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             ],
           ),
         ),
-        _buildBadge('IMAX 4K', isPrimary: true),
-        _buildBadge('DOLBY VISION'),
-        _buildBadge('DOLBY ATMOS'),
       ],
     );
   }
@@ -1285,48 +1257,6 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
       decoration: const BoxDecoration(
         color: ColorPalette.textMuted,
         shape: BoxShape.circle,
-      ),
-    );
-  }
-
-  Widget _buildTvTelemetryBadge(String label, String value, String sub) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: ColorPalette.surfaceContainer.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: ColorPalette.textMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              color: ColorPalette.fontWhite,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          Text(
-            sub,
-            style: const TextStyle(
-              color: ColorPalette.primaryGreen,
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
       ),
     );
   }

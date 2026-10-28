@@ -42,6 +42,7 @@ class ContinueWatchingCard extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: item.imageUrl,
               fit: BoxFit.cover,
+              memCacheWidth: 360,
               fadeInDuration: const Duration(milliseconds: 200),
               fadeOutDuration: const Duration(milliseconds: 200),
               errorWidget: (context, url, error) => const ErrorImagePlaceholder(),

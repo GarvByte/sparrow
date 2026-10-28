@@ -21,6 +21,9 @@ class RandomGenreHeroBanners extends ConsumerWidget {
         if (section.movies.isEmpty) return const SizedBox.shrink();
 
         final headingText = '${section.genreName} Movies';
+        // Bound hero banners to top 3 items to prevent eager construction of 20 4K hero banners
+        // inside the SingleChildScrollView on low-memory Fire TV devices.
+        final displayedMovies = section.movies.take(3).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,8 +68,8 @@ class RandomGenreHeroBanners extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
 
-            // Vertical list of ALL valid hero banner cards from Page 1 of this genre
-            ...section.movies.map((movie) {
+            // Bounded list of hero banner cards
+            ...displayedMovies.map((movie) {
               return Padding(
                 padding: EdgeInsets.only(
                   left: responsive.scale(16, min: 12, max: 20),
@@ -107,7 +110,7 @@ class RandomGenreHeroBanners extends ConsumerWidget {
           ),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

@@ -261,7 +261,7 @@ void main() {
       expect(find.text('My List'), findsOneWidget);
       expect(find.text('Synopsis'), findsOneWidget);
       expect(find.text('Not Adult'), findsOneWidget);
-      expect(find.byType(MovieAudioDropdown), findsOneWidget);
+      expect(find.byType(MovieAudioDropdown), findsNothing);
     });
 
     testWidgets('Renders TV large-screen layout with 16:9 composition and telemetry badges', (
@@ -293,9 +293,9 @@ void main() {
 
       expect(find.text('Breaking Bad'), findsOneWidget);
       expect(find.text('Watch Now'), findsOneWidget);
-      expect(find.text('HEVC 2160p · HDR10+ · DOLBY ATMOS'), findsOneWidget);
+      expect(find.text('HEVC 2160p · HDR10+ · DOLBY ATMOS'), findsNothing);
       expect(find.text('PRODUCTION METADATA'), findsOneWidget);
-      expect(find.byType(MovieAudioDropdown), findsOneWidget);
+      expect(find.byType(MovieAudioDropdown), findsNothing);
     });
   });
 }

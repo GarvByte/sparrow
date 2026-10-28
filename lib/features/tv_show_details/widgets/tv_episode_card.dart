@@ -68,6 +68,7 @@ class TvEpisodeCard extends StatelessWidget {
                           CachedNetworkImage(
                             imageUrl: episode.stillUrl,
                             fit: BoxFit.cover,
+                            memCacheWidth: 360,
                             fadeInDuration: const Duration(milliseconds: 200),
                             fadeOutDuration: const Duration(milliseconds: 200),
                             placeholder: (context, url) => Container(
@@ -210,6 +211,7 @@ class TvEpisodeCard extends StatelessWidget {
                           CachedNetworkImage(
                             imageUrl: episode.stillUrl,
                             fit: BoxFit.cover,
+                            memCacheWidth: 360,
                             fadeInDuration: const Duration(milliseconds: 200),
                             fadeOutDuration: const Duration(milliseconds: 200),
                             placeholder: (context, url) => Container(

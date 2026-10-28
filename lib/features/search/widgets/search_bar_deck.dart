@@ -75,9 +75,13 @@ class _SearchBarDeckState extends State<SearchBarDeck> {
 
   @override
   void dispose() {
-    _focusNode.removeListener(_onFocusChange);
+    try {
+      _focusNode.removeListener(_onFocusChange);
+    } catch (_) {}
     _internalFocusNode.dispose();
-    widget.controller.removeListener(_onTextChanged);
+    try {
+      widget.controller.removeListener(_onTextChanged);
+    } catch (_) {}
     super.dispose();
   }
 

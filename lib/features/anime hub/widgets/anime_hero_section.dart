@@ -265,6 +265,7 @@ class _LayeredTvCard extends StatelessWidget {
                                     ? CachedNetworkImage(
                                         imageUrl: item.imageUrl,
                                         fit: BoxFit.cover,
+                                        memCacheWidth: 600,
                                         errorWidget: (context, url, error) =>
                                             const ErrorImagePlaceholder(),
                                         placeholder: (context, url) =>
