@@ -48,19 +48,21 @@ class MovieCastSection extends ConsumerWidget {
             SizedBox(width: isDesktop ? 16 : 12),
         itemBuilder: (context, index) {
           final actor = castList[index];
-          return _CastCard(
-            actor: actor,
-            width: itemWidth,
-            avatarSize: avatarSize,
+          return DpadFocusable(
+            effects: [
+              DpadBorderEffect(color: ColorPalette.primaryGreen, width: 2),
+            ],
+            child: _CastCard(
+              actor: actor,
+              width: itemWidth,
+              avatarSize: avatarSize,
+            ),
           );
         },
       );
 
       if (isDesktop) {
-        list = DpadRegion(
-          leftEdge: DpadEdgeBehavior.leave,
-          child: list,
-        );
+        list = DpadRegion(leftEdge: DpadEdgeBehavior.leave, child: list);
       }
 
       return Column(
@@ -104,10 +106,7 @@ class MovieCastSection extends ConsumerWidget {
           const SizedBox(height: 12),
 
           // Horizontal Scrollable Strip
-          SizedBox(
-            height: avatarSize + 48,
-            child: list,
-          ),
+          SizedBox(height: avatarSize + 48, child: list),
         ],
       );
     }

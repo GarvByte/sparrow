@@ -560,7 +560,11 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                             color: Colors.black,
                           ),
                           label: Text(
-                            ref.watch(hasPlaybackProgressProvider('movie_${item.id}'))
+                            ref.watch(
+                                  hasPlaybackProgressProvider(
+                                    'movie_${item.id}',
+                                  ),
+                                )
                                 ? 'Resume'
                                 : 'Watch Now',
                             style: const TextStyle(
@@ -711,9 +715,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
         const SizedBox(height: 36),
 
         // Section 1: Cast & Crew
-        DpadRegion(
-          child: MovieCastSection(movieId: info.id, isTvOrDesktop: true),
-        ),
+        MovieCastSection(movieId: info.id, isTvOrDesktop: true),
 
         const SizedBox(height: 36),
 
@@ -1024,8 +1026,9 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     MediaItem item,
     MovieDetailInfo info,
   ) {
-    final hasProgress =
-        ref.watch(hasPlaybackProgressProvider('movie_${item.id}'));
+    final hasProgress = ref.watch(
+      hasPlaybackProgressProvider('movie_${item.id}'),
+    );
     return ElevatedButton.icon(
       onPressed: () => _openPlayer(context, item, info),
       icon: const Icon(Icons.play_arrow_rounded, size: 24, color: Colors.black),

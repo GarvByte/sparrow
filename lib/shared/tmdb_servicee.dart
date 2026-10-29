@@ -50,14 +50,15 @@ class TmdbService {
       return existing;
     }
 
-    final future = _executeGetWithRetry(
-      uri,
-      headers: headers,
-      timeout: timeout,
-      maxAttempts: maxAttempts,
-    ).whenComplete(() {
-      _inFlightGetRequests.remove(key);
-    });
+    final future =
+        _executeGetWithRetry(
+          uri,
+          headers: headers,
+          timeout: timeout,
+          maxAttempts: maxAttempts,
+        ).whenComplete(() {
+          _inFlightGetRequests.remove(key);
+        });
 
     _inFlightGetRequests[key] = future;
     return future;
@@ -73,8 +74,9 @@ class TmdbService {
     while (true) {
       attempt++;
       try {
-        final response =
-            await _client.get(uri, headers: headers).timeout(timeout);
+        final response = await _client
+            .get(uri, headers: headers)
+            .timeout(timeout);
         if (_isTransientError(response, response.statusCode) &&
             attempt < maxAttempts) {
           await Future.delayed(Duration(milliseconds: 300 * attempt));
@@ -94,8 +96,10 @@ class TmdbService {
   /// Fetches movies or shows from a TMDB endpoint with automatic transient retry.
   Future<List<dynamic>> fetchMovies(String endpoint) async {
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -104,7 +108,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'TMDB fetch failed with status ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+        ),
       );
     }
   }
@@ -128,8 +134,10 @@ class TmdbService {
     final endpoint =
         'search/movie?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -138,7 +146,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'Search request failed with status ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+        ),
       );
     }
   }
@@ -151,8 +161,10 @@ class TmdbService {
     final endpoint =
         'search/tv?query=${Uri.encodeComponent(clean)}&include_adult=false&language=en-US&page=$page';
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -161,7 +173,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'TV Search request failed with status ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+        ),
       );
     }
   }
@@ -171,8 +185,10 @@ class TmdbService {
     final endpoint =
         'discover/movie?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -181,7 +197,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'Genre request failed with status ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+        ),
       );
     }
   }
@@ -191,8 +209,10 @@ class TmdbService {
     final endpoint =
         'discover/tv?with_genres=$genreId&sort_by=popularity.desc&include_adult=false&language=en-US&page=$page';
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/$endpoint'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -201,7 +221,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'TV Genre request failed with status ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/$endpoint'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/$endpoint',
+        ),
       );
     }
   }
@@ -210,8 +232,10 @@ class TmdbService {
   Future<List<Map<String, dynamic>>> fetchMovieGenres() async {
     try {
       final response = await _getWithRetry(
-        Uri.parse('https://api.themoviedb.org/3/genre/movie/list?language=en-US'),
-        headers: {'Authorization': tokenAuth},
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/genre/movie/list?language=en-US',
+        ),
+      
       );
 
       if (response.statusCode == 200) {
@@ -229,8 +253,10 @@ class TmdbService {
   Future<List<Map<String, dynamic>>> fetchTvGenres() async {
     try {
       final response = await _getWithRetry(
-        Uri.parse('https://api.themoviedb.org/3/genre/tv/list?language=en-US'),
-        headers: {'Authorization': tokenAuth},
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/genre/tv/list?language=en-US',
+        ),
+      
       );
 
       if (response.statusCode == 200) {
@@ -250,8 +276,10 @@ class TmdbService {
     if (cleanId.isEmpty) return null;
 
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId?language=en-US',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -259,7 +287,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'TMDB details error: ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/movie/$cleanId?language=en-US'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId?language=en-US',
+        ),
       );
     }
   }
@@ -271,9 +301,9 @@ class TmdbService {
 
     final response = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/movie/$cleanId/credits?language=en-US',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId/credits?language=en-US',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (response.statusCode == 200) {
@@ -282,7 +312,7 @@ class TmdbService {
       throw http.ClientException(
         'TMDB credits error: ${response.statusCode}',
         Uri.parse(
-          'https://api.themoviedb.org/3/movie/$cleanId/credits?language=en-US',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId/credits?language=en-US',
         ),
       );
     }
@@ -297,9 +327,9 @@ class TmdbService {
     try {
       final recResponse = await _getWithRetry(
         Uri.parse(
-          'https://api.themoviedb.org/3/movie/$cleanId/recommendations?language=en-US&page=1',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId/recommendations?language=en-US&page=1',
         ),
-        headers: {'Authorization': tokenAuth},
+      
       );
 
       if (recResponse.statusCode == 200) {
@@ -316,9 +346,9 @@ class TmdbService {
     // Fallback to similar endpoint
     final simResponse = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId/similar?language=en-US&page=1',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (simResponse.statusCode == 200) {
@@ -329,7 +359,7 @@ class TmdbService {
     throw http.ClientException(
       'TMDB similar movies error: ${simResponse.statusCode}',
       Uri.parse(
-        'https://api.themoviedb.org/3/movie/$cleanId/similar?language=en-US&page=1',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/movie/$cleanId/similar?language=en-US&page=1',
       ),
     );
   }
@@ -340,8 +370,10 @@ class TmdbService {
     if (cleanId.isEmpty) return null;
 
     final response = await _getWithRetry(
-      Uri.parse('https://api.themoviedb.org/3/tv/$cleanId?language=en-US'),
-      headers: {'Authorization': tokenAuth},
+      Uri.parse(
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId?language=en-US',
+      ),
+    
     );
 
     if (response.statusCode == 200) {
@@ -349,7 +381,9 @@ class TmdbService {
     } else {
       throw http.ClientException(
         'TMDB TV details error: ${response.statusCode}',
-        Uri.parse('https://api.themoviedb.org/3/tv/$cleanId?language=en-US'),
+        Uri.parse(
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId?language=en-US',
+        ),
       );
     }
   }
@@ -361,9 +395,9 @@ class TmdbService {
 
     final response = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$cleanId/credits?language=en-US',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/credits?language=en-US',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (response.statusCode == 200) {
@@ -372,7 +406,7 @@ class TmdbService {
       throw http.ClientException(
         'TMDB TV credits error: ${response.statusCode}',
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/$cleanId/credits?language=en-US',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/credits?language=en-US',
         ),
       );
     }
@@ -388,9 +422,9 @@ class TmdbService {
 
     final response = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/season/$seasonNumber?language=en-US',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (response.statusCode == 200) {
@@ -403,7 +437,7 @@ class TmdbService {
       throw http.ClientException(
         'TMDB TV season error: ${response.statusCode}',
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/season/$seasonNumber?language=en-US',
         ),
       );
     }
@@ -419,9 +453,9 @@ class TmdbService {
 
     final response = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/season/$seasonNumber?language=en-US',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (response.statusCode == 200) {
@@ -438,7 +472,7 @@ class TmdbService {
       throw http.ClientException(
         'TMDB TV season error: ${response.statusCode}',
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/$cleanId/season/$seasonNumber?language=en-US',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/season/$seasonNumber?language=en-US',
         ),
       );
     }
@@ -452,9 +486,9 @@ class TmdbService {
     try {
       final recResponse = await _getWithRetry(
         Uri.parse(
-          'https://api.themoviedb.org/3/tv/$cleanId/recommendations?language=en-US&page=1',
+          'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/recommendations?language=en-US&page=1',
         ),
-        headers: {'Authorization': tokenAuth},
+      
       );
 
       if (recResponse.statusCode == 200) {
@@ -470,9 +504,9 @@ class TmdbService {
 
     final simResponse = await _getWithRetry(
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$cleanId/similar?language=en-US&page=1',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/similar?language=en-US&page=1',
       ),
-      headers: {'Authorization': tokenAuth},
+    
     );
 
     if (simResponse.statusCode == 200) {
@@ -483,7 +517,7 @@ class TmdbService {
     throw http.ClientException(
       'TMDB similar TV shows error: ${simResponse.statusCode}',
       Uri.parse(
-        'https://api.themoviedb.org/3/tv/$cleanId/similar?language=en-US&page=1',
+        'https://sparrow-tmdb-proxy.piratesparrow.workers.dev/3/tv/$cleanId/similar?language=en-US&page=1',
       ),
     );
   }

@@ -96,7 +96,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ref.read(searchResultsNotifier.notifier).search(query: cleanQuery);
           ref.read(selectedCategoryProvider.notifier).clear();
         } else {
-          _clearSearch();
+          ref.read(searchQueryProvider.notifier).clear();
+          ref.read(selectedCategoryProvider.notifier).clear();
+          ref.read(searchResultsNotifier.notifier).clear();
         }
       }
     });

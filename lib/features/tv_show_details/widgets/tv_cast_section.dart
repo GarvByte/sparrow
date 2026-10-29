@@ -49,10 +49,15 @@ class TvCastSection extends ConsumerWidget {
             SizedBox(width: isDesktop ? 20 : 12),
         itemBuilder: (context, index) {
           final actor = castList[index];
-          return _TvCastCard(
-            actor: actor,
-            width: itemWidth,
-            avatarSize: avatarSize,
+          return DpadFocusable(
+             effects: [
+                DpadBorderEffect(color: ColorPalette.primaryGreen, width: 2),
+              ],
+            child: _TvCastCard(
+              actor: actor,
+              width: itemWidth,
+              avatarSize: avatarSize,
+            ),
           );
         },
       );
