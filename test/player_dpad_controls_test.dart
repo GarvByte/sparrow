@@ -25,10 +25,13 @@ void main() {
       ],
       supportedLocales: const [Locale('en', 'US')],
       home: Scaffold(
-        body: SizedBox(
-          width: 800,
-          height: 450,
-          child: BetterPlayer(controller: controller),
+        body: MediaQuery(
+          data: const MediaQueryData(size: Size(1920, 1080)),
+          child: SizedBox(
+            width: 1920,
+            height: 1080,
+            child: BetterPlayer(controller: controller),
+          ),
         ),
       ),
     );

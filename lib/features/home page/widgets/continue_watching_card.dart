@@ -6,7 +6,7 @@ import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
 
-class ContinueWatchingCard extends StatelessWidget {
+class ContinueWatchingCard extends StatefulWidget {
   final MediaItem item;
   final double? width;
   final VoidCallback? onTap;
@@ -21,9 +21,44 @@ class ContinueWatchingCard extends StatelessWidget {
   });
 
   @override
+  State<ContinueWatchingCard> createState() => _ContinueWatchingCardState();
+}
+
+class _ContinueWatchingCardState extends State<ContinueWatchingCard> {
+  late final FocusNode _cardFocusNode;
+  late final FocusNode _closeFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _cardFocusNode = FocusNode(debugLabel: 'continue_card_${widget.item.id}');
+    _closeFocusNode = FocusNode(debugLabel: 'continue_close_${widget.item.id}');
+  }
+
+  @override
+  void dispose() {
+    _cardFocusNode.dispose();
+    _closeFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleRemove() {
+    if (context.responsive.isTvOrDesktop) {
+      if (_closeFocusNode.hasPrimaryFocus || _cardFocusNode.hasFocus) {
+        final scope = FocusScope.of(context);
+        final moved = scope.focusInDirection(TraversalDirection.right);
+        if (!moved) {
+          scope.focusInDirection(TraversalDirection.left);
+        }
+      }
+    }
+    widget.onRemove?.call();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final cardWidth = width ?? responsive.continueWatchingWidth;
+    final cardWidth = widget.width ?? responsive.continueWatchingWidth;
     final cardHeight = cardWidth * (9 / 16);
 
     final cardContent = Container(
@@ -40,7 +75,7 @@ class ContinueWatchingCard extends StatelessWidget {
           children: [
             // Media Image
             CachedNetworkImage(
-              imageUrl: item.imageUrl,
+              imageUrl: widget.item.imageUrl,
               fit: BoxFit.cover,
               memCacheWidth: 360,
               fadeInDuration: const Duration(milliseconds: 200),
@@ -76,11 +111,11 @@ class ContinueWatchingCard extends StatelessWidget {
             ),
 
             // Time Left Badge (Left-aligned if remove button present, else Right-aligned)
-            if (item.durationLeft != null)
+            if (widget.item.durationLeft != null)
               Positioned(
                 top: 10,
-                left: onRemove != null ? 10 : null,
-                right: onRemove != null ? null : 10,
+                left: widget.onRemove != null ? 10 : null,
+                right: widget.onRemove != null ? null : 10,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -95,7 +130,7 @@ class ContinueWatchingCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    item.durationLeft!,
+                    widget.item.durationLeft!,
                     style: TextStyle(
                       color: ColorPalette.fontWhite,
                       fontSize: responsive.sp(10, min: 8.5, max: 11),
@@ -107,7 +142,7 @@ class ContinueWatchingCard extends StatelessWidget {
               ),
 
             // Docked Bottom Progress Bar
-            if (item.progress != null)
+            if (widget.item.progress != null)
               Positioned(
                 left: 0,
                 right: 0,
@@ -117,7 +152,7 @@ class ContinueWatchingCard extends StatelessWidget {
                   color: ColorPalette.surfaceContainerHighest,
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor: item.progress!.clamp(0.0, 1.0),
+                    widthFactor: widget.item.progress!.clamp(0.0, 1.0),
                     child: Container(color: ColorPalette.primaryGreen),
                   ),
                 ),
@@ -127,7 +162,7 @@ class ContinueWatchingCard extends StatelessWidget {
               child: Material(
                 type: MaterialType.transparency,
                 child: InkWell(
-                  onTap: onTap,
+                  onTap: widget.onTap,
                   splashColor: ColorPalette.fontWhite.withValues(
                     alpha: 0.35,
                   ),
@@ -155,25 +190,42 @@ class ContinueWatchingCard extends StatelessWidget {
           children: [
             Positioned.fill(
               child: FocusablePosterCard(
-                onSelected: onTap ?? () {},
+                focusNode: _cardFocusNode,
+                onSelected: widget.onTap ?? () {},
+                onDirection: (direction) {
+                  if (direction == TraversalDirection.up && widget.onRemove != null) {
+                    _closeFocusNode.requestFocus();
+                    return true;
+                  }
+                  return false;
+                },
                 borderRadius: BorderRadius.circular(responsive.radius(16)),
                 child: cardContent,
               ),
             ),
 
             // Top-Right Remove Button Overlay
-            if (onRemove != null)
+            if (widget.onRemove != null)
               Positioned(
                 top: 8,
                 right: 8,
                 child: TvFocusable(
-                  onSelect: onRemove!,
+                  focusNode: _closeFocusNode,
+                  onSelect: _handleRemove,
+                  onDirection: (direction) {
+                    if (direction == TraversalDirection.down ||
+                        direction == TraversalDirection.left) {
+                      _cardFocusNode.requestFocus();
+                      return true;
+                    }
+                    return false;
+                  },
                   focusColor: Colors.redAccent,
                   borderRadius: BorderRadius.circular(16),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: onRemove,
+                      onTap: widget.onRemove,
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         width: responsive.scale(30, min: 26, max: 34),

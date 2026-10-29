@@ -16,6 +16,8 @@ class FocusablePosterCard extends StatelessWidget {
     this.autofocus = false,
     this.borderRadius,
     this.scale = 1.05,
+    this.focusNode,
+    this.onDirection,
   });
 
   final Widget child;
@@ -23,6 +25,8 @@ class FocusablePosterCard extends StatelessWidget {
   final bool autofocus;
   final BorderRadius? borderRadius;
   final double scale;
+  final FocusNode? focusNode;
+  final DpadDirectionCallback? onDirection;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +35,10 @@ class FocusablePosterCard extends StatelessWidget {
     }
 
     return DpadFocusable(
+      focusNode: focusNode,
       autofocus: autofocus,
       onSelect: onSelected,
+      onDirection: onDirection,
       autoScroll: true,
       effects: [
         DpadScaleEffect(scale: scale),
@@ -69,6 +75,8 @@ class TvFocusable extends StatelessWidget {
     this.borderWidth = 2.5,
     this.focusColor,
     this.onFocusChange,
+    this.focusNode,
+    this.onDirection,
   });
 
   final Widget child;
@@ -79,6 +87,8 @@ class TvFocusable extends StatelessWidget {
   final double borderWidth;
   final Color? focusColor;
   final ValueChanged<bool>? onFocusChange;
+  final FocusNode? focusNode;
+  final DpadDirectionCallback? onDirection;
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +100,11 @@ class TvFocusable extends StatelessWidget {
     final color = focusColor ?? ColorPalette.primaryGreen;
 
     return DpadFocusable(
+      focusNode: focusNode,
       autofocus: autofocus,
       onSelect: onSelect,
       onFocusChange: onFocusChange,
+      onDirection: onDirection,
       autoScroll: true,
       effects: [
         // DpadScaleEffect(scale: 1.05),

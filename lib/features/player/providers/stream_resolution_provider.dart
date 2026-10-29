@@ -195,11 +195,13 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       );
     } catch (e) {
       if (_disposed || _currentSessionId != sessionId) return;
+      debugPrint('StreamResolutionNotifier: getServers error: $e');
+      final msg =
+          _isNetworkError(e) ? 'Check your connection' : 'No sources found';
       state = state.copyWith(
         isLoadingServers: false,
         isResolvingFirstSource: false,
-        errorMessage:
-            'Unable to connect to stream servers. Please check your network and retry.',
+        errorMessage: msg,
       );
       return;
     }
@@ -212,11 +214,20 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       }
     }
 
+    if (serverList.isEmpty) {
+      if (_disposed || _currentSessionId != sessionId) return;
+      state = state.copyWith(
+        isResolvingFirstSource: false,
+        errorMessage: 'No sources found',
+      );
+      return;
+    }
+
     if (playableIndices.isEmpty) {
       if (_disposed || _currentSessionId != sessionId) return;
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage: 'No playable servers found for this title.',
+        errorMessage: 'No playable sources found',
       );
       return;
     }
@@ -277,8 +288,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     if (!foundFirstSource && !_disposed && _currentSessionId == sessionId) {
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage:
-            'Could not resolve a playable source from available servers. Tap Retry to try again.',
+        errorMessage: 'Unable to start playback',
       );
     }
   }
@@ -417,17 +427,20 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
         onSourceReady(chosen, currentPosition);
       } else {
         _updateServerStatus(serverIndex, ServerResolutionStatus.failed,
-            errorMessage: 'No playable links found.', sessionId: sessionId);
+            errorMessage: 'No playable sources found', sessionId: sessionId);
         state = state.copyWith(
-          errorMessage: 'Server ${server.name} returned no playable links.',
+          errorMessage: 'No playable sources found',
         );
       }
     } catch (e) {
       if (_disposed || _currentSessionId != sessionId) return;
+      debugPrint('StreamResolutionNotifier: selectServer failed: $e');
       _updateServerStatus(serverIndex, ServerResolutionStatus.failed,
           errorMessage: e.toString(), sessionId: sessionId);
+      final msg =
+          _isNetworkError(e) ? 'Check your connection' : 'Unable to start playback';
       state = state.copyWith(
-        errorMessage: 'Failed to resolve server ${server.name}: $e',
+        errorMessage: msg,
       );
     }
   }
@@ -469,12 +482,25 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     onSourceReady(chosen, currentPosition);
   }
 
+  bool _isNetworkError(Object error) {
+    final str = error.toString().toLowerCase();
+    return str.contains('socketexception') ||
+        str.contains('connection refused') ||
+        str.contains('connection timed out') ||
+        str.contains('network error') ||
+        str.contains('failed host lookup') ||
+        str.contains('clientexception') ||
+        str.contains('connection closed') ||
+        str.contains('timeoutexception');
+  }
+
   /// Automatic fallback handler when playback reports a failure or exception.
   Future<void> handleSourceFailure({
     ResolvedSource? failedSource,
     required Duration currentPosition,
     required void Function(ResolvedSource source, Duration startAt)
         onSourceReady,
+    bool isPlaybackStall = false,
   }) async {
     if (_disposed) return;
     final sessionId = _currentSessionId;
@@ -508,13 +534,14 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     const maxFallbackAttempts = 5;
 
     debugPrint(
-        'StreamResolution: TMDB=${state.context?.tmdbId}, Server=${currentServer.name}, SourceIndex=$targetSourceIdx, Attempts=$currentAttempts, FailureCategory=playback_error');
+        'StreamResolution: TMDB=${state.context?.tmdbId}, Server=${currentServer.name}, SourceIndex=$targetSourceIdx, Attempts=$currentAttempts, FailureCategory=${isPlaybackStall ? "playback_stall" : "playback_error"}');
 
     if (currentAttempts > maxFallbackAttempts) {
       state = state.copyWith(
         fallbackAttempts: currentAttempts,
-        errorMessage:
-            'All fallback attempts were exhausted. Please pick a server manually or retry.',
+        errorMessage: isPlaybackStall
+            ? 'Playback stalled, try again'
+            : 'No playable sources found',
       );
       return;
     }
@@ -628,6 +655,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
               errorMessage: 'No links', sessionId: sessionId);
           return await handleSourceFailure(
             currentPosition: currentPosition,
+            isPlaybackStall: isPlaybackStall,
             onSourceReady: onSourceReady,
           );
         }
@@ -637,6 +665,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
             errorMessage: e.toString(), sessionId: sessionId);
         return await handleSourceFailure(
           currentPosition: currentPosition,
+          isPlaybackStall: isPlaybackStall,
           onSourceReady: onSourceReady,
         );
       }
@@ -645,8 +674,9 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     // 4. Exhausted
     state = state.copyWith(
       fallbackAttempts: currentAttempts,
-      errorMessage:
-          'No alternate sources could be resolved. Please try again later.',
+      errorMessage: isPlaybackStall
+          ? 'Playback stalled, try again'
+          : 'No playable sources found',
     );
   }
 

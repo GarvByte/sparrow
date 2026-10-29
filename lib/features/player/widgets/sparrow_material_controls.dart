@@ -13,6 +13,7 @@ import 'package:better_player_plus/src/video_player/video_player.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/theme/color_palette.dart';
 
 /// TV and remote D-pad optimized Material controls for Better Player.
@@ -65,6 +66,8 @@ class _SparrowMaterialControlsState
       FocusNode(debugLabel: 'player_fullscreen');
   final FocusNode _bottomPlayPauseFocusNode =
       FocusNode(debugLabel: 'player_bottom_play_pause');
+  final FocusNode _progressBarFocusNode =
+      FocusNode(debugLabel: 'player_progress_bar');
 
   BetterPlayerControlsConfiguration get _controlsConfiguration =>
       widget.controlsConfiguration;
@@ -184,6 +187,7 @@ class _SparrowMaterialControlsState
     _overflowFocusNode.dispose();
     _fullscreenFocusNode.dispose();
     _bottomPlayPauseFocusNode.dispose();
+    _progressBarFocusNode.dispose();
     _controllerEventSubscription?.cancel();
     _dispose();
     super.dispose();
@@ -460,6 +464,10 @@ class _SparrowMaterialControlsState
               }
               return true;
             }
+            if (direction == TraversalDirection.down) {
+              _progressBarFocusNode.requestFocus();
+              return true;
+            }
             return false;
           },
           effects: [
@@ -538,7 +546,48 @@ class _SparrowMaterialControlsState
     required FocusNode focusNode,
     bool autofocus = false,
     DpadDirectionCallback? onDirection,
+    bool isSkipButton = false,
   }) {
+    final bool isTv = context.responsive.isTvOrDesktop;
+
+    // On mobile, skip buttons are standard touchable clickable buttons
+    // without TV D-pad focus highlights (green border / glow).
+    if (!isTv && isSkipButton) {
+      return Center(
+        child: BetterPlayerMaterialClickableWidget(
+          onTap: () {
+            cancelAndRestartTimer();
+            onClicked();
+          },
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black.withValues(alpha: 0.4),
+            ),
+            child: Center(child: icon),
+          ),
+        ),
+      );
+    }
+
+    final List<DpadEffect> effects = [
+      const DpadScaleEffect(scale: 1.08),
+      const DpadBorderEffect(
+        width: 3.0,
+        color: ColorPalette.primaryGreen,
+        borderRadius: BorderRadius.all(Radius.circular(48)),
+      ),
+      const DpadGlowEffect(
+        color: ColorPalette.primaryGreen,
+        blurRadius: 14,
+        spreadRadius: 1.5,
+        opacity: 0.45,
+        borderRadius: BorderRadius.all(Radius.circular(48)),
+      ),
+    ];
+
     return Center(
       child: DpadFocusable(
         focusNode: focusNode,
@@ -554,21 +603,7 @@ class _SparrowMaterialControlsState
           }
         },
         onDirection: onDirection,
-        effects: [
-          const DpadScaleEffect(scale: 1.08),
-          const DpadBorderEffect(
-            width: 3.0,
-            color: ColorPalette.primaryGreen,
-            borderRadius: BorderRadius.all(Radius.circular(48)),
-          ),
-          const DpadGlowEffect(
-            color: ColorPalette.primaryGreen,
-            blurRadius: 14,
-            spreadRadius: 1.5,
-            opacity: 0.45,
-            borderRadius: BorderRadius.all(Radius.circular(48)),
-          ),
-        ],
+        effects: effects,
         child: Container(
           width: 64,
           height: 64,
@@ -582,6 +617,34 @@ class _SparrowMaterialControlsState
     );
   }
 
+  @override
+  void skipBack() {
+    if (_controller == null || !_controller!.value.initialized) return;
+    cancelAndRestartTimer();
+    final position = _controller!.value.position;
+    final skipTime = Duration(
+      milliseconds:
+          _controlsConfiguration.backwardSkipTimeInMilliseconds,
+    );
+    final target = position - skipTime;
+    _betterPlayerController?.seekTo(target < Duration.zero ? Duration.zero : target);
+  }
+
+  @override
+  void skipForward() {
+    if (_controller == null || !_controller!.value.initialized) return;
+    final duration = _controller!.value.duration;
+    if (duration == null || duration <= Duration.zero) return;
+    cancelAndRestartTimer();
+    final position = _controller!.value.position;
+    final skipTime = Duration(
+      milliseconds:
+          _controlsConfiguration.forwardSkipTimeInMilliseconds,
+    );
+    final target = position + skipTime;
+    _betterPlayerController?.seekTo(target > duration ? duration : target);
+  }
+
   Widget _buildSkipButton() => _buildHitAreaButton(
         icon: Icon(
           _controlsConfiguration.skipBackIcon,
@@ -590,6 +653,7 @@ class _SparrowMaterialControlsState
         ),
         onClicked: skipBack,
         focusNode: _skipBackFocusNode,
+        isSkipButton: true,
         onDirection: (direction) {
           if (direction == TraversalDirection.right) {
             _playPauseFocusNode.requestFocus();
@@ -619,6 +683,7 @@ class _SparrowMaterialControlsState
         ),
         onClicked: skipForward,
         focusNode: _skipForwardFocusNode,
+        isSkipButton: true,
         onDirection: (direction) {
           if (direction == TraversalDirection.left) {
             _playPauseFocusNode.requestFocus();
@@ -777,6 +842,10 @@ class _SparrowMaterialControlsState
             }
             if (direction == TraversalDirection.right) {
               _fullscreenFocusNode.requestFocus();
+              return true;
+            }
+            if (direction == TraversalDirection.down) {
+              _progressBarFocusNode.requestFocus();
               return true;
             }
             return false;
@@ -968,29 +1037,124 @@ class _SparrowMaterialControlsState
     }
   }
 
-  Widget _buildProgressBar() => Expanded(
+  Duration? _pendingSeekPosition;
+  DateTime? _lastSeekTime;
+
+  void _seekRelative(Duration offset) {
+    if (_controller == null || !_controller!.value.initialized) return;
+    final duration = _controller!.value.duration;
+    if (duration == null || duration <= Duration.zero) {
+      // If duration is unknown, avoid invalid seeking
+      return;
+    }
+
+    final now = DateTime.now();
+    Duration basePosition;
+    if (_pendingSeekPosition != null &&
+        _lastSeekTime != null &&
+        now.difference(_lastSeekTime!).inMilliseconds < 1500) {
+      basePosition = _pendingSeekPosition!;
+    } else {
+      basePosition = _controller!.value.position;
+    }
+
+    var newPosition = basePosition + offset;
+    if (newPosition < Duration.zero) {
+      newPosition = Duration.zero;
+    } else if (newPosition > duration) {
+      newPosition = duration;
+    }
+
+    _pendingSeekPosition = newPosition;
+    _lastSeekTime = now;
+    _betterPlayerController?.seekTo(newPosition);
+  }
+
+  Widget _buildProgressBar() {
+    final progressBarWidget = BetterPlayerMaterialVideoProgressBar(
+      _controller,
+      _betterPlayerController,
+      onDragStart: () {
+        _hideTimer?.cancel();
+      },
+      onDragEnd: _startHideTimer,
+      onTapDown: cancelAndRestartTimer,
+      colors: BetterPlayerProgressColors(
+        playedColor: _controlsConfiguration.progressBarPlayedColor,
+        handleColor: _controlsConfiguration.progressBarHandleColor,
+        bufferedColor: _controlsConfiguration.progressBarBufferedColor,
+        backgroundColor:
+            _controlsConfiguration.progressBarBackgroundColor,
+      ),
+    );
+
+    if (!context.responsive.isTvOrDesktop) {
+      return Expanded(
         flex: 40,
         child: Container(
           alignment: Alignment.bottomCenter,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: BetterPlayerMaterialVideoProgressBar(
-            _controller,
-            _betterPlayerController,
-            onDragStart: () {
-              _hideTimer?.cancel();
-            },
-            onDragEnd: _startHideTimer,
-            onTapDown: cancelAndRestartTimer,
-            colors: BetterPlayerProgressColors(
-              playedColor: _controlsConfiguration.progressBarPlayedColor,
-              handleColor: _controlsConfiguration.progressBarHandleColor,
-              bufferedColor: _controlsConfiguration.progressBarBufferedColor,
-              backgroundColor:
-                  _controlsConfiguration.progressBarBackgroundColor,
-            ),
-          ),
+          child: progressBarWidget,
         ),
       );
+    }
+
+    return Expanded(
+      flex: 40,
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: DpadFocusable(
+          focusNode: _progressBarFocusNode,
+          enabled: !controlsNotVisible,
+          onFocusChange: (focused) {
+            if (focused) cancelAndRestartTimer();
+          },
+          onDirection: (direction) {
+            if (direction == TraversalDirection.left) {
+              cancelAndRestartTimer();
+              _seekRelative(const Duration(minutes: -15));
+              return true;
+            }
+            if (direction == TraversalDirection.right) {
+              cancelAndRestartTimer();
+              _seekRelative(const Duration(minutes: 15));
+              return true;
+            }
+            if (direction == TraversalDirection.up) {
+              _fullscreenFocusNode.requestFocus();
+              return true;
+            }
+            if (direction == TraversalDirection.down) {
+              return true;
+            }
+            return false;
+          },
+          effects: [
+            const DpadBorderEffect(
+              width: 2.5,
+              color: ColorPalette.primaryGreen,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            const DpadGlowEffect(
+              color: ColorPalette.primaryGreen,
+              blurRadius: 10,
+              spreadRadius: 1.0,
+              opacity: 0.4,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+          ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: progressBarWidget,
+          ),
+        ),
+      ),
+    );
+  }
 
   void _onPlayerHide() {
     _betterPlayerController!.toggleControlsVisibility(!controlsNotVisible);

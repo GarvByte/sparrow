@@ -55,6 +55,18 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   int _playbackSessionToken = 0;
   ResolvedSource? _activeSource;
 
+  // Stall detection and automatic recovery state
+  bool _hasPlaybackStartedForCurrentSource = false;
+  bool _isPaused = false;
+  bool _isUserSeeking = false;
+  bool _isTransitioningSource = false;
+  Timer? _stallGraceTimer;
+  Timer? _seekGraceTimer;
+  Timer? _stallWatchdogTimer;
+  Duration _lastObservedPosition = Duration.zero;
+  Duration _lastValidPlaybackPosition = Duration.zero;
+  DateTime? _lastProgressAdvanceTime;
+
   Timer? _progressSaveTimer;
   bool _hasRestoredResumePosition = false;
   Duration? _savedResumePosition;
@@ -94,6 +106,13 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     _progressSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (_controller.videoPlayerController?.value.isPlaying == true) {
         _saveCurrentProgress();
+      }
+    });
+
+    // 1-second watchdog to monitor playback stalls and progress
+    _stallWatchdogTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        _monitorPlaybackProgress();
       }
     });
   }
@@ -295,6 +314,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       _videoPlayerListener = () {
         if (mounted) {
           _updateAspectRatio();
+          _monitorPlaybackProgress();
         }
       };
       vpc.addListener(_videoPlayerListener!);
@@ -309,6 +329,117 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       } catch (_) {}
       _videoPlayerListener = null;
     }
+  }
+
+  void _monitorPlaybackProgress() {
+    final vpc = _controller.videoPlayerController;
+    if (vpc == null || !vpc.value.initialized) return;
+
+    final isPlaying = vpc.value.isPlaying;
+    final isBuffering = vpc.value.isBuffering;
+    final pos = vpc.value.position;
+    final dur = vpc.value.duration;
+
+    // Normal end of media must not trigger recovery
+    if (dur != null && dur > Duration.zero && pos >= dur) {
+      _cancelStallTimer();
+      return;
+    }
+
+    // Do not trigger recovery during pause, finish, seek, or source transitions
+    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) {
+      _cancelStallTimer();
+      return;
+    }
+
+    if (isPlaying) {
+      if (pos > _lastObservedPosition) {
+        _hasPlaybackStartedForCurrentSource = true;
+        _lastObservedPosition = pos;
+        _lastValidPlaybackPosition = pos;
+        _lastProgressAdvanceTime = DateTime.now();
+        _cancelStallTimer();
+      } else if (_hasPlaybackStartedForCurrentSource) {
+        if (isBuffering) {
+          _checkAndScheduleStallRecovery();
+        } else {
+          final stationaryDuration = _lastProgressAdvanceTime != null
+              ? DateTime.now().difference(_lastProgressAdvanceTime!)
+              : Duration.zero;
+          if (stationaryDuration > const Duration(seconds: 3)) {
+            _checkAndScheduleStallRecovery();
+          }
+        }
+      }
+    }
+  }
+
+  void _checkAndScheduleStallRecovery() {
+    if (!_hasPlaybackStartedForCurrentSource) return;
+    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) return;
+    if (_stallGraceTimer != null && _stallGraceTimer!.isActive) return;
+
+    final stallPosition = _lastValidPlaybackPosition > Duration.zero
+        ? _lastValidPlaybackPosition
+        : _captureCurrentPosition();
+
+    debugPrint(
+      'PlayerPage: Playback stall suspected at ${stallPosition.inSeconds}s. '
+      'Waiting 12-second grace period...',
+    );
+
+    _stallGraceTimer = Timer(const Duration(seconds: 12), () {
+      if (!mounted) return;
+      _executeStallRecovery(stallPosition);
+    });
+  }
+
+  void _cancelStallTimer() {
+    if (_stallGraceTimer != null && _stallGraceTimer!.isActive) {
+      debugPrint('PlayerPage: Playback resumed, cancelled pending stall recovery.');
+      _stallGraceTimer!.cancel();
+    }
+    _stallGraceTimer = null;
+  }
+
+  void _executeStallRecovery(Duration stallPosition) {
+    _stallGraceTimer = null;
+    if (!_hasPlaybackStartedForCurrentSource) return;
+    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) return;
+
+    final vpc = _controller.videoPlayerController;
+    if (vpc != null && vpc.value.isPlaying && !vpc.value.isBuffering) {
+      if (vpc.value.position > _lastObservedPosition) {
+        debugPrint('PlayerPage: Playback resumed, aborting stall recovery.');
+        return;
+      }
+    }
+
+    var resumePos = stallPosition;
+    final dur = vpc?.value.duration;
+    if (dur != null && dur > Duration.zero && resumePos > dur) {
+      resumePos = dur;
+    }
+
+    debugPrint(
+      'PlayerPage: Genuine stall persisted for 12s. '
+      'Triggering automatic server recovery from ${resumePos.inSeconds}s...',
+    );
+
+    _isTransitioningSource = true;
+    _hasPlaybackStartedForCurrentSource = false;
+
+    ref
+        .read(streamResolutionControllerProvider.notifier)
+        .handleSourceFailure(
+          failedSource: _activeSource,
+          currentPosition: resumePos,
+          isPlaybackStall: true,
+          onSourceReady: (source, startAt) {
+            if (!mounted) return;
+            _playSource(source, startAt: startAt);
+          },
+        );
   }
 
   void _handlePlayerEvent(BetterPlayerEvent event) {
@@ -342,19 +473,61 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         setState(() {
           _videoFinished = true;
         });
+        _cancelStallTimer();
         _saveCurrentProgress(isCompleting: true);
         break;
 
       case BetterPlayerEventType.pause:
+        _isPaused = true;
+        _cancelStallTimer();
         _saveCurrentProgress();
+        break;
+
+      case BetterPlayerEventType.seekTo:
+        _isUserSeeking = true;
+        _cancelStallTimer();
+        _seekGraceTimer?.cancel();
+        _seekGraceTimer = Timer(const Duration(seconds: 3), () {
+          _isUserSeeking = false;
+        });
+        break;
+
+      case BetterPlayerEventType.bufferingStart:
+        if (_hasPlaybackStartedForCurrentSource) {
+          _checkAndScheduleStallRecovery();
+        }
+        break;
+
+      case BetterPlayerEventType.bufferingEnd:
+        _cancelStallTimer();
+        break;
+
+      case BetterPlayerEventType.progress:
+        _isTransitioningSource = false;
+        final pos = event.parameters?['progress'] as Duration? ??
+            _controller.videoPlayerController?.value.position;
+        if (pos != null && pos > _lastObservedPosition) {
+          if (_controller.videoPlayerController?.value.isPlaying == true) {
+            _hasPlaybackStartedForCurrentSource = true;
+          }
+          _lastObservedPosition = pos;
+          _lastValidPlaybackPosition = pos;
+          _lastProgressAdvanceTime = DateTime.now();
+          _cancelStallTimer();
+        }
         break;
 
       case BetterPlayerEventType.exception:
         debugPrint('PlayerPage: Playback exception occurred: $event');
-        _triggerAutomaticFallback(_activeSource);
+        if (!_hasPlaybackStartedForCurrentSource) {
+          _triggerAutomaticFallback(_activeSource);
+        } else {
+          _checkAndScheduleStallRecovery();
+        }
         break;
 
       case BetterPlayerEventType.play:
+        _isPaused = false;
         setState(() {
           _videoFinished = false;
         });
@@ -375,6 +548,9 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   }
 
   void _startResolution() {
+    _hasStartedFirstSource = false;
+    _hasPlaybackStartedForCurrentSource = false;
+    _cancelStallTimer();
     ref
         .read(streamResolutionControllerProvider.notifier)
         .startPlaybackResolution(
@@ -393,6 +569,13 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   }) async {
     final currentToken = ++_playbackSessionToken;
     _activeSource = source;
+    _cancelStallTimer();
+    _hasPlaybackStartedForCurrentSource = false;
+    _isTransitioningSource = true;
+    _isUserSeeking = false;
+    _lastObservedPosition = startAt;
+    _lastValidPlaybackPosition = startAt;
+    _lastProgressAdvanceTime = null;
 
     if (!_hasRestoredResumePosition) {
       if (startAt == Duration.zero &&
@@ -432,10 +615,15 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       if (mounted && currentToken == _playbackSessionToken) {
         await _controller.play();
       }
+      _isTransitioningSource = false;
     } catch (e) {
       debugPrint('PlayerPage: setupDataSource failed: $e');
       if (mounted && currentToken == _playbackSessionToken) {
-        _triggerAutomaticFallback(source);
+        if (!_hasPlaybackStartedForCurrentSource) {
+          _triggerAutomaticFallback(source);
+        } else {
+          _checkAndScheduleStallRecovery();
+        }
       }
     }
   }
@@ -605,6 +793,9 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _progressSaveTimer?.cancel();
+    _stallWatchdogTimer?.cancel();
+    _stallGraceTimer?.cancel();
+    _seekGraceTimer?.cancel();
     _saveCurrentProgress();
     _removeVideoPlayerListener();
     _restoreOrientation();
@@ -694,7 +885,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
               ),
 
             // Fatal Error / Exhausted Fallback Overlay
-            if (errorMessage != null && !_hasStartedFirstSource)
+            if (errorMessage != null)
               Container(
                 color: Colors.black.withValues(alpha: 0.92),
                 padding: const EdgeInsets.all(24),
