@@ -197,7 +197,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       if (_disposed || _currentSessionId != sessionId) return;
       debugPrint('StreamResolutionNotifier: getServers error: $e');
       final msg =
-          _isNetworkError(e) ? 'Check your connection' : 'No sources found';
+          _isNetworkError(e) ? 'Check your connection' : 'No valid links were found for this title.';
       state = state.copyWith(
         isLoadingServers: false,
         isResolvingFirstSource: false,
@@ -218,7 +218,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       if (_disposed || _currentSessionId != sessionId) return;
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage: 'No sources found',
+        errorMessage: 'No valid links were found for this title.',
       );
       return;
     }
@@ -227,7 +227,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       if (_disposed || _currentSessionId != sessionId) return;
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage: 'No playable sources found',
+        errorMessage: 'No valid links were found for this title.',
       );
       return;
     }
@@ -288,7 +288,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     if (!foundFirstSource && !_disposed && _currentSessionId == sessionId) {
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage: 'Unable to start playback',
+        errorMessage: 'No valid links were found for this title.',
       );
     }
   }
@@ -427,9 +427,9 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
         onSourceReady(chosen, currentPosition);
       } else {
         _updateServerStatus(serverIndex, ServerResolutionStatus.failed,
-            errorMessage: 'No playable sources found', sessionId: sessionId);
+            errorMessage: 'No valid links were found for this title.', sessionId: sessionId);
         state = state.copyWith(
-          errorMessage: 'No playable sources found',
+          errorMessage: 'No valid links were found for this title.',
         );
       }
     } catch (e) {
@@ -438,7 +438,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       _updateServerStatus(serverIndex, ServerResolutionStatus.failed,
           errorMessage: e.toString(), sessionId: sessionId);
       final msg =
-          _isNetworkError(e) ? 'Check your connection' : 'Unable to start playback';
+          _isNetworkError(e) ? 'Check your connection' : 'No valid links were found for this title.';
       state = state.copyWith(
         errorMessage: msg,
       );
@@ -539,9 +539,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     if (currentAttempts > maxFallbackAttempts) {
       state = state.copyWith(
         fallbackAttempts: currentAttempts,
-        errorMessage: isPlaybackStall
-            ? 'Playback stalled, try again'
-            : 'No playable sources found',
+        errorMessage: 'No valid links were found for this title.',
       );
       return;
     }
@@ -674,9 +672,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     // 4. Exhausted
     state = state.copyWith(
       fallbackAttempts: currentAttempts,
-      errorMessage: isPlaybackStall
-          ? 'Playback stalled, try again'
-          : 'No playable sources found',
+      errorMessage: 'No valid links were found for this title.',
     );
   }
 

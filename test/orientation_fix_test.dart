@@ -310,9 +310,13 @@ void main() {
 
       expect(find.byType(PlayerPage), findsOneWidget);
 
-      // Tap in-app back
+      // Exit player (via back button if present, or hardware/system back on TV)
       final backButtonFinder = find.byIcon(Icons.arrow_back_rounded);
-      await tester.tap(backButtonFinder);
+      if (backButtonFinder.evaluate().isNotEmpty) {
+        await tester.tap(backButtonFinder);
+      } else {
+        await tester.binding.handlePopRoute();
+      }
       await tester.pumpAndSettle();
 
       expect(find.byType(PlayerPage), findsNothing);

@@ -3,10 +3,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/playback_context.dart';
 
 /// Hive-backed persistent cache for decoded server lists and resolved sources
-/// with a 1-hour expiration policy and strict request-identity validation.
+/// with a 5-minute expiration policy and strict request-identity validation.
 class StreamCacheService {
   static const String boxName = 'sparrow_stream_cache_box';
-  static const Duration cacheTtl = Duration(hours: 1);
+  static const Duration cacheTtl = Duration(minutes: 5);
   static bool _initialized = false;
 
   /// Initializes the cache box safely.

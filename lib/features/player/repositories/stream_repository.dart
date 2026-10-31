@@ -7,7 +7,7 @@ import '../services/nxsha_api_service.dart';
 import '../services/stream_cache_service.dart';
 
 /// Repository coordinating server and source resolution, in-flight deduplication,
-/// and 1-hour persistent caching.
+/// and 5-minute persistent caching.
 class StreamRepository {
   final NxshaApiService _apiService;
 
@@ -20,7 +20,7 @@ class StreamRepository {
 
   /// Resolves the list of supported servers for [context].
   ///
-  /// Checks the 1-hour Hive cache first.
+  /// Checks the 5-minute Hive cache first.
   /// If an in-flight request is already running for this context, reuses it.
   Future<List<ServerItem>> getServers(
     PlaybackContext context, {
@@ -80,7 +80,7 @@ class StreamRepository {
 
   /// Resolves streaming sources for a specific server [scraper].
   ///
-  /// Checks 1-hour cache first and deduplicates in-flight requests.
+  /// Checks 5-minute cache first and deduplicates in-flight requests.
   Future<List<ResolvedSource>> getSources(
     PlaybackContext context,
     String scraper, {

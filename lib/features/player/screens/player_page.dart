@@ -55,14 +55,12 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   int _playbackSessionToken = 0;
   ResolvedSource? _activeSource;
 
-  // Stall detection and automatic recovery state
+  // Playback monitoring and recovery state
   bool _hasPlaybackStartedForCurrentSource = false;
   bool _isPaused = false;
   bool _isUserSeeking = false;
   bool _isTransitioningSource = false;
-  Timer? _stallGraceTimer;
   Timer? _seekGraceTimer;
-  Timer? _stallWatchdogTimer;
   Duration _lastObservedPosition = Duration.zero;
   Duration _lastValidPlaybackPosition = Duration.zero;
   DateTime? _lastProgressAdvanceTime;
@@ -106,13 +104,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     _progressSaveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (_controller.videoPlayerController?.value.isPlaying == true) {
         _saveCurrentProgress();
-      }
-    });
-
-    // 1-second watchdog to monitor playback stalls and progress
-    _stallWatchdogTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        _monitorPlaybackProgress();
       }
     });
   }
@@ -253,13 +244,8 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       fullScreenByDefault: false,
       autoDetectFullscreenAspectRatio: true,
       playerVisibilityChangedBehavior: (visibility) {
-        try {
-          if (visibility == 0) {
-            if (_controller.videoPlayerController?.value.isPlaying == true) {
-              _controller.pause();
-            }
-          }
-        } catch (_) {}
+        // Prevent BetterPlayer from pausing active playback during modal bottom sheets
+        // and avoid calling isPlaying() before the data source is initialized.
       },
     );
 
@@ -336,110 +322,20 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     if (vpc == null || !vpc.value.initialized) return;
 
     final isPlaying = vpc.value.isPlaying;
-    final isBuffering = vpc.value.isBuffering;
     final pos = vpc.value.position;
     final dur = vpc.value.duration;
 
-    // Normal end of media must not trigger recovery
+    // Normal end of media
     if (dur != null && dur > Duration.zero && pos >= dur) {
-      _cancelStallTimer();
       return;
     }
 
-    // Do not trigger recovery during pause, finish, seek, or source transitions
-    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) {
-      _cancelStallTimer();
-      return;
+    if (isPlaying && pos > _lastObservedPosition) {
+      _hasPlaybackStartedForCurrentSource = true;
+      _lastObservedPosition = pos;
+      _lastValidPlaybackPosition = pos;
+      _lastProgressAdvanceTime = DateTime.now();
     }
-
-    if (isPlaying) {
-      if (pos > _lastObservedPosition) {
-        _hasPlaybackStartedForCurrentSource = true;
-        _lastObservedPosition = pos;
-        _lastValidPlaybackPosition = pos;
-        _lastProgressAdvanceTime = DateTime.now();
-        _cancelStallTimer();
-      } else if (_hasPlaybackStartedForCurrentSource) {
-        if (isBuffering) {
-          _checkAndScheduleStallRecovery();
-        } else {
-          final stationaryDuration = _lastProgressAdvanceTime != null
-              ? DateTime.now().difference(_lastProgressAdvanceTime!)
-              : Duration.zero;
-          if (stationaryDuration > const Duration(seconds: 3)) {
-            _checkAndScheduleStallRecovery();
-          }
-        }
-      }
-    }
-  }
-
-  void _checkAndScheduleStallRecovery() {
-    if (!_hasPlaybackStartedForCurrentSource) return;
-    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) return;
-    if (_stallGraceTimer != null && _stallGraceTimer!.isActive) return;
-
-    final stallPosition = _lastValidPlaybackPosition > Duration.zero
-        ? _lastValidPlaybackPosition
-        : _captureCurrentPosition();
-
-    debugPrint(
-      'PlayerPage: Playback stall suspected at ${stallPosition.inSeconds}s. '
-      'Waiting 12-second grace period...',
-    );
-
-    _stallGraceTimer = Timer(const Duration(seconds: 12), () {
-      if (!mounted) return;
-      _executeStallRecovery(stallPosition);
-    });
-  }
-
-  void _cancelStallTimer() {
-    if (_stallGraceTimer != null && _stallGraceTimer!.isActive) {
-      debugPrint('PlayerPage: Playback resumed, cancelled pending stall recovery.');
-      _stallGraceTimer!.cancel();
-    }
-    _stallGraceTimer = null;
-  }
-
-  void _executeStallRecovery(Duration stallPosition) {
-    _stallGraceTimer = null;
-    if (!_hasPlaybackStartedForCurrentSource) return;
-    if (_isPaused || _videoFinished || _isUserSeeking || _isTransitioningSource) return;
-
-    final vpc = _controller.videoPlayerController;
-    if (vpc != null && vpc.value.isPlaying && !vpc.value.isBuffering) {
-      if (vpc.value.position > _lastObservedPosition) {
-        debugPrint('PlayerPage: Playback resumed, aborting stall recovery.');
-        return;
-      }
-    }
-
-    var resumePos = stallPosition;
-    final dur = vpc?.value.duration;
-    if (dur != null && dur > Duration.zero && resumePos > dur) {
-      resumePos = dur;
-    }
-
-    debugPrint(
-      'PlayerPage: Genuine stall persisted for 12s. '
-      'Triggering automatic server recovery from ${resumePos.inSeconds}s...',
-    );
-
-    _isTransitioningSource = true;
-    _hasPlaybackStartedForCurrentSource = false;
-
-    ref
-        .read(streamResolutionControllerProvider.notifier)
-        .handleSourceFailure(
-          failedSource: _activeSource,
-          currentPosition: resumePos,
-          isPlaybackStall: true,
-          onSourceReady: (source, startAt) {
-            if (!mounted) return;
-            _playSource(source, startAt: startAt);
-          },
-        );
   }
 
   void _handlePlayerEvent(BetterPlayerEvent event) {
@@ -473,19 +369,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         setState(() {
           _videoFinished = true;
         });
-        _cancelStallTimer();
         _saveCurrentProgress(isCompleting: true);
         break;
 
       case BetterPlayerEventType.pause:
         _isPaused = true;
-        _cancelStallTimer();
         _saveCurrentProgress();
         break;
 
       case BetterPlayerEventType.seekTo:
         _isUserSeeking = true;
-        _cancelStallTimer();
         _seekGraceTimer?.cancel();
         _seekGraceTimer = Timer(const Duration(seconds: 3), () {
           _isUserSeeking = false;
@@ -493,13 +386,9 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         break;
 
       case BetterPlayerEventType.bufferingStart:
-        if (_hasPlaybackStartedForCurrentSource) {
-          _checkAndScheduleStallRecovery();
-        }
-        break;
-
       case BetterPlayerEventType.bufferingEnd:
-        _cancelStallTimer();
+        // Buffering preserves the active source and presents the loading indicator.
+        // No automatic stall fallback occurs on slow/pending network segments.
         break;
 
       case BetterPlayerEventType.progress:
@@ -513,17 +402,12 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
           _lastObservedPosition = pos;
           _lastValidPlaybackPosition = pos;
           _lastProgressAdvanceTime = DateTime.now();
-          _cancelStallTimer();
         }
         break;
 
       case BetterPlayerEventType.exception:
         debugPrint('PlayerPage: Playback exception occurred: $event');
-        if (!_hasPlaybackStartedForCurrentSource) {
-          _triggerAutomaticFallback(_activeSource);
-        } else {
-          _checkAndScheduleStallRecovery();
-        }
+        _triggerAutomaticFallback(_activeSource);
         break;
 
       case BetterPlayerEventType.play:
@@ -550,7 +434,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   void _startResolution() {
     _hasStartedFirstSource = false;
     _hasPlaybackStartedForCurrentSource = false;
-    _cancelStallTimer();
     ref
         .read(streamResolutionControllerProvider.notifier)
         .startPlaybackResolution(
@@ -569,7 +452,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   }) async {
     final currentToken = ++_playbackSessionToken;
     _activeSource = source;
-    _cancelStallTimer();
     _hasPlaybackStartedForCurrentSource = false;
     _isTransitioningSource = true;
     _isUserSeeking = false;
@@ -619,17 +501,17 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     } catch (e) {
       debugPrint('PlayerPage: setupDataSource failed: $e');
       if (mounted && currentToken == _playbackSessionToken) {
-        if (!_hasPlaybackStartedForCurrentSource) {
-          _triggerAutomaticFallback(source);
-        } else {
-          _checkAndScheduleStallRecovery();
-        }
+        _triggerAutomaticFallback(source);
       }
     }
   }
 
   void _triggerAutomaticFallback([ResolvedSource? failedSource]) {
-    final currentPos = _captureCurrentPosition();
+    final currentPos = _lastValidPlaybackPosition > Duration.zero
+        ? _lastValidPlaybackPosition
+        : _captureCurrentPosition();
+    _isTransitioningSource = true;
+    _hasPlaybackStartedForCurrentSource = false;
     ref
         .read(streamResolutionControllerProvider.notifier)
         .handleSourceFailure(
@@ -793,8 +675,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _progressSaveTimer?.cancel();
-    _stallWatchdogTimer?.cancel();
-    _stallGraceTimer?.cancel();
     _seekGraceTimer?.cancel();
     _saveCurrentProgress();
     _removeVideoPlayerListener();
@@ -884,7 +764,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
                 ),
               ),
 
-            // Fatal Error / Exhausted Fallback Overlay
+            // No Valid Links Found Overlay
             if (errorMessage != null)
               Container(
                 color: Colors.black.withValues(alpha: 0.92),
@@ -896,73 +776,21 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(
-                          Icons.error_outline_rounded,
-                          size: 50,
-                          color: Colors.redAccent,
+                          Icons.info_outline_rounded,
+                          size: 48,
+                          color: ColorPalette.textMuted,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Playback Error',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
                         Text(
-                          errorMessage,
+                          errorMessage.contains('connection')
+                              ? errorMessage
+                              : 'No valid links were found for this title.',
                           style: const TextStyle(
-                            color: ColorPalette.textMuted,
-                            fontSize: 13,
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 14,
-                          runSpacing: 10,
-                          children: [
-                            DpadFocusable(
-                              onSelect: _startResolution,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorPalette.primaryGreen,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                onPressed: _startResolution,
-                                icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Retry'),
-                              ),
-                            ),
-                            DpadFocusable(
-                              onSelect: _openServerSheet,
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.white30),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                onPressed: _openServerSheet,
-                                icon: const Icon(Icons.dns_rounded),
-                                label: const Text('Change Server'),
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),

@@ -105,7 +105,34 @@ class _SparrowMaterialControlsState
     super.changePlayerControlsNotVisible(notVisible);
     if (wasNotVisible && !notVisible) {
       _requestPlayPauseFocus();
+      widget.onControlsVisibilityChanged(true);
+      betterPlayerController?.postEvent(
+        BetterPlayerEvent(BetterPlayerEventType.controlsVisible),
+      );
     }
+  }
+
+  @override
+  bool isLoading(VideoPlayerValue? latestValue) {
+    if (latestValue?.isBuffering == true) return true;
+    return super.isLoading(latestValue);
+  }
+
+  void _syncVideoController() {
+    final newController = _betterPlayerController?.videoPlayerController;
+    if (newController != null && newController != _controller) {
+      _controller?.removeListener(_updateState);
+      _controller = newController;
+      _latestValue = _controller?.value;
+      _controller?.addListener(_updateState);
+      _updateState();
+    }
+  }
+
+  @override
+  void didUpdateWidget(SparrowMaterialControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncVideoController();
   }
 
   @override
@@ -206,8 +233,7 @@ class _SparrowMaterialControlsState
   void didChangeDependencies() {
     final oldController = _betterPlayerController;
     _betterPlayerController = widget.controller ?? BetterPlayerController.of(context);
-    _controller = _betterPlayerController!.videoPlayerController;
-    _latestValue = _controller!.value;
+    _syncVideoController();
 
     if (oldController != _betterPlayerController) {
       _dispose();
@@ -261,7 +287,6 @@ class _SparrowMaterialControlsState
         ? AnimatedOpacity(
             opacity: controlsNotVisible ? 0.0 : 1.0,
             duration: _controlsConfiguration.controlsHideTime,
-            onEnd: _onPlayerHide,
             child: SizedBox(
               height: _controlsConfiguration.controlBarHeight,
               width: double.infinity,
@@ -271,7 +296,6 @@ class _SparrowMaterialControlsState
                   if (_controlsConfiguration.enablePip)
                     _buildPipButtonWrapperWidget(
                       controlsNotVisible,
-                      _onPlayerHide,
                     )
                   else
                     const SizedBox(),
@@ -300,7 +324,6 @@ class _SparrowMaterialControlsState
 
   Widget _buildPipButtonWrapperWidget(
     bool hideStuff,
-    void Function() onPlayerHide,
   ) =>
       FutureBuilder<bool>(
         future: betterPlayerController!.isPictureInPictureSupported(),
@@ -311,7 +334,6 @@ class _SparrowMaterialControlsState
             return AnimatedOpacity(
               opacity: hideStuff ? 0.0 : 1.0,
               duration: betterPlayerControlsConfiguration.controlsHideTime,
-              onEnd: onPlayerHide,
               child: SizedBox(
                 height: betterPlayerControlsConfiguration.controlBarHeight,
                 child: Row(
@@ -703,21 +725,26 @@ class _SparrowMaterialControlsState
 
   Widget _buildReplayButton(VideoPlayerController controller) {
     final bool isFinished = isVideoFinished(_latestValue);
+    final Widget playPauseIcon = isFinished
+        ? Icon(
+            Icons.replay_rounded,
+            size: 38,
+            color: _controlsConfiguration.iconsColor,
+          )
+        : Icon(
+            controller.value.isPlaying
+                ? _controlsConfiguration.pauseIcon
+                : _controlsConfiguration.playIcon,
+            size: 38,
+            color: _controlsConfiguration.iconsColor,
+          );
+
     return _buildHitAreaButton(
-      icon: isFinished
-          ? Icon(
-              Icons.replay_rounded,
-              size: 38,
-              color: _controlsConfiguration.iconsColor,
-            )
-          : Icon(
-              controller.value.isPlaying
-                  ? _controlsConfiguration.pauseIcon
-                  : _controlsConfiguration.playIcon,
-              size: 38,
-              color: _controlsConfiguration.iconsColor,
-            ),
+      icon: _wasLoading
+          ? const SizedBox(width: 38, height: 38)
+          : playPauseIcon,
       onClicked: () {
+        if (_wasLoading) return;
         if (isFinished) {
           if (_latestValue != null && _latestValue!.isPlaying) {
             if (_displayTapped) {
@@ -960,6 +987,13 @@ class _SparrowMaterialControlsState
     _controllerEventSubscription?.cancel();
     _controllerEventSubscription =
         _betterPlayerController!.controllerEventStream.listen((event) {
+      if (event == BetterPlayerControllerEvent.setupDataSource) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _syncVideoController();
+          }
+        });
+      }
       if (event == BetterPlayerControllerEvent.openFullscreen ||
           event == BetterPlayerControllerEvent.hideFullscreen) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -986,27 +1020,38 @@ class _SparrowMaterialControlsState
     });
   }
 
+  DateTime? _lastPlayPauseTime;
+
   void _onPlayPause() {
+    final now = DateTime.now();
+    if (_lastPlayPauseTime != null &&
+        now.difference(_lastPlayPauseTime!).inMilliseconds < 350) {
+      return;
+    }
+    _lastPlayPauseTime = now;
+
+    final vpc = _controller;
+    if (vpc == null) return;
+
     bool isFinished = false;
 
     if (_latestValue?.position != null && _latestValue?.duration != null) {
       isFinished = _latestValue!.position >= _latestValue!.duration!;
     }
 
-    if (_controller!.value.isPlaying) {
+    if (vpc.value.isPlaying) {
       changePlayerControlsNotVisible(false);
       _hideTimer?.cancel();
-      _betterPlayerController!.pause();
+      _betterPlayerController?.pause();
     } else {
       cancelAndRestartTimer();
 
-      if (!_controller!.value.initialized) {
-      } else {
+      if (vpc.value.initialized) {
         if (isFinished) {
-          _betterPlayerController!.seekTo(Duration.zero);
+          _betterPlayerController?.seekTo(Duration.zero);
         }
-        _betterPlayerController!.play();
-        _betterPlayerController!.cancelNextVideoTimer();
+        _betterPlayerController?.play();
+        _betterPlayerController?.cancelNextVideoTimer();
       }
     }
   }
@@ -1022,12 +1067,14 @@ class _SparrowMaterialControlsState
 
   void _updateState() {
     if (mounted) {
+      final vpc = _controller;
+      if (vpc == null) return;
       if (!controlsNotVisible ||
-          isVideoFinished(_controller!.value) ||
+          isVideoFinished(vpc.value) ||
           _wasLoading ||
-          isLoading(_controller!.value)) {
+          isLoading(vpc.value)) {
         setState(() {
-          _latestValue = _controller!.value;
+          _latestValue = vpc.value;
           if (isVideoFinished(_latestValue) &&
               _betterPlayerController?.isLiveStream() == false) {
             changePlayerControlsNotVisible(false);
@@ -1157,9 +1204,10 @@ class _SparrowMaterialControlsState
   }
 
   void _onPlayerHide() {
-    _betterPlayerController!.toggleControlsVisibility(!controlsNotVisible);
-    _betterPlayerController!.setControlsVisibility(!controlsNotVisible);
-    widget.onControlsVisibilityChanged(!controlsNotVisible);
+    if (controlsNotVisible) {
+      _betterPlayerController?.toggleControlsVisibility(false);
+      widget.onControlsVisibilityChanged(false);
+    }
   }
 
   Widget? _buildLoadingWidget() {
