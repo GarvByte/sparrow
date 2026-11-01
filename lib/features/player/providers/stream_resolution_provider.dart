@@ -465,6 +465,12 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     // If the user manually selects a source that was previously marked failed,
     // reset its failed flag so the user can retry it cleanly.
     if (chosen.isFailed) {
+      debugPrint(
+  '[SPARROW_DIAG] RETRYING_PREVIOUSLY_FAILED_SOURCE | '
+  'source=${chosen.displayName} | '
+  'index=$sourceIndex | '
+  'position=$currentPosition',
+);
       chosen = chosen.copyWith(isFailed: false);
       final updatedSources = List<ResolvedSource>.from(server.sources);
       updatedSources[sourceIndex] = chosen;
@@ -534,6 +540,17 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     const maxFallbackAttempts = 5;
 
     debugPrint(
+  '[SPARROW_DIAG] RESOLUTION_FAILURE | '
+  'server=${currentServer.name} | '
+  'sourceIndex=$targetSourceIdx | '
+  'sourceName=${failedSource?.displayName} | '
+  'sourceUrl=${failedSource?.url == null ? 'NONE' : Uri.tryParse(failedSource!.url)?.replace(query: '')} | '
+  'position=$currentPosition | '
+  'attempt=$currentAttempts | '
+  'isPlaybackStall=$isPlaybackStall',
+);
+
+    debugPrint(
         'StreamResolution: TMDB=${state.context?.tmdbId}, Server=${currentServer.name}, SourceIndex=$targetSourceIdx, Attempts=$currentAttempts, FailureCategory=${isPlaybackStall ? "playback_stall" : "playback_error"}');
 
     if (currentAttempts > maxFallbackAttempts) {
@@ -546,10 +563,22 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
 
     // 1. Check if current server has another untried valid source link
     final updatedSources = List<ResolvedSource>.from(currentServer.sources);
-    if (targetSourceIdx >= 0 && targetSourceIdx < updatedSources.length) {
-      updatedSources[targetSourceIdx] =
-          updatedSources[targetSourceIdx].copyWith(isFailed: true);
-    }
+
+  if (targetSourceIdx >= 0 && targetSourceIdx < updatedSources.length) {
+  final failed = updatedSources[targetSourceIdx];
+
+  debugPrint(
+    '[SPARROW_DIAG] MARKING_SOURCE_FAILED | '
+    'server=${currentServer.name} | '
+    'source=${failed.displayName} | '
+    'index=$targetSourceIdx | '
+    'url=${Uri.tryParse(failed.url)?.replace(query: '')} | '
+    'position=$currentPosition',
+  );
+
+  updatedSources[targetSourceIdx] =
+      failed.copyWith(isFailed: true);
+}
 
     final nextUntriedSourceIdx = updatedSources.indexWhere(
       (s) => !s.isFailed && s.isValidUrl,
@@ -557,6 +586,13 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
 
     if (nextUntriedSourceIdx != -1) {
       final nextSource = updatedSources[nextUntriedSourceIdx];
+      debugPrint(
+  '[SPARROW_DIAG] NEXT_SOURCE_SELECTED | '
+  'server=${currentServer.name} | '
+  'source=${nextSource.displayName} | '
+  'index=$nextUntriedSourceIdx | '
+  'resumePosition=$currentPosition',
+);
       _updateServerSources(currentServerIdx, updatedSources,
           ServerResolutionStatus.ready, sessionId);
 

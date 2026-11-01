@@ -64,6 +64,9 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   Duration _lastObservedPosition = Duration.zero;
   Duration _lastValidPlaybackPosition = Duration.zero;
   DateTime? _lastProgressAdvanceTime;
+  // Playback diagnostics
+  DateTime? _lastDiagnosticLogTime;
+  int _diagnosticEventCount = 0;
 
   Timer? _progressSaveTimer;
   bool _hasRestoredResumePosition = false;
@@ -317,6 +320,79 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     }
   }
 
+  String _diagnosticSourceName() {
+    final source = _activeSource;
+    if (source == null) return 'NONE';
+
+    return source.displayName;
+  }
+
+  String _diagnosticSourceUrl() {
+    final url = _activeSource?.url;
+    if (url == null || url.isEmpty) return 'NONE';
+
+    try {
+      final uri = Uri.parse(url);
+
+      // Deliberately exclude query parameters because they may contain tokens.
+      return '${uri.scheme}://${uri.host}${uri.path}';
+    } catch (_) {
+      return 'INVALID_URL';
+    }
+  }
+
+  void _logPlaybackSnapshot(String reason, {bool force = false}) {
+    final now = DateTime.now();
+
+    if (!force &&
+        _lastDiagnosticLogTime != null &&
+        now.difference(_lastDiagnosticLogTime!) < const Duration(seconds: 5)) {
+      return;
+    }
+
+    _lastDiagnosticLogTime = now;
+
+    final vpc = _controller.videoPlayerController;
+
+    if (vpc == null) {
+      debugPrint(
+        '[SPARROW_DIAG] SNAPSHOT | reason=$reason | '
+        'controller=NULL | source=${_diagnosticSourceName()}',
+      );
+      return;
+    }
+
+    final value = vpc.value;
+
+    final bufferedEnd = value.buffered.isEmpty
+        ? Duration.zero
+        : value.buffered
+              .map((range) => range.end)
+              .reduce((a, b) => a > b ? a : b);
+
+    final bufferAhead = bufferedEnd - value.position;
+
+    debugPrint(
+      '[SPARROW_DIAG] SNAPSHOT | '
+      'reason=$reason | '
+      'source=${_diagnosticSourceName()} | '
+      'url=${_diagnosticSourceUrl()} | '
+      'position=${value.position} | '
+      'duration=${value.duration} | '
+      'bufferedEnd=$bufferedEnd | '
+      'bufferAhead=$bufferAhead | '
+      'isPlaying=${value.isPlaying} | '
+      'isBuffering=${value.isBuffering} | '
+      'initialized=${value.initialized}  | '
+      'hasError=${value.hasError} | '
+      'error=${value.errorDescription} | '
+      'paused=$_isPaused | '
+      'seeking=$_isUserSeeking | '
+      'transitioning=$_isTransitioningSource | '
+      'lastProgress=$_lastProgressAdvanceTime',
+    );
+  }
+
   void _monitorPlaybackProgress() {
     final vpc = _controller.videoPlayerController;
     if (vpc == null || !vpc.value.initialized) return;
@@ -325,12 +401,22 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     final pos = vpc.value.position;
     final dur = vpc.value.duration;
 
+    // Log a playback snapshot every 5 seconds.
+    _logPlaybackSnapshot('PROGRESS_MONITOR');
+
     // Normal end of media
     if (dur != null && dur > Duration.zero && pos >= dur) {
       return;
     }
 
     if (isPlaying && pos > _lastObservedPosition) {
+      if (!_hasPlaybackStartedForCurrentSource) {
+        debugPrint(
+          '[SPARROW_DIAG] FIRST_PLAYBACK_ADVANCE | '
+          'source=${_diagnosticSourceName()} | position=$pos',
+        );
+      }
+
       _hasPlaybackStartedForCurrentSource = true;
       _lastObservedPosition = pos;
       _lastValidPlaybackPosition = pos;
@@ -340,6 +426,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
   void _handlePlayerEvent(BetterPlayerEvent event) {
     if (!mounted) return;
+
+    _diagnosticEventCount++;
+
+    debugPrint(
+      '[SPARROW_DIAG] PLAYER_EVENT #$_diagnosticEventCount | '
+      'event=${event.betterPlayerEventType} | '
+      'source=${_diagnosticSourceName()} | '
+      'position=${_captureCurrentPosition()} | '
+      'parameters=${event.parameters}',
+    );
 
     switch (event.betterPlayerEventType) {
       case BetterPlayerEventType.initialized:
@@ -386,14 +482,34 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         break;
 
       case BetterPlayerEventType.bufferingStart:
+        debugPrint(
+          '[SPARROW_DIAG] BUFFERING_START | '
+          'source=${_diagnosticSourceName()} | '
+          'position=${_captureCurrentPosition()}',
+        );
+
+        _logPlaybackSnapshot('BUFFERING_START', force: true);
+        break;
+
       case BetterPlayerEventType.bufferingEnd:
-        // Buffering preserves the active source and presents the loading indicator.
-        // No automatic stall fallback occurs on slow/pending network segments.
+        debugPrint(
+          '[SPARROW_DIAG] BUFFERING_END | '
+          'source=${_diagnosticSourceName()} | '
+          'position=${_captureCurrentPosition()}',
+        );
+
+        _logPlaybackSnapshot('BUFFERING_END', force: true);
         break;
 
       case BetterPlayerEventType.progress:
+        debugPrint(
+          '[SPARROW_DIAG] PROGRESS_EVENT | '
+          'position=${event.parameters?['progress']} | '
+          'source=${_diagnosticSourceName()}',
+        );
         _isTransitioningSource = false;
-        final pos = event.parameters?['progress'] as Duration? ??
+        final pos =
+            event.parameters?['progress'] as Duration? ??
             _controller.videoPlayerController?.value.position;
         if (pos != null && pos > _lastObservedPosition) {
           if (_controller.videoPlayerController?.value.isPlaying == true) {
@@ -406,7 +522,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         break;
 
       case BetterPlayerEventType.exception:
-        debugPrint('PlayerPage: Playback exception occurred: $event');
+        debugPrint(
+          '[SPARROW_DIAG] PLAYBACK_EXCEPTION | '
+          'source=${_diagnosticSourceName()} | '
+          'position=${_captureCurrentPosition()} | '
+          'event=$event | '
+          'parameters=${event.parameters}',
+        );
+
+        _logPlaybackSnapshot('EXCEPTION', force: true);
+
         _triggerAutomaticFallback(_activeSource);
         break;
 
@@ -451,6 +576,14 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     Duration startAt = Duration.zero,
   }) async {
     final currentToken = ++_playbackSessionToken;
+    debugPrint(
+      '[SPARROW_DIAG] SOURCE_SETUP_START | '
+      'session=$currentToken | '
+      'source=${source.displayName} | '
+      'url=${Uri.tryParse(source.url)?.replace(query: '')} | '
+      'requestedStartAt=$startAt | '
+      'type=${source.type}',
+    );
     _activeSource = source;
     _hasPlaybackStartedForCurrentSource = false;
     _isTransitioningSource = true;
@@ -488,6 +621,12 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
     try {
       await _controller.setupDataSource(dataSource);
+      debugPrint(
+        '[SPARROW_DIAG] SOURCE_SETUP_COMPLETE | '
+        'session=$currentToken | '
+        'source=${source.displayName} | '
+        'position=$_captureCurrentPosition()',
+      );
       if (currentToken != _playbackSessionToken) return;
       _attachVideoPlayerListener();
       _updateAspectRatio();
@@ -496,10 +635,21 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       }
       if (mounted && currentToken == _playbackSessionToken) {
         await _controller.play();
+        debugPrint(
+          '[SPARROW_DIAG] PLAY_COMMAND_COMPLETED | '
+          'session=$currentToken | '
+          'source=${source.displayName}',
+        );
       }
       _isTransitioningSource = false;
-    } catch (e) {
-      debugPrint('PlayerPage: setupDataSource failed: $e');
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[SPARROW_DIAG] SOURCE_SETUP_EXCEPTION | '
+        'session=$currentToken | '
+        'source=${source.displayName} | '
+        'error=$e | '
+        'stackTrace=$stackTrace',
+      );
       if (mounted && currentToken == _playbackSessionToken) {
         _triggerAutomaticFallback(source);
       }
@@ -507,6 +657,21 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   }
 
   void _triggerAutomaticFallback([ResolvedSource? failedSource]) {
+    debugPrint(
+      '[SPARROW_DIAG] FALLBACK_TRIGGERED | '
+      'failedSource=${failedSource?.displayName} | '
+      'failedUrl=${failedSource?.url == null ? 'NONE' : Uri.tryParse(failedSource!.url)?.replace(query: '')} | '
+      'currentSource=${_activeSource?.displayName} | '
+      'lastValidPosition=$_lastValidPlaybackPosition | '
+      'currentPosition=${_captureCurrentPosition()} | '
+      'lastProgressAdvance=$_lastProgressAdvanceTime | '
+      'hasStarted=$_hasPlaybackStartedForCurrentSource | '
+      'isPaused=$_isPaused | '
+      'isSeeking=$_isUserSeeking',
+    );
+
+    _logPlaybackSnapshot('FALLBACK_TRIGGERED', force: true);
+
     final currentPos = _lastValidPlaybackPosition > Duration.zero
         ? _lastValidPlaybackPosition
         : _captureCurrentPosition();
@@ -537,6 +702,12 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         context: context,
         currentPosition: currentPos,
         onSelectServer: (serverIndex) {
+          debugPrint(
+            '[SPARROW_DIAG] MANUAL_SERVER_SELECTION | '
+            'serverIndex=$serverIndex | '
+            'currentPosition=$currentPos | '
+            'previousSource=${_activeSource?.displayName}',
+          );
           ref
               .read(streamResolutionControllerProvider.notifier)
               .selectServer(
@@ -583,6 +754,15 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         context: context,
         currentPosition: currentPos,
         onSelectSource: (sourceIndex) {
+          final currentState = ref.read(streamResolutionControllerProvider);
+
+          debugPrint(
+            '[SPARROW_DIAG] MANUAL_SOURCE_SELECTION | '
+            'sourceIndex=$sourceIndex | '
+            'currentPosition=$currentPos | '
+            'selectedServer=${currentState.selectedServer?.name} | '
+            'previousSource=${_activeSource?.displayName}',
+          );
           ref
               .read(streamResolutionControllerProvider.notifier)
               .selectSource(
