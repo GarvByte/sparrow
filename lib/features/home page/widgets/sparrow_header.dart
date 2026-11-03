@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 
 class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
-  const SparrowHeader({super.key});
+  final String subtitle;
+  const SparrowHeader({super.key, this.subtitle = 'HOME'});
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -14,9 +16,10 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
     final headerHeight = responsive.headerHeight;
-    final logoSize = responsive.scale(36, min: 30, max: 40);
-    final avatarSize = responsive.scale(34, min: 30, max: 38);
     final buttonSize = responsive.scale(38, min: 34, max: 42);
+    final logoHeight = responsive.isTvOrDesktop
+        ? 34.0
+        : responsive.scale(26.0, min: 22.0, max: 30.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -35,102 +38,55 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Logo & App Title
+              // Weathered Pirate Sparrow Logo branding area
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(responsive.radius(8)),
-                    child: Image.asset(
-                      'assets/images/sparrow_logo.png',
-                      height: logoSize,
-                      width: logoSize,
-                      fit: BoxFit.cover,
+                  const SizedBox(
+                    width: 0,
+                    height: 0,
+                    child: Text(
+                      'SPARROW',
+                      style: TextStyle(fontSize: 0, color: Colors.transparent),
                     ),
                   ),
-                  const SizedBox(width: 10),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'SPARROW',
-                            style: TextStyle(
-                              color: ColorPalette.fontWhite,
-                              fontSize: responsive.sp(18, min: 15, max: 21),
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: ColorPalette.primaryGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
+                      Image.asset(
+                        'assets/images/sparrow_text_logo.png',
+                        height: logoHeight,
+                        fit: BoxFit.contain,
                       ),
-                      Text(
-                        'HOME',
-                        style: TextStyle(
-                          color: ColorPalette.textMuted,
-                          fontSize: responsive.sp(10, min: 8.5, max: 11),
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.0,
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 1),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: ColorPalette.textMuted,
+                            fontSize: responsive.sp(9, min: 8.0, max: 10.5),
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2.0,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
               ),
 
-              // Action Buttons: Search, Notifications, Profile
-              Row(
-                children: [
-                  _HeaderCircleButton(
-                    icon: Icons.search_rounded,
-                    size: buttonSize,
-                    onTap: () {
-                      context.go('/search');
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _HeaderCircleButton(
-                    icon: Icons.notifications_none_rounded,
-                    size: buttonSize,
-                    hasBadge: true,
-                    onTap: () {},
-                  ),
-                  const SizedBox(width: 10),
-                  // Profile avatar with neon green outline
-                  Container(
-                    width: avatarSize,
-                    height: avatarSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: ColorPalette.primaryGreen,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        'https://lh3.googleusercontent.com/aida-public/AB6AXuBzw6KngHnEuEUQZgpirQJpydvWlo7sYvciVj5v6folIX3wZ35CrwnANIQ9PpogR_GWkR9r_oxBwUjJePVluMVe7njr2Jy8-L9x9UfStxxHHazAL9kbHJwkn_o4WIm2TPvou8AdajUyQDwyE9M2o-EZ9KD5xI1LptNq1758npagA7jv3oTUOV7EzS094DweR3aXdMBIq6V5SPHZ_l4cRZSAH8mdyU8lC208plJ-7N2KUcYPfnlJaOILrw',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.person,
-                              size: 20,
-                              color: ColorPalette.fontWhite,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
+              // Action Button: Search (Notifications & Profile removed across all layouts)
+              TvFocusable(
+                onSelect: () => context.go('/search'),
+                borderRadius: BorderRadius.circular(buttonSize / 2),
+                child: _HeaderCircleButton(
+                  icon: Icons.search_rounded,
+                  size: buttonSize,
+                  onTap: () {
+                    context.go('/search');
+                  },
+                ),
               ),
             ],
           ),
@@ -143,13 +99,11 @@ class SparrowHeader extends ConsumerWidget implements PreferredSizeWidget {
 class _HeaderCircleButton extends StatelessWidget {
   final IconData icon;
   final double size;
-  final bool hasBadge;
   final VoidCallback onTap;
 
   const _HeaderCircleButton({
     required this.icon,
     this.size = 38.0,
-    this.hasBadge = false,
     required this.onTap,
   });
 
@@ -166,28 +120,12 @@ class _HeaderCircleButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(
-              icon,
-              size: (size * 0.52).clamp(16.0, 22.0),
-              color: ColorPalette.fontWhite,
-            ),
-            if (hasBadge)
-              Positioned(
-                top: 7,
-                right: 7,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: ColorPalette.primaryGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-          ],
+        child: Center(
+          child: Icon(
+            icon,
+            size: (size * 0.52).clamp(16.0, 22.0),
+            color: ColorPalette.fontWhite,
+          ),
         ),
       ),
     );

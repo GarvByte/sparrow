@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/search/data/category_item.dart';
-import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
 import 'package:sparrow/features/search/widgets/explore_categories_grid.dart';
 import 'package:sparrow/features/search/widgets/search_bar_deck.dart';
 import 'package:sparrow/features/search/widgets/search_header.dart';
 import 'package:sparrow/features/search/widgets/search_results_view.dart';
+import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
+import 'package:sparrow/features/search/providers/search_results_provider.dart';
 import 'package:sparrow/main.dart';
 import 'package:sparrow/navigation/app_router.dart';
 
@@ -29,14 +31,14 @@ void main() {
         expect(categories[2].title, equals('Psychological Thriller'));
         expect(categories[2].tmdbGenreId, equals(53));
 
-        expect(categories[3].title, equals('Anime & Mecha'));
+        expect(categories[3].title, equals('Animation & Disney'));
         expect(categories[3].tmdbGenreId, equals(16));
 
-        expect(categories[4].title, equals('Cosmic Odysseys'));
-        expect(categories[4].tmdbGenreId, equals(878));
+        expect(categories[4].title, equals('Mystery Odysseys'));
+        expect(categories[4].tmdbGenreId, equals(9648));
 
-        expect(categories[5].title, equals('Master Vault'));
-        expect(categories[5].tmdbGenreId, isNull);
+        expect(categories[5].title, equals('Family'));
+        expect(categories[5].tmdbGenreId, equals(10751));
       },
     );
 
@@ -72,7 +74,7 @@ void main() {
       );
 
       expect(find.text('SPARROW'), findsOneWidget);
-      expect(find.byIcon(Icons.cast_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.cast_rounded), findsNothing);
     });
 
     testWidgets('SearchBarDeck synchronizes text controller and clear button', (
@@ -139,9 +141,9 @@ void main() {
         expect(find.text('Cyberpunk & Sci-Fi'), findsOneWidget);
         expect(find.text('Action & Adrenaline'), findsOneWidget);
         expect(find.text('Psychological Thriller'), findsOneWidget);
-        expect(find.text('Anime & Mecha'), findsOneWidget);
-        expect(find.text('Cosmic Odysseys'), findsOneWidget);
-        expect(find.text('Master Vault'), findsOneWidget);
+        expect(find.text('Animation & Disney'), findsOneWidget);
+        expect(find.text('Mystery Odysseys'), findsOneWidget);
+        expect(find.text('Family'), findsOneWidget);
 
         // Tap Cyberpunk & Sci-Fi
         await tester.tap(find.text('Cyberpunk & Sci-Fi'));
@@ -180,7 +182,7 @@ void main() {
 
         expect(find.text('Neon Horizon 2099'), findsOneWidget);
         expect(find.text('#1'), findsOneWidget);
-        expect(find.text('4K HDR'), findsOneWidget);
+        expect(find.text('4K HDR'), findsNothing);
         expect(find.text('9.1'), findsOneWidget);
         expect(find.text('Sci-Fi • 2024'), findsOneWidget);
       },
@@ -195,7 +197,7 @@ void main() {
           ProviderScope(
             overrides: [
               searchQueryProvider.overrideWith(_TestQueryNotifier.new),
-              searchResultsProvider.overrideWith((ref) => Future.value([])),
+              searchResultsNotifier.overrideWith(_TestResultsNotifier.new),
             ],
             child: MaterialApp(
               home: Scaffold(
@@ -272,10 +274,46 @@ void main() {
         expect(find.text('Explore Categories'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'Search results Back action clears query and restores normal Discover page without popping tab',
+      (tester) async {
+        appRouter.go('/search');
+        await tester.pumpWidget(const SparrowApp());
+        await tester.pumpAndSettle();
+
+        // Initially Discover content is visible
+        expect(find.text('Explore Categories'), findsOneWidget);
+
+        // Enter search query and wait for 1-second debounce
+        await tester.enterText(find.byType(TextField), 'Batman');
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 1050));
+        await tester.pumpAndSettle();
+
+        // Search Results view is now showing
+        expect(find.byType(SearchResultsView), findsOneWidget);
+
+        // Simulate Back action via Escape key
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // Query is cleared and normal Discover content reappears
+        expect(find.byType(SearchResultsView), findsNothing);
+        expect(find.text('Explore Categories'), findsOneWidget);
+        expect(find.text('Search movies, actors, genres...'), findsOneWidget);
+      },
+    );
   });
 }
 
 class _TestQueryNotifier extends SearchQueryNotifier {
   @override
   String build() => 'UnknownXYZ';
+}
+
+class _TestResultsNotifier extends SearchResultsProvider {
+  @override
+  List<dynamic> build() => [];
 }

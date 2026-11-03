@@ -1,3 +1,5 @@
+
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
@@ -108,26 +110,37 @@ class SectionHeader extends StatelessWidget {
               if (trailing != null)
                 trailing!
               else if (actionText != null)
-                InkWell(
-                  onTap: onTrailingTap,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        actionText!,
-                        style: TextStyle(
-                          color: ColorPalette.primaryGreen,
-                          fontSize: responsive.sp(12, min: 10, max: 13),
-                          fontWeight: FontWeight.w700,
+                DpadFocusable(
+                  onSelect: () => onTrailingTap?.call(),
+
+                  effects: [
+                    DpadBorderEffect(
+                      width: 2,
+                      color: ColorPalette.primaryGreen,
+                    ),
+                    DpadTintEffect(color: ColorPalette.fontWhite),
+                  ],
+                  child: InkWell(
+                    onTap: onTrailingTap,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          actionText!,
+                          style: TextStyle(
+                            color: ColorPalette.primaryGreen,
+                            fontSize: responsive.sp(12, min: 10, max: 13),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: responsive.iconSize(16, min: 14, max: 18),
-                        color: ColorPalette.primaryGreen,
-                      ),
-                    ],
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: responsive.iconSize(16, min: 14, max: 18),
+                          color: ColorPalette.primaryGreen,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],

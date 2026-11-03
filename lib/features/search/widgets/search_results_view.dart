@@ -1,11 +1,16 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/search/providers/category_results_provider.dart';
-import 'package:sparrow/features/search/providers/selected_category_provider.dart';
-import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/search/providers/searchQueryProvider.dart';
+import 'package:sparrow/features/search/providers/search_filter_provider.dart';
 import 'package:sparrow/features/search/providers/search_results_provider.dart';
+import 'package:sparrow/features/search/providers/selected_category_provider.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
+import 'package:sparrow/navigation/dpad_navigation.dart';
+import 'package:sparrow/shared/media_item.dart';
+import 'package:sparrow/shared/navigation/movie_navigation.dart';
+import 'package:sparrow/shared/navigation/tv_show_navigation.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -19,8 +24,13 @@ class SearchResultsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final query = ref.watch(searchQueryProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
+    final mediaType = ref.watch(searchMediaTypeProvider);
+    final sortFilter = ref.watch(searchFilterProvider);
+    final isTvShowMode = mediaType == SearchMediaType.tvShows;
+
     final resultsAsync = ref.watch(searchResultsNotifier);
     final categoryResults = ref.watch(categoryResultsNotifier);
     final results = selectedCategory != null ? categoryResults : resultsAsync;
@@ -29,7 +39,17 @@ class SearchResultsView extends ConsumerWidget {
         ? 'Results for "$query"'
         : (selectedCategory != null
               ? '${selectedCategory.title} Movies'
-              : 'Search Results');
+              : (isTvShowMode ? 'TV Show Results' : 'Movie Results'));
+
+    void onRetry() {
+      if (selectedCategory != null) {
+        ref
+            .read(categoryResultsNotifier.notifier)
+            .fetchMoviesByGenre(selectedCategory.tmdbGenreId);
+      } else {
+        ref.read(searchResultsNotifier.notifier).retry();
+      }
+    }
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -38,49 +58,87 @@ class SearchResultsView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with Active Query and Clear Button
+          // Header with Active Query, Media Type indicator, and Clear Button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ColorPalette.fontWhite,
-                    fontSize: responsive.sp(18, min: 15, max: 21),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: onClear,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Clear',
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: ColorPalette.primaryGreen,
-                          fontSize: responsive.sp(12, min: 10.5, max: 13),
+                          color: ColorPalette.fontWhite,
+                          fontSize: responsive.sp(18, min: 15, max: 21),
                           fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                         ),
                       ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.close_rounded,
-                        size: 14,
-                        color: ColorPalette.primaryGreen,
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
                       ),
-                    ],
+                      decoration: BoxDecoration(
+                        color: ColorPalette.primaryGreen.withValues(
+                          alpha: 0.15,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: ColorPalette.primaryGreen.withValues(
+                            alpha: 0.4,
+                          ),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        isTvShowMode ? 'TV' : 'MOVIE',
+                        style: TextStyle(
+                          color: ColorPalette.primaryGreen,
+                          fontSize: responsive.sp(9.5, min: 8.5, max: 11),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TvFocusable(
+                borderRadius: BorderRadius.circular(12),
+                onSelect: onClear,
+                child: InkWell(
+                  onTap: onClear,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Clear',
+                          style: TextStyle(
+                            color: ColorPalette.primaryGreen,
+                            fontSize: responsive.sp(12, min: 10.5, max: 13),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(
+                          Icons.close_rounded,
+                          size: 14,
+                          color: ColorPalette.primaryGreen,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -90,11 +148,45 @@ class SearchResultsView extends ConsumerWidget {
 
           // Results Content
           results.when(
-            data: (movies) {
-              if (movies.isEmpty) {
-                return _buildEmptyState(context, query);
+            data: (rawList) {
+              if (rawList.isEmpty) {
+                return _buildEmptyState(context, query, isTvShowMode);
               }
-              debugPrint("searched reasults = $movies");
+
+              // Apply client-side sorting if needed
+              final itemsList = List<dynamic>.from(rawList);
+              switch (sortFilter) {
+                case SearchSortFilter.popularity:
+                  itemsList.sort((a, b) {
+                    final popA = (a['popularity'] as num?)?.toDouble() ?? 0.0;
+                    final popB = (b['popularity'] as num?)?.toDouble() ?? 0.0;
+                    return popB.compareTo(popA);
+                  });
+                  break;
+                case SearchSortFilter.topRated:
+                  itemsList.sort((a, b) {
+                    final rateA =
+                        (a['vote_average'] as num?)?.toDouble() ?? 0.0;
+                    final rateB =
+                        (b['vote_average'] as num?)?.toDouble() ?? 0.0;
+                    return rateB.compareTo(rateA);
+                  });
+                  break;
+                case SearchSortFilter.releaseDate:
+                  itemsList.sort((a, b) {
+                    final dateA = (a['release_date'] ??
+                            a['first_air_date'] ??
+                            '')
+                        .toString();
+                    final dateB = (b['release_date'] ??
+                            b['first_air_date'] ??
+                            '')
+                        .toString();
+                    return dateB.compareTo(dateA);
+                  });
+                  break;
+              }
+
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
@@ -109,7 +201,7 @@ class SearchResultsView extends ConsumerWidget {
 
                   final spacing = responsive.scale(10, min: 8, max: 14);
 
-                  return GridView.builder(
+                  Widget grid = GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
@@ -119,25 +211,65 @@ class SearchResultsView extends ConsumerWidget {
                       mainAxisSpacing: spacing + 8,
                       childAspectRatio: 2 / 3.75,
                     ),
-                    itemCount: movies.length,
+                    itemCount: itemsList.length,
                     itemBuilder: (context, index) {
-                      final movie = movies[index];
+                      final raw = itemsList[index];
+                      final itemIsTv = isTvShowMode ||
+                          raw['media_type'] == 'tv' ||
+                          (raw['name'] != null && raw['title'] == null);
+
+                      final posterPath = raw['poster_path'] as String?;
+                      final backdropPath = raw['backdrop_path'] as String?;
+
                       final item = MediaItem(
-                        id: movie['id'].toString(),
-                        title: movie['title'],
-                        imageUrl: movie['poster_path'] == null
-                            ? ""
-                            : imageBaseUrl + movie['poster_path'],
-                        genres: movie['genre'],
-                        releaseDate: movie['release_date'],
+                        id: raw['id'].toString(),
+                        title: (raw['name'] ?? raw['title'] ?? 'Untitled')
+                            .toString(),
+                        imageUrl: posterPath != null && posterPath.isNotEmpty
+                            ? imageBaseUrl + posterPath
+                            : (backdropPath != null && backdropPath.isNotEmpty
+                                ? imageBaseUrl + backdropPath
+                                : ''),
+                        genres: raw['genre'] is List
+                            ? (raw['genre'] as List)
+                            : [],
+                        isAdult: raw['adult'] as bool? ?? false,
+                        releaseDate: (raw['first_air_date'] ??
+                            raw['release_date']) as String?,
+                        mediaType: itemIsTv ? 'tv' : 'movie',
+                        overview: raw['overview'] as String?,
+                        rating: (raw['vote_average'] as num?)?.toDouble(),
+                        ratingCount: raw['vote_count']?.toString(),
+                        backdropUrl: backdropPath != null &&
+                                backdropPath.isNotEmpty
+                            ? '$imageBaseUrl2$backdropPath'
+                            : null,
                       );
+
                       return DiscoverPosterCard(
                         item: item,
                         showRank: false,
-                        onTap: () => onMovieTap?.call(item),
+                        onTap: () {
+                          if (onMovieTap != null) {
+                            onMovieTap!(item);
+                          } else if (item.isTvShow) {
+                            openTvShowDetails(context, item);
+                          } else {
+                            openMovieDetails(context, item);
+                          }
+                        },
                       );
                     },
                   );
+
+                  if (isTv) {
+                    grid = DpadRegion(
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: grid,
+                    );
+                  }
+
+                  return grid;
                 },
               );
             },
@@ -156,7 +288,7 @@ class SearchResultsView extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Searching movies...',
+                      isTvShowMode ? 'Searching TV shows...' : 'Searching movies...',
                       style: TextStyle(
                         color: ColorPalette.textMuted,
                         fontSize: responsive.sp(12, min: 10, max: 14),
@@ -195,18 +327,22 @@ class SearchResultsView extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () => ref.refresh(searchResultsNotifier),
-                      icon: const Icon(Icons.refresh_rounded, size: 16),
-                      label: const Text('Try Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorPalette.surfaceContainerHigh,
-                        foregroundColor: ColorPalette.primaryGreen,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: const BorderSide(
-                            color: ColorPalette.primaryGreen,
-                            width: 0.8,
+                    TvFocusable(
+                      borderRadius: BorderRadius.circular(20),
+                      onSelect: onRetry,
+                      child: ElevatedButton.icon(
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh_rounded, size: 16),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorPalette.surfaceContainerHigh,
+                          foregroundColor: ColorPalette.primaryGreen,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(
+                              color: ColorPalette.primaryGreen,
+                              width: 0.8,
+                            ),
                           ),
                         ),
                       ),
@@ -221,8 +357,9 @@ class SearchResultsView extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, String query) {
+  Widget _buildEmptyState(BuildContext context, String query, bool isTvShowMode) {
     final responsive = context.responsive;
+    final entity = isTvShowMode ? 'TV shows' : 'movies';
 
     return Center(
       child: Padding(
@@ -237,8 +374,8 @@ class SearchResultsView extends ConsumerWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
               ),
-              child: const Icon(
-                Icons.search_off_rounded,
+              child: Icon(
+                isTvShowMode ? Icons.tv_off_rounded : Icons.search_off_rounded,
                 size: 32,
                 color: ColorPalette.textMuted,
               ),
@@ -246,8 +383,8 @@ class SearchResultsView extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               query.isNotEmpty
-                  ? 'No movies found for "$query"'
-                  : 'No movies found in this category',
+                  ? 'No $entity found for "$query"'
+                  : 'No $entity found in this category',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: ColorPalette.fontWhite,
@@ -257,7 +394,7 @@ class SearchResultsView extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Try checking for typos or searching for a different actor, director, or title.',
+              'Try checking for typos or searching for a different title or creator.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: ColorPalette.textMuted,
@@ -265,16 +402,20 @@ class SearchResultsView extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            OutlinedButton(
-              onPressed: onClear,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: ColorPalette.primaryGreen,
-                side: const BorderSide(color: ColorPalette.primaryGreen),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+            TvFocusable(
+              borderRadius: BorderRadius.circular(20),
+              onSelect: onClear,
+              child: OutlinedButton(
+                onPressed: onClear,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: ColorPalette.primaryGreen,
+                  side: const BorderSide(color: ColorPalette.primaryGreen),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
+                child: const Text('Back to Discover'),
               ),
-              child: const Text('Back to Discover'),
             ),
           ],
         ),

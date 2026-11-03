@@ -1,8 +1,9 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/search/widgets/discover_poster_card.dart';
+import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/responsive_utils.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import 'package:sparrow/theme/color_palette.dart';
@@ -16,6 +17,7 @@ class TopTrendingCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final trendingAsync = ref.watch(trendingNowProvider);
     final cardWidth = responsive.scale(136, min: 120, max: 160);
     // 2:3 aspect ratio height + text metadata buffer
@@ -30,52 +32,23 @@ class TopTrendingCarousel extends ConsumerWidget {
             horizontal: responsive.scale(16, min: 12, max: 20),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.trending_up_rounded,
-                    size: 20,
-                    color: ColorPalette.primaryGreen,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Top Trending Today',
-                    style: TextStyle(
-                      color: ColorPalette.fontWhite,
-                      fontSize: responsive.sp(18, min: 15, max: 21),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
+              const Icon(
+                Icons.trending_up_rounded,
+                size: 20,
+                color: ColorPalette.primaryGreen,
               ),
-              InkWell(
-                onTap: onSeeAllTap ?? () {},
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'See all',
-                        style: TextStyle(
-                          color: ColorPalette.primaryGreen,
-                          fontSize: responsive.sp(12, min: 10.5, max: 13),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: ColorPalette.primaryGreen,
-                      ),
-                    ],
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Top Trending Today',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ColorPalette.fontWhite,
+                    fontSize: responsive.sp(18, min: 15, max: 21),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
@@ -98,13 +71,12 @@ class TopTrendingCarousel extends ConsumerWidget {
                 );
               }
 
-              final qualityBadges = ['4K HDR', 'IMAX 4K', 'REMUX', 'DOLBY'];
-
-              return ListView.separated(
+              Widget list = ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: responsive.scale(16, min: 12, max: 20),
+                  vertical: 6,
                 ),
                 itemCount: rawList.length,
                 separatorBuilder: (context, index) =>
@@ -119,9 +91,9 @@ class TopTrendingCarousel extends ConsumerWidget {
                         ? '$imageBaseUrl$posterPath'
                         : '',
                     genres: movie['genre'] ?? [],
+                    isAdult: movie['adult'] as bool? ?? false,
                     rating: (movie['vote_average'] as num?)?.toDouble(),
                     ratingCount: movie['vote_count']?.toString(),
-                    bottomBadge: qualityBadges[index % qualityBadges.length],
                     releaseDate: movie['release_date'] as String?,
                   );
 
@@ -134,6 +106,15 @@ class TopTrendingCarousel extends ConsumerWidget {
                   );
                 },
               );
+
+              if (isTv) {
+                list = DpadRegion(
+                  leftEdge: DpadEdgeBehavior.leave,
+                  child: list,
+                );
+              }
+
+              return list;
             },
             loading: () => const Center(
               child: SizedBox(

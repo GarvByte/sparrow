@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/features/search/providers/curated_taste_provider.dart';
@@ -15,6 +16,7 @@ class CuratedTasteGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
+    final isTv = responsive.isTvOrDesktop;
     final curatedAsync = ref.watch(curatedTasteProvider);
 
     return Padding(
@@ -26,26 +28,25 @@ class CuratedTasteGrid extends ConsumerWidget {
         children: [
           // Section Header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 20,
-                    color: ColorPalette.primaryGreen,
+              const Icon(
+                Icons.auto_awesome_rounded,
+                size: 20,
+                color: ColorPalette.primaryGreen,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Curated For Your Taste',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ColorPalette.fontWhite,
+                    fontSize: responsive.sp(18, min: 15, max: 21),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Curated For Your Taste',
-                    style: TextStyle(
-                      color: ColorPalette.fontWhite,
-                      fontSize: responsive.sp(18, min: 15, max: 21),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -54,7 +55,6 @@ class CuratedTasteGrid extends ConsumerWidget {
           // Responsive Adaptive Poster Grid
           curatedAsync.when(
             data: (movies) {
-              debugPrint("Data movies = $movies");
               if (movies.isEmpty) {
                 return const Center(
                   child: Padding(
@@ -81,7 +81,7 @@ class CuratedTasteGrid extends ConsumerWidget {
 
                   final spacing = responsive.scale(10, min: 8, max: 14);
 
-                  return GridView.builder(
+                  Widget grid = GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
@@ -94,13 +94,16 @@ class CuratedTasteGrid extends ConsumerWidget {
                     itemCount: movies.length,
                     itemBuilder: (context, index) {
                       final movie = movies[index];
+                      final poster = movie['poster_path'] as String?;
                       final item = MediaItem(
                         id: movie['id'].toString(),
                         title: movie['title'].toString(),
-                        imageUrl: imageBaseUrl + movie['poster_path'],
-                        genres: movie['genre'],
+                        imageUrl: poster != null && poster.isNotEmpty
+                            ? imageBaseUrl + poster
+                            : '',
+                        genres: movie['genre'] is List ? movie['genre'] : [],
+                        isAdult: movie['adult'] as bool? ?? false,
                       );
-                      debugPrint("item i = $item");
                       return DiscoverPosterCard(
                         item: item,
                         showRank: false,
@@ -108,6 +111,15 @@ class CuratedTasteGrid extends ConsumerWidget {
                       );
                     },
                   );
+
+                  if (isTv) {
+                    grid = DpadRegion(
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: grid,
+                    );
+                  }
+
+                  return grid;
                 },
               );
             },
@@ -130,7 +142,7 @@ class CuratedTasteGrid extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Failed to load recommendations $err in $stack',
+                      'Failed to load recommendations',
                       style: TextStyle(
                         color: ColorPalette.error,
                         fontSize: responsive.sp(12, min: 10, max: 14),

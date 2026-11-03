@@ -30,10 +30,7 @@ class FloatingBottomNav extends StatelessWidget {
           decoration: BoxDecoration(
             color: ColorPalette.surfaceContainerLow.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(responsive.radius(32)),
-            border: Border.all(
-              color: ColorPalette.ghostBorder,
-              width: 1,
-            ),
+            border: Border.all(color: ColorPalette.ghostBorder, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.65),
@@ -63,14 +60,14 @@ class FloatingBottomNav extends StatelessWidget {
                 index: 2,
                 selectedIndex: currentIndex,
                 icon: Icons.auto_awesome_rounded,
-                label: 'Anime',
+                label: 'Tv Shows',
                 onTap: () => onTabSelected(2),
               ),
               _NavItem(
                 index: 3,
                 selectedIndex: currentIndex,
-                icon: Icons.person_rounded,
-                label: 'Profile',
+                icon: Icons.bookmarks_rounded,
+                label: 'Watchlist',
                 onTap: () => onTabSelected(3),
               ),
             ],
@@ -101,43 +98,77 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
-    final color = isSelected ? ColorPalette.primaryGreen : ColorPalette.textMuted;
+    final targetColor = isSelected
+        ? const Color.fromARGB(201, 9, 0, 1)
+        : ColorPalette.textMuted;
 
     return Expanded(
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: responsive.iconSize(21, min: 18, max: 24),
-                color: color,
+          padding: const EdgeInsets.symmetric(vertical: 0),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOutCubic,
+            padding: EdgeInsets.symmetric(
+              horizontal: responsive.scale(8, min: 4, max: 10),
+              vertical: responsive.scale(6, min: 3, max: 8),
+            ),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected
+                  ? ColorPalette.primaryGreen
+                  : Colors.transparent,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: ColorPalette.primaryGreen.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: TweenAnimationBuilder<Color?>(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOutCubic,
+              tween: ColorTween(
+                begin: isSelected ? ColorPalette.textMuted : const Color.fromARGB(201, 9, 0, 1),
+                end: targetColor,
               ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: responsive.sp(10, min: 8.5, max: 11),
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              // Active emerald dot indicator
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isSelected ? ColorPalette.primaryGreen : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
+              builder: (context, animatedColor, child) {
+                final activeColor = animatedColor ?? targetColor;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedScale(
+                      scale: isSelected ? 1.08 : 1.0,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      child: Icon(
+                        icon,
+                        size: responsive.iconSize(21, min: 18, max: 24),
+                        color: activeColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      style: TextStyle(
+                        color: activeColor,
+                        fontSize: responsive.sp(10, min: 8.5, max: 11),
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w500,
+                      ),
+                      child: Text(label),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

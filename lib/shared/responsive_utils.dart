@@ -24,9 +24,16 @@ class SparrowResponsive {
   /// Device classification
   bool get isSmallPhone => width < 360 || height < 700;
   bool get isNormalPhone => width >= 360 && width < 600;
-  bool get isTablet => width >= 600 && width < 1024;
-  bool get isTvOrDesktop => width >= 1024 || (isLandscape && width >= 900);
+  bool get isTablet =>
+      (mediaQuery.size.shortestSide >= 600 && !isTvOrDesktop) ||
+      (width >= 600 && width < 1024 && !isTvOrDesktop);
+  bool get isTvOrDesktop =>
+      width >= 1024 ||
+      (isLandscape && width >= 900 && mediaQuery.size.shortestSide >= 500);
   bool get isLandscape => width > height;
+
+  /// Whether the device is a mobile phone (shortest side < 600dp and not a TV/desktop).
+  bool get isPhone => mediaQuery.size.shortestSide < 600 && !isTvOrDesktop;
 
   /// Width scale factor relative to standard 390dp baseline, clamped to prevent
   /// extremes on very small phones or wide TV/tablet screens.
@@ -100,14 +107,14 @@ class SparrowResponsive {
   double get heroPosterHeight {
     // Reserve vertical space inside the card for padding, title, genres, rating, and watch button
     final reservedForMetadata = isSmallPhone
-        ? 142.0
+        ? 152.0
         : (isTvOrDesktop ? 165.0 : 152.0);
     final available = heroCardHeight - reservedForMetadata;
 
     if (isTvOrDesktop) {
       return available.clamp(250.0, 350.0);
     }
-    return available.clamp(160.0, 280.0);
+    return available.clamp(isSmallPhone ? 148.0 : 160.0, 280.0);
   }
 
   /// Active poster width derived strictly from the 17:16 aspect ratio.

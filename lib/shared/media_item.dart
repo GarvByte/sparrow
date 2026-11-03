@@ -16,6 +16,8 @@ class MediaItem {
   final String? overview;
   final String? releaseDate;
   final String? backdropUrl;
+  final bool isAdult;
+  final String mediaType;
 
   const MediaItem({
     required this.id,
@@ -35,5 +37,20 @@ class MediaItem {
     this.overview,
     this.releaseDate,
     this.backdropUrl,
+    this.isAdult = false,
+    this.mediaType = 'movie',
   });
+
+  bool get isTvShow => mediaType == 'tv';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MediaItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          mediaType == other.mediaType;
+
+  @override
+  int get hashCode => Object.hash(id, mediaType);
 }

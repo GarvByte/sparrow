@@ -1,15 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
+import 'package:sparrow/navigation/main_shell_scaffold.dart';
 import 'package:sparrow/shared/error_image_placeholder.dart';
 import 'package:sparrow/shared/tmdb_base_url.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
 import '../../../shared/media_item.dart';
 import '../providers/featured_providers.dart';
-import 'network_media_image.dart';
 
 /// Complete Layered Featured Hero Section.
 ///
@@ -51,65 +53,91 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
   Widget build(BuildContext context) {
     final responsive = context.responsive;
     final featuredmovies = ref.watch(movieProviderNotifier);
-    // final featuredItems = ref.watch(featuredListProvider);
+    final fallbackItems = ref.watch(featuredListProvider);
     final selectedIndex = ref.watch(selectedFeaturedIndexProvider);
-
-    if (featuredmovies.isLoading) {
-      return const CircularProgressIndicator();
-    }
 
     final carouselHeight = responsive.layeredCarouselHeight;
     final cardHeight = responsive.heroCardHeight;
     final posterHeight = responsive.heroPosterHeight;
 
-    // Viewport fraction: on mobile ~0.76 centers active card while
-    // previous and next cards peek symmetrically from behind on left and right
     final viewportFraction = responsive.isTvOrDesktop
         ? 0.25
         : (responsive.isTablet ? 0.40 : 0.66);
-    return featuredmovies.when(
-      data: (data) {
-        debugPrint("data is $data");
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return SizedBox(
-              height: carouselHeight,
+
+    // 1. Resolve items: live TMDB movies when available; otherwise fallback to curated mock heroes
+    final List<MediaItem> items;
+    if (featuredmovies.hasValue &&
+        featuredmovies.value != null &&
+        featuredmovies.value!.isNotEmpty) {
+      items = featuredmovies.value!.map((movieInfo) {
+        final backdrop = movieInfo['backdrop_path'] as String?;
+        final poster = movieInfo['poster_path'] as String?;
+        return MediaItem(
+          id: movieInfo['id'].toString(),
+          title: movieInfo['title'] ?? 'Untitled',
+          rating: (movieInfo['vote_average'] as num?)?.toDouble(),
+          ratingCount: movieInfo['vote_count']?.toString(),
+          imageUrl: poster != null && poster.isNotEmpty
+              ? imageBaseUrl + poster
+              : (backdrop != null && backdrop.isNotEmpty
+                    ? imageBaseUrl + backdrop
+                    : ''),
+          genres: movieInfo['genre'] ?? [],
+          isAdult: movieInfo['adult'] as bool? ?? false,
+          overview: movieInfo['overview'] as String?,
+          releaseDate: movieInfo['release_date'] as String?,
+          backdropUrl: backdrop != null && backdrop.isNotEmpty
+              ? imageBaseUrl2 + backdrop
+              : null,
+        );
+      }).toList();
+    } else if (fallbackItems.isNotEmpty) {
+      items = fallbackItems;
+    } else {
+      items = const [];
+    }
+
+    if (items.isNotEmpty) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            height: carouselHeight,
+            child: DpadRegion(
+              memoryKey: 'home/featuredCarousel',
+              horizontalEdge: responsive.isTvOrDesktop
+                  ? DpadEdgeBehavior.leave
+                  : DpadEdgeBehavior.wrap,
+              leftEdge: responsive.isTvOrDesktop ? DpadEdgeBehavior.stop : null,
+              verticalEdge: DpadEdgeBehavior.leave,
+              onEdge: (direction) {
+                if (direction == TraversalDirection.left) {
+                  TvDrawerScope.openOf(context);
+                }
+              },
               child: CarouselSlider.builder(
                 carouselController: _carouselController,
-                itemCount: data.length,
+                itemCount: items.length,
                 options: CarouselOptions(
                   height: carouselHeight,
                   viewportFraction: viewportFraction,
                   initialPage: selectedIndex,
-                  enableInfiniteScroll: true,
-                  enlargeCenterPage:
-                      false, // Custom 3D layered transform inside _LayeredMovieCard
+                  enableInfiniteScroll: !responsive.isTvOrDesktop,
+                  enlargeCenterPage: false,
                   padEnds: true,
                   scrollPhysics: const BouncingScrollPhysics(),
                   onPageChanged: (index, reason) {
-                    // Update Riverpod selection state cleanly on settle
                     ref.read(selectedFeaturedIndexProvider.notifier).state =
                         index;
                   },
                 ),
                 itemBuilder: (context, index, realIndex) {
                   final isCurrent = index == selectedIndex;
-                  final movieInfo = data[index];
-
-                  final item = MediaItem(
-                    id: movieInfo['id'].toString(),
-                    title: movieInfo['title'] ?? 'Untitled',
-                    rating: (movieInfo['vote_average'] as num?)?.toDouble(),
-                    ratingCount: movieInfo['vote_count']?.toString(),
-                    imageUrl: imageBaseUrl + movieInfo['poster_path'],
-                    genres: movieInfo['genre'],
-                  );
+                  final item = items[index];
                   return _LayeredMovieCard(
                     item: item,
                     isCurrent: isCurrent,
                     cardHeight: cardHeight,
                     posterHeight: posterHeight,
-                    // movieInfo: data[index],
                     onTap: () {
                       if (!isCurrent) {
                         _carouselController.animateToPage(
@@ -117,21 +145,63 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOutCubic,
                         );
+                      } else {
+                        widget.onWatchNow?.call(item);
                       }
                     },
                     onWatchNow: () => widget.onWatchNow?.call(item),
                   );
                 },
               ),
-            );
-          },
-        );
-      },
-      error: (error, stack) => Text("error : $error"),
-      loading: () {
-        return CircularProgressIndicator(color: ColorPalette.primaryGreen);
-      },
-    );
+            ),
+          );
+        },
+      );
+    }
+
+    // 2. Initial loading state (no cached or fallback data available)
+    if (featuredmovies.isLoading) {
+      return SizedBox(
+        height: carouselHeight,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: ColorPalette.primaryGreen,
+            strokeWidth: 2.5,
+          ),
+        ),
+      );
+    }
+
+    // 3. Error state with retry
+    if (featuredmovies.hasError) {
+      return SizedBox(
+        height: carouselHeight,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              const Icon(Icons.wifi_off_rounded,
+                  size: 20, color: ColorPalette.textMuted),
+              const Text(
+                'Unable to load featured movies',
+                style: TextStyle(color: ColorPalette.textMuted),
+                textAlign: TextAlign.center,
+              ),
+              TextButton(
+                onPressed: () => ref.refresh(movieProviderNotifier),
+                child: const Text('Retry',
+                    style: TextStyle(color: ColorPalette.primaryGreen)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 
@@ -140,14 +210,13 @@ class _FeaturedHeroSectionState extends ConsumerState<FeaturedHeroSection> {
 /// Serves as the self-contained rounded brown container (#281913) enclosing:
 /// - 17:16 exact aspect ratio poster (with BoxFit.cover and zero overlays).
 /// - Title, genre chips, star rating, and "Watch Now" action button.
-class _LayeredMovieCard extends StatelessWidget {
+class _LayeredMovieCard extends ConsumerWidget {
   final MediaItem item;
   final bool isCurrent;
   final double cardHeight;
   final double posterHeight;
   final VoidCallback onTap;
   final VoidCallback onWatchNow;
-  // final Map? movieInfo;
 
   const _LayeredMovieCard({
     required this.item,
@@ -156,15 +225,12 @@ class _LayeredMovieCard extends StatelessWidget {
     required this.posterHeight,
     required this.onTap,
     required this.onWatchNow,
-    // this.movieInfo,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
 
-    // Active card: scale 1.0, translateY 0.
-    // Background card: scale ~0.86, dropped vertically ~16dp, atmospheric dimming.
     final scale = isCurrent ? 1.0 : 0.86;
     final translateY = isCurrent
         ? 0.0
@@ -176,7 +242,7 @@ class _LayeredMovieCard extends StatelessWidget {
     final paddingTop = responsive.scale(10.0, min: 8.0, max: 14.0);
     final paddingBottom = responsive.scale(12.0, min: 10.0, max: 16.0);
 
-    return GestureDetector(
+    final cardContent = GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 320),
@@ -195,8 +261,7 @@ class _LayeredMovieCard extends StatelessWidget {
                 horizontal: responsive.scale(6.0, min: 4.0, max: 10.0),
               ),
               decoration: BoxDecoration(
-                color: ColorPalette
-                    .heroContainer, // Dark muted brown surface (#281913)
+                color: ColorPalette.heroContainer,
                 borderRadius: BorderRadius.circular(cardRadius),
                 border: Border.all(
                   color: isCurrent
@@ -204,203 +269,219 @@ class _LayeredMovieCard extends StatelessWidget {
                       : ColorPalette.heroBorder.withValues(alpha: 0.60),
                   width: isCurrent ? 1.5 : 1.0,
                 ),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: isCurrent
-                //         ? ColorPalette.primaryGreen.withValues(alpha: 0.20)
-                //         : Colors.black.withValues(alpha: 0.70),
-                //     blurRadius: isCurrent ? 20 : 10,
-                //     offset: Offset(0, isCurrent ? 8 : 4),
-                //   ),
-                // ],
+                boxShadow: isCurrent
+                    ? [
+                        BoxShadow(
+                          color: ColorPalette.primaryGreen.withValues(
+                            alpha: 0.25,
+                          ),
+                          blurRadius: 24,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.70),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
               ),
-              clipBehavior: Clip.antiAlias,
-              padding: EdgeInsets.fromLTRB(
-                paddingH,
-                paddingTop,
-                paddingH,
-                paddingBottom,
-              ),
-              child: Stack(
-                children: [
-                  Column(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(cardRadius),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    paddingH,
+                    paddingTop,
+                    paddingH,
+                    paddingBottom,
+                  ),
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // 1. Movie Poster (Exact 17:16 aspect ratio, ZERO overlays)
+                      // 16:17 aspect ratio poster
                       SizedBox(
                         height: posterHeight,
                         child: AspectRatio(
-                          aspectRatio: 16.0 / 17.0,
+                          aspectRatio: 16 / 17,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(posterRadius),
-                            child: CachedNetworkImage(
-                              imageUrl: item.imageUrl,
-                              placeholder: (context, url) => Center(
-                                child: SizedBox(
-                                  width: 28,
-                                  height: 28,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: ColorPalette.primaryGreen,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                item.imageUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: item.imageUrl,
+                                        fit: BoxFit.cover,
+                                        memCacheWidth: 600,
+                                        errorWidget: (context, url, error) =>
+                                            const ErrorImagePlaceholder(),
+                                        placeholder: (context, url) => Container(
+                                          color: ColorPalette.surfaceContainerLow,
+                                        ),
+                                      )
+                                    : const ErrorImagePlaceholder(),
+                                // Movie Badge
+                                Positioned(
+                                  top: 8,
+                                  left: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.75,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: ColorPalette.primaryGreen
+                                            .withValues(alpha: 0.5),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'MOVIE',
+                                      style: TextStyle(
+                                        color: ColorPalette.primaryGreen,
+                                        fontSize: responsive.sp(
+                                          8.5,
+                                          min: 7.5,
+                                          max: 9.5,
+                                        ),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  ErrorImagePlaceholder(),
-                              fit: BoxFit.cover,
+                              ],
                             ),
                           ),
                         ),
                       ),
+                      SizedBox(height: responsive.scale(8, min: 6, max: 10)),
 
-                      SizedBox(height: responsive.scale(7, min: 4, max: 9)),
-
-                      // 2. Movie Title
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          item.title,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: ColorPalette.fontWhite,
-                            fontSize: responsive.sp(17, min: 14.5, max: 20),
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                          ),
+                      // Title
+                      Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: ColorPalette.fontWhite,
+                          fontSize: responsive.sp(14, min: 12, max: 16),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                         ),
                       ),
+                      const SizedBox(height: 4),
 
-                      SizedBox(height: responsive.scale(5, min: 3, max: 7)),
-
-                      // 3. Genre Chips
-                      Wrap(
-                        spacing: 5,
-                        runSpacing: 4,
-                        alignment: WrapAlignment.center,
-                        children: item.genres.map<Widget>((genre) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: responsive.scale(7, min: 5, max: 9),
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: ColorPalette.heroChipBackground.withValues(
-                                alpha: 0.90,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: ColorPalette.ghostBorder.withValues(
-                                  alpha: 0.08,
-                                ),
-                                width: 0.6,
-                              ),
-                            ),
-                            child: Text(
-                              genre,
-                              style: TextStyle(
-                                color: ColorPalette.textSecondary,
-                                fontSize: responsive.sp(9, min: 7.5, max: 10.5),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-
-                      SizedBox(height: responsive.scale(5, min: 3, max: 7)),
-
-                      // 4. Star Rating & Review Count
+                      // Rating & Year
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          for (int i = 0; i < 4; i++)
-                            Icon(
+                          if (item.rating != null && item.rating! > 0) ...[
+                            const Icon(
                               Icons.star_rounded,
-                              size: responsive.iconSize(13, min: 11, max: 15),
-                              color: ColorPalette.primaryGreen,
+                              size: 14,
+                              color: Color(0xFF84FFA8),
                             ),
-                          Icon(
-                            Icons.star_half_rounded,
-                            size: responsive.iconSize(13, min: 11, max: 15),
-                            color: ColorPalette.primaryGreen,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${item.rating ?? 8.8}',
-                            style: TextStyle(
-                              color: ColorPalette.fontWhite,
-                              fontSize: responsive.sp(10.5, min: 8.5, max: 12),
-                              fontWeight: FontWeight.w700,
+                            const SizedBox(width: 3),
+                            Text(
+                              item.rating!.toStringAsFixed(1),
+                              style: TextStyle(
+                                color: ColorPalette.fontWhite,
+                                fontSize: responsive.sp(
+                                  11,
+                                  min: 9.5,
+                                  max: 12.5,
+                                ),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            '(${item.ratingCount ?? "142k"})',
-                            style: TextStyle(
-                              color: ColorPalette.textMuted,
-                              fontSize: responsive.sp(9.5, min: 8, max: 11),
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(width: 8),
+                          ],
+                          if (item.releaseDate != null &&
+                              item.releaseDate!.length >= 4)
+                            Text(
+                              item.releaseDate!.substring(0, 4),
+                              style: TextStyle(
+                                color: ColorPalette.textMuted,
+                                fontSize: responsive.sp(11, min: 9.5, max: 12),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
                         ],
                       ),
+                      SizedBox(height: responsive.scale(8, min: 6, max: 10)),
 
-                      SizedBox(height: responsive.scale(7, min: 5, max: 10)),
-
-                      // 5. Watch Now Action Button (Inside this movie's brown container)
-                      ElevatedButton.icon(
-                        onPressed: onWatchNow,
-
-                        icon: Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.black,
-                          size: responsive.iconSize(18, min: 15, max: 21),
-                        ),
-                        label: Text(
-                          'Watch Now',
-                          style: TextStyle(
+                      // "Watch Now" action button
+                      SizedBox(
+                        height: responsive.scale(32, min: 28, max: 36),
+                        child: ElevatedButton.icon(
+                          onPressed: onWatchNow,
+                          icon: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 16,
                             color: Colors.black,
-                            fontSize: responsive.sp(13, min: 11, max: 15),
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.2,
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorPalette.primaryGreen,
-                          elevation: 2,
-                          shadowColor: ColorPalette.primaryGreen.withValues(
-                            alpha: 0.35,
+                          label: Text(
+                            ref.watch(hasPlaybackProgressProvider(
+                              item.isTvShow ? 'tv_${item.id}_s1_e1' : 'movie_${item.id}',
+                            ))
+                                ? 'Resume'
+                                : 'Watch Now',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: responsive.sp(11.5, min: 10, max: 13),
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorPalette.primaryGreen,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
-                          padding: EdgeInsets.all(10),
                         ),
                       ),
                     ],
                   ),
-
-                  // Atmospheric depth tint for background side cards
-                  if (!isCurrent)
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(cardRadius - 1),
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.42),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+
+    if (responsive.isTvOrDesktop) {
+      return DpadFocusable(
+        onSelect: onWatchNow,
+        onFocusChange: (focused) {
+          if (focused && !isCurrent) {
+            onTap();
+          }
+        },
+        autoScroll: true,
+        effects: const [],
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
   }
 }
 

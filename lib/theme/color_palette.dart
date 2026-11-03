@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class ColorPalette {
   // Original theme colors preserved strictly
   static const Color primaryGreen = Color(0xFF1DB954);
+  // static const Color primaryGreen = Color.fromARGB(255, 255, 28, 28);
   static const Color backgroundBlack = Color.fromARGB(255, 0, 0, 0);
   static const Color secondaryBrown = Color.fromARGB(255, 46, 12, 0);
   static const Color fontWhite = Color.fromARGB(255, 255, 255, 255);
@@ -16,7 +17,7 @@ class ColorPalette {
   static const Color surfaceContainerHighest = Color(0xFF333534);
 
   // Cinematic Hero tones (Refined dark muted brown #281913 container)
-  static const Color heroContainer = Color(0xFF281913);
+  static const Color heroContainer = Color.fromARGB(255, 33, 33, 33);
   static const Color heroBorder = Color(0xFF3E2B22);
   static const Color heroChipBackground = Color(0xFF38231B);
 
