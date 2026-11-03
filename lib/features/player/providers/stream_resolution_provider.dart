@@ -536,6 +536,18 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       targetSourceIdx = state.selectedSourceIndex ?? 0;
     }
 
+    if (targetSourceIdx >= 0 &&
+        targetSourceIdx < currentServer.sources.length &&
+        currentServer.sources[targetSourceIdx].isFailed) {
+      debugPrint(
+        '[SPARROW_DIAG] DUPLICATE_FAILURE_IGNORED | '
+        'server=${currentServer.name} | '
+        'sourceIndex=$targetSourceIdx | '
+        'sourceName=${currentServer.sources[targetSourceIdx].displayName}',
+      );
+      return;
+    }
+
     final currentAttempts = state.fallbackAttempts + 1;
     const maxFallbackAttempts = 5;
 

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
 import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../shared/media_item.dart';
 import '../../../shared/responsive_utils.dart';
 import '../../../theme/color_palette.dart';
@@ -60,10 +61,23 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   bool _isPaused = false;
   bool _isUserSeeking = false;
   bool _isTransitioningSource = false;
+  bool _isFallbackInProgress = false;
   Timer? _seekGraceTimer;
   Duration _lastObservedPosition = Duration.zero;
   Duration _lastValidPlaybackPosition = Duration.zero;
   DateTime? _lastProgressAdvanceTime;
+
+  /// Bounded load control buffering configuration designed specifically for stability
+  /// on constrained Android TV / Fire TV platforms while preserving rapid start times.
+  /// Overrides the plugin's default maxBufferMs (6,553,600 ms = ~109 minutes) which
+  /// exhausts the ART heap and leads to OutOfMemoryError.
+  static const BetterPlayerBufferingConfiguration _bufferingConfiguration =
+      BetterPlayerBufferingConfiguration(
+        minBufferMs: 15000,
+        maxBufferMs: 35000,
+        bufferForPlaybackMs: 2500,
+        bufferForPlaybackAfterRebufferMs: 5000,
+      );
   // Playback diagnostics
   DateTime? _lastDiagnosticLogTime;
   int _diagnosticEventCount = 0;
@@ -88,6 +102,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
   @override
   void initState() {
     super.initState();
+    WakelockPlus.enable();
     WidgetsBinding.instance.addObserver(this);
     _streamResolutionNotifier = ref.read(
       streamResolutionControllerProvider.notifier,
@@ -507,7 +522,6 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
           'position=${event.parameters?['progress']} | '
           'source=${_diagnosticSourceName()}',
         );
-        _isTransitioningSource = false;
         final pos =
             event.parameters?['progress'] as Duration? ??
             _controller.videoPlayerController?.value.position;
@@ -532,7 +546,16 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
         _logPlaybackSnapshot('EXCEPTION', force: true);
 
-        _triggerAutomaticFallback(_activeSource);
+        // Discard stale exceptions during source transitions or if a fallback is already running
+        if (!_isTransitioningSource && !_isFallbackInProgress) {
+          _triggerAutomaticFallback(_activeSource);
+        } else {
+          debugPrint(
+            '[SPARROW_DIAG] EXCEPTION_IGNORED_DURING_TRANSITION | '
+            'transitioning=$_isTransitioningSource | '
+            'fallbackInProgress=$_isFallbackInProgress',
+          );
+        }
         break;
 
       case BetterPlayerEventType.play:
@@ -610,6 +633,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       BetterPlayerDataSourceType.network,
       source.url,
       headers: source.headers,
+      bufferingConfiguration: _bufferingConfiguration,
       videoFormat: isHls
           ? BetterPlayerVideoFormat.hls
           : (isMp4 ? BetterPlayerVideoFormat.other : null),
@@ -620,6 +644,11 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     );
 
     try {
+      if (_controller.videoPlayerController != null) {
+        try {
+          await _controller.pause();
+        } catch (_) {}
+      }
       await _controller.setupDataSource(dataSource);
       debugPrint(
         '[SPARROW_DIAG] SOURCE_SETUP_COMPLETE | '
@@ -641,7 +670,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
           'source=${source.displayName}',
         );
       }
-      _isTransitioningSource = false;
+      if (currentToken == _playbackSessionToken) {
+        _isTransitioningSource = false;
+        _isFallbackInProgress = false;
+      }
     } catch (e, stackTrace) {
       debugPrint(
         '[SPARROW_DIAG] SOURCE_SETUP_EXCEPTION | '
@@ -651,14 +683,28 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         'stackTrace=$stackTrace',
       );
       if (mounted && currentToken == _playbackSessionToken) {
+        _isTransitioningSource = false;
+        _isFallbackInProgress = false;
         _triggerAutomaticFallback(source);
       }
     }
   }
 
-  void _triggerAutomaticFallback([ResolvedSource? failedSource]) {
+  Future<void> _triggerAutomaticFallback([ResolvedSource? failedSource]) async {
+    if (_isFallbackInProgress) {
+      debugPrint(
+        '[SPARROW_DIAG] FALLBACK_IGNORED_ALREADY_IN_PROGRESS | '
+        'failedSource=${failedSource?.displayName}',
+      );
+      return;
+    }
+    _isFallbackInProgress = true;
+    _isTransitioningSource = true;
+    final fallbackSession = _playbackSessionToken;
+
     debugPrint(
       '[SPARROW_DIAG] FALLBACK_TRIGGERED | '
+      'session=$fallbackSession | '
       'failedSource=${failedSource?.displayName} | '
       'failedUrl=${failedSource?.url == null ? 'NONE' : Uri.tryParse(failedSource!.url)?.replace(query: '')} | '
       'currentSource=${_activeSource?.displayName} | '
@@ -675,18 +721,37 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
     final currentPos = _lastValidPlaybackPosition > Duration.zero
         ? _lastValidPlaybackPosition
         : _captureCurrentPosition();
-    _isTransitioningSource = true;
     _hasPlaybackStartedForCurrentSource = false;
-    ref
-        .read(streamResolutionControllerProvider.notifier)
-        .handleSourceFailure(
-          failedSource: failedSource ?? _activeSource,
-          currentPosition: currentPos,
-          onSourceReady: (source, startAt) {
-            if (!mounted) return;
-            _playSource(source, startAt: startAt);
-          },
+
+    bool fallbackSourceDelivered = false;
+
+    try {
+      await ref
+          .read(streamResolutionControllerProvider.notifier)
+          .handleSourceFailure(
+            failedSource: failedSource ?? _activeSource,
+            currentPosition: currentPos,
+            onSourceReady: (source, startAt) {
+              if (!mounted || fallbackSession != _playbackSessionToken) {
+                return;
+              }
+              fallbackSourceDelivered = true;
+              _playSource(source, startAt: startAt);
+            },
+          );
+    } catch (e) {
+      debugPrint('[SPARROW_DIAG] FALLBACK_EXCEPTION | error=$e');
+    } finally {
+      if (!fallbackSourceDelivered &&
+          fallbackSession == _playbackSessionToken) {
+        debugPrint(
+          '[SPARROW_DIAG] FALLBACK_ENDED_WITHOUT_SOURCE | '
+          'session=$fallbackSession',
         );
+        _isFallbackInProgress = false;
+        _isTransitioningSource = false;
+      }
+    }
   }
 
   void _openServerSheet() {
@@ -701,23 +766,40 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
       ServerSelectionSheet.show(
         context: context,
         currentPosition: currentPos,
-        onSelectServer: (serverIndex) {
+        onSelectServer: (serverIndex) async {
+          final selectionSession = ++_playbackSessionToken;
+          _isFallbackInProgress = false;
+          _isTransitioningSource = true;
           debugPrint(
             '[SPARROW_DIAG] MANUAL_SERVER_SELECTION | '
+            'session=$selectionSession | '
             'serverIndex=$serverIndex | '
             'currentPosition=$currentPos | '
             'previousSource=${_activeSource?.displayName}',
           );
-          ref
-              .read(streamResolutionControllerProvider.notifier)
-              .selectServer(
-                serverIndex,
-                currentPosition: currentPos,
-                onSourceReady: (source, startAt) {
-                  if (!mounted) return;
-                  _playSource(source, startAt: startAt);
-                },
-              );
+          bool manualSourceDelivered = false;
+          try {
+            await ref
+                .read(streamResolutionControllerProvider.notifier)
+                .selectServer(
+                  serverIndex,
+                  currentPosition: currentPos,
+                  onSourceReady: (source, startAt) {
+                    if (!mounted || selectionSession != _playbackSessionToken) {
+                      return;
+                    }
+                    manualSourceDelivered = true;
+                    _playSource(source, startAt: startAt);
+                  },
+                );
+          } catch (e) {
+            debugPrint('[SPARROW_DIAG] MANUAL_SERVER_EXCEPTION | error=$e');
+          } finally {
+            if (!manualSourceDelivered &&
+                selectionSession == _playbackSessionToken) {
+              _isTransitioningSource = false;
+            }
+          }
         },
         onOpenLinks: _openLinkSheet,
       ).then((_) {
@@ -754,25 +836,40 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
         context: context,
         currentPosition: currentPos,
         onSelectSource: (sourceIndex) {
+          final selectionSession = ++_playbackSessionToken;
+          _isFallbackInProgress = false;
+          _isTransitioningSource = true;
           final currentState = ref.read(streamResolutionControllerProvider);
 
           debugPrint(
             '[SPARROW_DIAG] MANUAL_SOURCE_SELECTION | '
+            'session=$selectionSession | '
             'sourceIndex=$sourceIndex | '
             'currentPosition=$currentPos | '
             'selectedServer=${currentState.selectedServer?.name} | '
             'previousSource=${_activeSource?.displayName}',
           );
-          ref
-              .read(streamResolutionControllerProvider.notifier)
-              .selectSource(
-                sourceIndex,
-                currentPosition: currentPos,
-                onSourceReady: (source, startAt) {
-                  if (!mounted) return;
-                  _playSource(source, startAt: startAt);
-                },
-              );
+          bool manualSourceDelivered = false;
+          try {
+            ref
+                .read(streamResolutionControllerProvider.notifier)
+                .selectSource(
+                  sourceIndex,
+                  currentPosition: currentPos,
+                  onSourceReady: (source, startAt) {
+                    if (!mounted || selectionSession != _playbackSessionToken) {
+                      return;
+                    }
+                    manualSourceDelivered = true;
+                    _playSource(source, startAt: startAt);
+                  },
+                );
+          } finally {
+            if (!manualSourceDelivered &&
+                selectionSession == _playbackSessionToken) {
+              _isTransitioningSource = false;
+            }
+          }
         },
       ).then((_) {
         if (mounted) {
@@ -853,6 +950,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
 
   @override
   void dispose() {
+    WakelockPlus.disable();
     WidgetsBinding.instance.removeObserver(this);
     _progressSaveTimer?.cancel();
     _seekGraceTimer?.cancel();

@@ -1,4 +1,4 @@
-package com.example.sparrow
+package com.example.sparrow.tv
 
 import io.flutter.embedding.android.FlutterActivity
 

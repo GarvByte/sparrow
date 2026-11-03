@@ -1,7 +1,7 @@
 name: sparrow
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 0.2.0+2
 
 environment:
   sdk: ^3.9.2
@@ -24,6 +24,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   http: ^1.6.0
+  wakelock_plus: ^1.8.2
 
 dev_dependencies:
   flutter_test:

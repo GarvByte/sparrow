@@ -50,24 +50,28 @@ class _SparrowMaterialControlsState
   VideoPlayerController? _controller;
   BetterPlayerController? _betterPlayerController;
   StreamSubscription<dynamic>? _controlsVisibilityStreamSubscription;
-  StreamSubscription<BetterPlayerControllerEvent>?
-      _controllerEventSubscription;
+  StreamSubscription<BetterPlayerControllerEvent>? _controllerEventSubscription;
 
   // Dedicated focus nodes for TV D-pad / keyboard directional navigation
-  final FocusNode _playPauseFocusNode =
-      FocusNode(debugLabel: 'player_play_pause');
-  final FocusNode _skipBackFocusNode =
-      FocusNode(debugLabel: 'player_skip_back');
-  final FocusNode _skipForwardFocusNode =
-      FocusNode(debugLabel: 'player_skip_forward');
-  final FocusNode _overflowFocusNode =
-      FocusNode(debugLabel: 'player_overflow');
-  final FocusNode _fullscreenFocusNode =
-      FocusNode(debugLabel: 'player_fullscreen');
-  final FocusNode _bottomPlayPauseFocusNode =
-      FocusNode(debugLabel: 'player_bottom_play_pause');
-  final FocusNode _progressBarFocusNode =
-      FocusNode(debugLabel: 'player_progress_bar');
+  final FocusNode _playPauseFocusNode = FocusNode(
+    debugLabel: 'player_play_pause',
+  );
+  final FocusNode _skipBackFocusNode = FocusNode(
+    debugLabel: 'player_skip_back',
+  );
+  final FocusNode _skipForwardFocusNode = FocusNode(
+    debugLabel: 'player_skip_forward',
+  );
+  final FocusNode _overflowFocusNode = FocusNode(debugLabel: 'player_overflow');
+  final FocusNode _fullscreenFocusNode = FocusNode(
+    debugLabel: 'player_fullscreen',
+  );
+  final FocusNode _bottomPlayPauseFocusNode = FocusNode(
+    debugLabel: 'player_bottom_play_pause',
+  );
+  final FocusNode _progressBarFocusNode = FocusNode(
+    debugLabel: 'player_progress_bar',
+  );
 
   BetterPlayerControlsConfiguration get _controlsConfiguration =>
       widget.controlsConfiguration;
@@ -76,12 +80,11 @@ class _SparrowMaterialControlsState
   VideoPlayerValue? get latestValue => _latestValue;
 
   @override
-  BetterPlayerController? get betterPlayerController =>
-      _betterPlayerController;
+  BetterPlayerController? get betterPlayerController => _betterPlayerController;
 
   @override
-  BetterPlayerControlsConfiguration
-      get betterPlayerControlsConfiguration => _controlsConfiguration;
+  BetterPlayerControlsConfiguration get betterPlayerControlsConfiguration =>
+      _controlsConfiguration;
 
   @override
   void initState() {
@@ -124,6 +127,7 @@ class _SparrowMaterialControlsState
       _controller?.removeListener(_updateState);
       _controller = newController;
       _latestValue = _controller?.value;
+      _controller?.removeListener(_updateState);
       _controller?.addListener(_updateState);
       _updateState();
     }
@@ -132,7 +136,14 @@ class _SparrowMaterialControlsState
   @override
   void didUpdateWidget(SparrowMaterialControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _syncVideoController();
+    if (oldWidget.controller != widget.controller) {
+      _dispose();
+      _betterPlayerController = widget.controller;
+      _syncVideoController();
+      _initialize();
+    } else {
+      _syncVideoController();
+    }
   }
 
   @override
@@ -193,10 +204,14 @@ class _SparrowMaterialControlsState
               fit: StackFit.expand,
               children: [
                 _buildHitArea(),
-                if (_wasLoading)
-                  Center(child: _buildLoadingWidget()),
+                if (_wasLoading) Center(child: _buildLoadingWidget()),
                 Positioned(top: 0, left: 0, right: 0, child: _buildTopBar()),
-                Positioned(bottom: 0, left: 0, right: 0, child: _buildBottomBar()),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildBottomBar(),
+                ),
                 _buildNextVideoWidget(),
               ],
             ),
@@ -215,32 +230,38 @@ class _SparrowMaterialControlsState
     _fullscreenFocusNode.dispose();
     _bottomPlayPauseFocusNode.dispose();
     _progressBarFocusNode.dispose();
-    _controllerEventSubscription?.cancel();
     _dispose();
     super.dispose();
   }
 
   void _dispose() {
     _controller?.removeListener(_updateState);
+    _controller = null;
     _hideTimer?.cancel();
+    _hideTimer = null;
     _initTimer?.cancel();
+    _initTimer = null;
     _showAfterExpandCollapseTimer?.cancel();
+    _showAfterExpandCollapseTimer = null;
     _controlsVisibilityStreamSubscription?.cancel();
+    _controlsVisibilityStreamSubscription = null;
     _controllerEventSubscription?.cancel();
+    _controllerEventSubscription = null;
   }
 
   @override
   void didChangeDependencies() {
-    final oldController = _betterPlayerController;
-    _betterPlayerController = widget.controller ?? BetterPlayerController.of(context);
-    _syncVideoController();
-
-    if (oldController != _betterPlayerController) {
-      _dispose();
-      _initialize();
-    }
-
     super.didChangeDependencies();
+    final newController =
+        widget.controller ?? BetterPlayerController.of(context);
+    if (_betterPlayerController != newController) {
+      _dispose();
+      _betterPlayerController = newController;
+      _syncVideoController();
+      _initialize();
+    } else {
+      _syncVideoController();
+    }
   }
 
   Widget _buildErrorWidget() {
@@ -257,7 +278,11 @@ class _SparrowMaterialControlsState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.warning, color: _controlsConfiguration.iconsColor, size: 42),
+            Icon(
+              Icons.warning,
+              color: _controlsConfiguration.iconsColor,
+              size: 42,
+            ),
             Text(
               _betterPlayerController!.translations.generalDefaultError,
               style: textStyle,
@@ -294,9 +319,7 @@ class _SparrowMaterialControlsState
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (_controlsConfiguration.enablePip)
-                    _buildPipButtonWrapperWidget(
-                      controlsNotVisible,
-                    )
+                    _buildPipButtonWrapperWidget(controlsNotVisible)
                   else
                     const SizedBox(),
                   _buildMoreButton(),
@@ -308,99 +331,96 @@ class _SparrowMaterialControlsState
   }
 
   Widget _buildPipButton() => BetterPlayerMaterialClickableWidget(
-        onTap: () {
-          betterPlayerController!.enablePictureInPicture(
-            betterPlayerController!.betterPlayerGlobalKey!,
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(
-            betterPlayerControlsConfiguration.pipMenuIcon,
-            color: betterPlayerControlsConfiguration.iconsColor,
-          ),
-        ),
+    onTap: () {
+      betterPlayerController!.enablePictureInPicture(
+        betterPlayerController!.betterPlayerGlobalKey!,
       );
+    },
+    child: Padding(
+      padding: const EdgeInsets.all(8),
+      child: Icon(
+        betterPlayerControlsConfiguration.pipMenuIcon,
+        color: betterPlayerControlsConfiguration.iconsColor,
+      ),
+    ),
+  );
 
-  Widget _buildPipButtonWrapperWidget(
-    bool hideStuff,
-  ) =>
-      FutureBuilder<bool>(
-        future: betterPlayerController!.isPictureInPictureSupported(),
-        builder: (context, snapshot) {
-          final bool isPipSupported = snapshot.data ?? false;
-          if (isPipSupported &&
-              _betterPlayerController!.betterPlayerGlobalKey != null) {
-            return AnimatedOpacity(
-              opacity: hideStuff ? 0.0 : 1.0,
-              duration: betterPlayerControlsConfiguration.controlsHideTime,
-              child: SizedBox(
-                height: betterPlayerControlsConfiguration.controlBarHeight,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [_buildPipButton()],
-                ),
-              ),
-            );
-          } else {
-            return const SizedBox();
-          }
-        },
-      );
+  Widget _buildPipButtonWrapperWidget(bool hideStuff) => FutureBuilder<bool>(
+    future: betterPlayerController!.isPictureInPictureSupported(),
+    builder: (context, snapshot) {
+      final bool isPipSupported = snapshot.data ?? false;
+      if (isPipSupported &&
+          _betterPlayerController!.betterPlayerGlobalKey != null) {
+        return AnimatedOpacity(
+          opacity: hideStuff ? 0.0 : 1.0,
+          duration: betterPlayerControlsConfiguration.controlsHideTime,
+          child: SizedBox(
+            height: betterPlayerControlsConfiguration.controlBarHeight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [_buildPipButton()],
+            ),
+          ),
+        );
+      } else {
+        return const SizedBox();
+      }
+    },
+  );
 
   Widget _buildMoreButton() => Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: DpadFocusable(
-          focusNode: _overflowFocusNode,
-          enabled: !controlsNotVisible,
-          onSelect: () {
-            cancelAndRestartTimer();
-            onShowMoreClicked();
-          },
-          onFocusChange: (focused) {
-            if (focused) cancelAndRestartTimer();
-          },
-          onDirection: (direction) {
-            if (direction == TraversalDirection.down) {
-              _playPauseFocusNode.requestFocus();
-              return true;
-            }
-            if (direction == TraversalDirection.left) {
-              _skipBackFocusNode.requestFocus();
-              return true;
-            }
-            return false;
-          },
-          effects: [
-            const DpadScaleEffect(scale: 1.08),
-            const DpadBorderEffect(
-              width: 3.0,
-              color: ColorPalette.primaryGreen,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-            const DpadGlowEffect(
-              color: ColorPalette.primaryGreen,
-              blurRadius: 12,
-              spreadRadius: 1.0,
-              opacity: 0.4,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-          ],
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withValues(alpha: 0.35),
-            ),
-            child: Icon(
-              _controlsConfiguration.overflowMenuIcon,
-              color: _controlsConfiguration.iconsColor,
-              size: 24,
-            ),
-          ),
+    padding: const EdgeInsets.only(right: 12),
+    child: DpadFocusable(
+      focusNode: _overflowFocusNode,
+      enabled: !controlsNotVisible,
+      onSelect: () {
+        cancelAndRestartTimer();
+        onShowMoreClicked();
+      },
+      onFocusChange: (focused) {
+        if (focused) cancelAndRestartTimer();
+      },
+      onDirection: (direction) {
+        if (direction == TraversalDirection.down) {
+          _playPauseFocusNode.requestFocus();
+          return true;
+        }
+        if (direction == TraversalDirection.left) {
+          _skipBackFocusNode.requestFocus();
+          return true;
+        }
+        return false;
+      },
+      effects: [
+        const DpadScaleEffect(scale: 1.08),
+        const DpadBorderEffect(
+          width: 3.0,
+          color: ColorPalette.primaryGreen,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
         ),
-      );
+        const DpadGlowEffect(
+          color: ColorPalette.primaryGreen,
+          blurRadius: 12,
+          spreadRadius: 1.0,
+          opacity: 0.4,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+      ],
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withValues(alpha: 0.35),
+        ),
+        child: Icon(
+          _controlsConfiguration.overflowMenuIcon,
+          color: _controlsConfiguration.iconsColor,
+          size: 24,
+        ),
+      ),
+    ),
+  );
 
   Widget _buildBottomBar() {
     if (!betterPlayerController!.controlsEnabled) {
@@ -454,78 +474,78 @@ class _SparrowMaterialControlsState
   }
 
   Widget _buildLiveWidget() => Text(
-        _betterPlayerController!.translations.controlsLive,
-        style: TextStyle(
-          color: _controlsConfiguration.liveTextColor,
-          fontWeight: FontWeight.bold,
-        ),
-      );
+    _betterPlayerController!.translations.controlsLive,
+    style: TextStyle(
+      color: _controlsConfiguration.liveTextColor,
+      fontWeight: FontWeight.bold,
+    ),
+  );
 
   Widget _buildExpandButton() => Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: DpadFocusable(
-          focusNode: _fullscreenFocusNode,
-          enabled: !controlsNotVisible,
-          onSelect: () {
-            cancelAndRestartTimer();
-            _onExpandCollapse();
-          },
-          onFocusChange: (focused) {
-            if (focused) cancelAndRestartTimer();
-          },
-          onDirection: (direction) {
-            if (direction == TraversalDirection.up) {
-              _playPauseFocusNode.requestFocus();
-              return true;
-            }
-            if (direction == TraversalDirection.left) {
-              if (_controlsConfiguration.enablePlayPause) {
-                _bottomPlayPauseFocusNode.requestFocus();
-              } else {
-                _skipBackFocusNode.requestFocus();
-              }
-              return true;
-            }
-            if (direction == TraversalDirection.down) {
-              _progressBarFocusNode.requestFocus();
-              return true;
-            }
-            return false;
-          },
-          effects: [
-            const DpadScaleEffect(scale: 1.08),
-            const DpadBorderEffect(
-              width: 3.0,
-              color: ColorPalette.primaryGreen,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-            const DpadGlowEffect(
-              color: ColorPalette.primaryGreen,
-              blurRadius: 12,
-              spreadRadius: 1.0,
-              opacity: 0.4,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-          ],
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withValues(alpha: 0.35),
-            ),
-            child: Center(
-              child: Icon(
-                _betterPlayerController!.isFullScreen
-                    ? _controlsConfiguration.fullscreenDisableIcon
-                    : _controlsConfiguration.fullscreenEnableIcon,
-                color: _controlsConfiguration.iconsColor,
-                size: 24,
-              ),
-            ),
+    padding: const EdgeInsets.only(right: 12),
+    child: DpadFocusable(
+      focusNode: _fullscreenFocusNode,
+      enabled: !controlsNotVisible,
+      onSelect: () {
+        cancelAndRestartTimer();
+        _onExpandCollapse();
+      },
+      onFocusChange: (focused) {
+        if (focused) cancelAndRestartTimer();
+      },
+      onDirection: (direction) {
+        if (direction == TraversalDirection.up) {
+          _playPauseFocusNode.requestFocus();
+          return true;
+        }
+        if (direction == TraversalDirection.left) {
+          if (_controlsConfiguration.enablePlayPause) {
+            _bottomPlayPauseFocusNode.requestFocus();
+          } else {
+            _skipBackFocusNode.requestFocus();
+          }
+          return true;
+        }
+        if (direction == TraversalDirection.down) {
+          _progressBarFocusNode.requestFocus();
+          return true;
+        }
+        return false;
+      },
+      effects: [
+        const DpadScaleEffect(scale: 1.08),
+        const DpadBorderEffect(
+          width: 3.0,
+          color: ColorPalette.primaryGreen,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+        const DpadGlowEffect(
+          color: ColorPalette.primaryGreen,
+          blurRadius: 12,
+          spreadRadius: 1.0,
+          opacity: 0.4,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+      ],
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withValues(alpha: 0.35),
+        ),
+        child: Center(
+          child: Icon(
+            _betterPlayerController!.isFullScreen
+                ? _controlsConfiguration.fullscreenDisableIcon
+                : _controlsConfiguration.fullscreenEnableIcon,
+            color: _controlsConfiguration.iconsColor,
+            size: 24,
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _buildHitArea() {
     if (!betterPlayerController!.controlsEnabled) {
@@ -541,26 +561,26 @@ class _SparrowMaterialControlsState
   }
 
   Widget _buildMiddleRow() => Container(
-        color: _controlsConfiguration.controlBarColor,
-        width: double.infinity,
-        height: double.infinity,
-        child: _betterPlayerController?.isLiveStream() ?? false
-            ? const SizedBox()
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (_controlsConfiguration.enableSkips)
-                    Expanded(child: _buildSkipButton())
-                  else
-                    const SizedBox(),
-                  Expanded(child: _buildReplayButton(_controller!)),
-                  if (_controlsConfiguration.enableSkips)
-                    Expanded(child: _buildForwardButton())
-                  else
-                    const SizedBox(),
-                ],
-              ),
-      );
+    color: _controlsConfiguration.controlBarColor,
+    width: double.infinity,
+    height: double.infinity,
+    child: _betterPlayerController?.isLiveStream() ?? false
+        ? const SizedBox()
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (_controlsConfiguration.enableSkips)
+                Expanded(child: _buildSkipButton())
+              else
+                const SizedBox(),
+              Expanded(child: _buildReplayButton(_controller!)),
+              if (_controlsConfiguration.enableSkips)
+                Expanded(child: _buildForwardButton())
+              else
+                const SizedBox(),
+            ],
+          ),
+  );
 
   Widget _buildHitAreaButton({
     required Widget icon,
@@ -645,11 +665,12 @@ class _SparrowMaterialControlsState
     cancelAndRestartTimer();
     final position = _controller!.value.position;
     final skipTime = Duration(
-      milliseconds:
-          _controlsConfiguration.backwardSkipTimeInMilliseconds,
+      milliseconds: _controlsConfiguration.backwardSkipTimeInMilliseconds,
     );
     final target = position - skipTime;
-    _betterPlayerController?.seekTo(target < Duration.zero ? Duration.zero : target);
+    _betterPlayerController?.seekTo(
+      target < Duration.zero ? Duration.zero : target,
+    );
   }
 
   @override
@@ -660,68 +681,67 @@ class _SparrowMaterialControlsState
     cancelAndRestartTimer();
     final position = _controller!.value.position;
     final skipTime = Duration(
-      milliseconds:
-          _controlsConfiguration.forwardSkipTimeInMilliseconds,
+      milliseconds: _controlsConfiguration.forwardSkipTimeInMilliseconds,
     );
     final target = position + skipTime;
     _betterPlayerController?.seekTo(target > duration ? duration : target);
   }
 
   Widget _buildSkipButton() => _buildHitAreaButton(
-        icon: Icon(
-          _controlsConfiguration.skipBackIcon,
-          size: 28,
-          color: _controlsConfiguration.iconsColor,
-        ),
-        onClicked: skipBack,
-        focusNode: _skipBackFocusNode,
-        isSkipButton: true,
-        onDirection: (direction) {
-          if (direction == TraversalDirection.right) {
-            _playPauseFocusNode.requestFocus();
-            return true;
-          }
-          if (direction == TraversalDirection.up) {
-            _overflowFocusNode.requestFocus();
-            return true;
-          }
-          if (direction == TraversalDirection.down) {
-            if (_controlsConfiguration.enablePlayPause) {
-              _bottomPlayPauseFocusNode.requestFocus();
-            } else {
-              _fullscreenFocusNode.requestFocus();
-            }
-            return true;
-          }
-          return false;
-        },
-      );
+    icon: Icon(
+      _controlsConfiguration.skipBackIcon,
+      size: 28,
+      color: _controlsConfiguration.iconsColor,
+    ),
+    onClicked: skipBack,
+    focusNode: _skipBackFocusNode,
+    isSkipButton: true,
+    onDirection: (direction) {
+      if (direction == TraversalDirection.right) {
+        _playPauseFocusNode.requestFocus();
+        return true;
+      }
+      if (direction == TraversalDirection.up) {
+        _overflowFocusNode.requestFocus();
+        return true;
+      }
+      if (direction == TraversalDirection.down) {
+        if (_controlsConfiguration.enablePlayPause) {
+          _bottomPlayPauseFocusNode.requestFocus();
+        } else {
+          _fullscreenFocusNode.requestFocus();
+        }
+        return true;
+      }
+      return false;
+    },
+  );
 
   Widget _buildForwardButton() => _buildHitAreaButton(
-        icon: Icon(
-          _controlsConfiguration.skipForwardIcon,
-          size: 28,
-          color: _controlsConfiguration.iconsColor,
-        ),
-        onClicked: skipForward,
-        focusNode: _skipForwardFocusNode,
-        isSkipButton: true,
-        onDirection: (direction) {
-          if (direction == TraversalDirection.left) {
-            _playPauseFocusNode.requestFocus();
-            return true;
-          }
-          if (direction == TraversalDirection.up) {
-            _overflowFocusNode.requestFocus();
-            return true;
-          }
-          if (direction == TraversalDirection.down) {
-            _fullscreenFocusNode.requestFocus();
-            return true;
-          }
-          return false;
-        },
-      );
+    icon: Icon(
+      _controlsConfiguration.skipForwardIcon,
+      size: 28,
+      color: _controlsConfiguration.iconsColor,
+    ),
+    onClicked: skipForward,
+    focusNode: _skipForwardFocusNode,
+    isSkipButton: true,
+    onDirection: (direction) {
+      if (direction == TraversalDirection.left) {
+        _playPauseFocusNode.requestFocus();
+        return true;
+      }
+      if (direction == TraversalDirection.up) {
+        _overflowFocusNode.requestFocus();
+        return true;
+      }
+      if (direction == TraversalDirection.down) {
+        _fullscreenFocusNode.requestFocus();
+        return true;
+      }
+      return false;
+    },
+  );
 
   Widget _buildReplayButton(VideoPlayerController controller) {
     final bool isFinished = isVideoFinished(_latestValue);
@@ -740,9 +760,7 @@ class _SparrowMaterialControlsState
           );
 
     return _buildHitAreaButton(
-      icon: _wasLoading
-          ? const SizedBox(width: 38, height: 38)
-          : playPauseIcon,
+      icon: _wasLoading ? const SizedBox(width: 38, height: 38) : playPauseIcon,
       onClicked: () {
         if (_wasLoading) return;
         if (isFinished) {
@@ -785,40 +803,40 @@ class _SparrowMaterialControlsState
   }
 
   Widget _buildNextVideoWidget() => StreamBuilder<int?>(
-        stream: _betterPlayerController!.nextVideoTimeStream,
-        builder: (context, snapshot) {
-          final time = snapshot.data;
-          if (time != null && time > 0) {
-            return BetterPlayerMaterialClickableWidget(
-              onTap: () {
-                _betterPlayerController!.playNextVideo();
-              },
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                  margin: EdgeInsets.only(
-                    bottom: _controlsConfiguration.controlBarHeight + 20,
-                    right: 24,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _controlsConfiguration.controlBarColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      '${_betterPlayerController!.translations.controlsNextVideoIn} $time...',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
+    stream: _betterPlayerController!.nextVideoTimeStream,
+    builder: (context, snapshot) {
+      final time = snapshot.data;
+      if (time != null && time > 0) {
+        return BetterPlayerMaterialClickableWidget(
+          onTap: () {
+            _betterPlayerController!.playNextVideo();
+          },
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: Container(
+              margin: EdgeInsets.only(
+                bottom: _controlsConfiguration.controlBarHeight + 20,
+                right: 24,
+              ),
+              decoration: BoxDecoration(
+                color: _controlsConfiguration.controlBarColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  '${_betterPlayerController!.translations.controlsNextVideoIn} $time...',
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
-            );
-          } else {
-            return const SizedBox();
-          }
-        },
-      );
+            ),
+          ),
+        );
+      } else {
+        return const SizedBox();
+      }
+    },
+  );
 
   Widget _buildMuteButton(VideoPlayerController? controller) =>
       BetterPlayerMaterialClickableWidget(
@@ -850,71 +868,72 @@ class _SparrowMaterialControlsState
       );
 
   Widget _buildPlayPause(VideoPlayerController controller) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: DpadFocusable(
-          key: const Key('better_player_material_controls_play_pause_button'),
-          focusNode: _bottomPlayPauseFocusNode,
-          enabled: !controlsNotVisible,
-          onSelect: () {
-            cancelAndRestartTimer();
-            _onPlayPause();
-          },
-          onFocusChange: (focused) {
-            if (focused) cancelAndRestartTimer();
-          },
-          onDirection: (direction) {
-            if (direction == TraversalDirection.up) {
-              _playPauseFocusNode.requestFocus();
-              return true;
-            }
-            if (direction == TraversalDirection.right) {
-              _fullscreenFocusNode.requestFocus();
-              return true;
-            }
-            if (direction == TraversalDirection.down) {
-              _progressBarFocusNode.requestFocus();
-              return true;
-            }
-            return false;
-          },
-          effects: [
-            const DpadScaleEffect(scale: 1.08),
-            const DpadBorderEffect(
-              width: 3.0,
-              color: ColorPalette.primaryGreen,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-            const DpadGlowEffect(
-              color: ColorPalette.primaryGreen,
-              blurRadius: 12,
-              spreadRadius: 1.0,
-              opacity: 0.4,
-              borderRadius: BorderRadius.all(Radius.circular(24)),
-            ),
-          ],
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withValues(alpha: 0.35),
-            ),
-            child: Center(
-              child: Icon(
-                controller.value.isPlaying
-                    ? _controlsConfiguration.pauseIcon
-                    : _controlsConfiguration.playIcon,
-                color: _controlsConfiguration.iconsColor,
-                size: 24,
-              ),
-            ),
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    child: DpadFocusable(
+      key: const Key('better_player_material_controls_play_pause_button'),
+      focusNode: _bottomPlayPauseFocusNode,
+      enabled: !controlsNotVisible,
+      onSelect: () {
+        cancelAndRestartTimer();
+        _onPlayPause();
+      },
+      onFocusChange: (focused) {
+        if (focused) cancelAndRestartTimer();
+      },
+      onDirection: (direction) {
+        if (direction == TraversalDirection.up) {
+          _playPauseFocusNode.requestFocus();
+          return true;
+        }
+        if (direction == TraversalDirection.right) {
+          _fullscreenFocusNode.requestFocus();
+          return true;
+        }
+        if (direction == TraversalDirection.down) {
+          _progressBarFocusNode.requestFocus();
+          return true;
+        }
+        return false;
+      },
+      effects: [
+        const DpadScaleEffect(scale: 1.08),
+        const DpadBorderEffect(
+          width: 3.0,
+          color: ColorPalette.primaryGreen,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+        const DpadGlowEffect(
+          color: ColorPalette.primaryGreen,
+          blurRadius: 12,
+          spreadRadius: 1.0,
+          opacity: 0.4,
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+        ),
+      ],
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.black.withValues(alpha: 0.35),
+        ),
+        child: Center(
+          child: Icon(
+            controller.value.isPlaying
+                ? _controlsConfiguration.pauseIcon
+                : _controlsConfiguration.playIcon,
+            color: _controlsConfiguration.iconsColor,
+            size: 24,
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _buildPosition() {
-    final position =
-        _latestValue != null ? _latestValue!.position : Duration.zero;
+    final position = _latestValue != null
+        ? _latestValue!.position
+        : Duration.zero;
     final duration = _latestValue != null && _latestValue!.duration != null
         ? _latestValue!.duration!
         : Duration.zero;
@@ -958,52 +977,64 @@ class _SparrowMaterialControlsState
   }
 
   Future<void> _initialize() async {
-    _controller!.addListener(_updateState);
-    _updateState();
+    if (_controller != null) {
+      _controller!.removeListener(_updateState);
+      _controller!.addListener(_updateState);
+      _updateState();
+    }
 
-    if ((_controller!.value.isPlaying) ||
-        _betterPlayerController!.betterPlayerConfiguration.autoPlay) {
+    if ((_controller?.value.isPlaying ?? false) ||
+        (_betterPlayerController?.betterPlayerConfiguration.autoPlay ??
+            false)) {
       _startHideTimer();
     }
 
     if (_controlsConfiguration.showControlsOnInitialize) {
+      _initTimer?.cancel();
       _initTimer = Timer(const Duration(milliseconds: 200), () {
         changePlayerControlsNotVisible(false);
       });
     }
 
-    _controlsVisibilityStreamSubscription =
-        _betterPlayerController!.controlsVisibilityStream.listen((state) {
-      if (controlsNotVisible == !state) {
-        return;
-      }
-      changePlayerControlsNotVisible(!state);
-      if (!controlsNotVisible) {
-        cancelAndRestartTimer();
-        _requestPlayPauseFocus();
-      }
-    });
+    _controlsVisibilityStreamSubscription?.cancel();
+    if (_betterPlayerController != null) {
+      _controlsVisibilityStreamSubscription = _betterPlayerController!
+          .controlsVisibilityStream
+          .listen((state) {
+            if (controlsNotVisible == !state) {
+              return;
+            }
+            changePlayerControlsNotVisible(!state);
+            if (!controlsNotVisible) {
+              cancelAndRestartTimer();
+              _requestPlayPauseFocus();
+            }
+          });
+    }
 
     _controllerEventSubscription?.cancel();
-    _controllerEventSubscription =
-        _betterPlayerController!.controllerEventStream.listen((event) {
-      if (event == BetterPlayerControllerEvent.setupDataSource) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _syncVideoController();
-          }
-        });
-      }
-      if (event == BetterPlayerControllerEvent.openFullscreen ||
-          event == BetterPlayerControllerEvent.hideFullscreen) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            cancelAndRestartTimer();
-            _playPauseFocusNode.requestFocus();
-          }
-        });
-      }
-    });
+    if (_betterPlayerController != null) {
+      _controllerEventSubscription = _betterPlayerController!
+          .controllerEventStream
+          .listen((event) {
+            if (event == BetterPlayerControllerEvent.setupDataSource) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _syncVideoController();
+                }
+              });
+            }
+            if (event == BetterPlayerControllerEvent.openFullscreen ||
+                event == BetterPlayerControllerEvent.hideFullscreen) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  cancelAndRestartTimer();
+                  _playPauseFocusNode.requestFocus();
+                }
+              });
+            }
+          });
+    }
 
     _requestPlayPauseFocus();
   }
@@ -1011,13 +1042,15 @@ class _SparrowMaterialControlsState
   void _onExpandCollapse() {
     changePlayerControlsNotVisible(true);
     _betterPlayerController!.toggleFullScreen();
-    _showAfterExpandCollapseTimer =
-        Timer(_controlsConfiguration.controlsHideTime, () {
-      if (mounted) {
-        setState(cancelAndRestartTimer);
-        _playPauseFocusNode.requestFocus();
-      }
-    });
+    _showAfterExpandCollapseTimer = Timer(
+      _controlsConfiguration.controlsHideTime,
+      () {
+        if (mounted) {
+          setState(cancelAndRestartTimer);
+          _playPauseFocusNode.requestFocus();
+        }
+      },
+    );
   }
 
   DateTime? _lastPlayPauseTime;
@@ -1130,8 +1163,7 @@ class _SparrowMaterialControlsState
         playedColor: _controlsConfiguration.progressBarPlayedColor,
         handleColor: _controlsConfiguration.progressBarHandleColor,
         bufferedColor: _controlsConfiguration.progressBarBufferedColor,
-        backgroundColor:
-            _controlsConfiguration.progressBarBackgroundColor,
+        backgroundColor: _controlsConfiguration.progressBarBackgroundColor,
       ),
     );
 
@@ -1160,12 +1192,12 @@ class _SparrowMaterialControlsState
           onDirection: (direction) {
             if (direction == TraversalDirection.left) {
               cancelAndRestartTimer();
-              _seekRelative(const Duration(minutes: -15));
+              _seekRelative(const Duration(minutes: -5));
               return true;
             }
             if (direction == TraversalDirection.right) {
               cancelAndRestartTimer();
-              _seekRelative(const Duration(minutes: 15));
+              _seekRelative(const Duration(minutes: 5));
               return true;
             }
             if (direction == TraversalDirection.up) {
@@ -1193,9 +1225,7 @@ class _SparrowMaterialControlsState
           ],
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             child: progressBarWidget,
           ),
         ),
@@ -1219,8 +1249,9 @@ class _SparrowMaterialControlsState
     }
 
     return CircularProgressIndicator(
-      valueColor:
-          AlwaysStoppedAnimation<Color>(_controlsConfiguration.loadingColor),
+      valueColor: AlwaysStoppedAnimation<Color>(
+        _controlsConfiguration.loadingColor,
+      ),
     );
   }
 }
