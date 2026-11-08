@@ -47,7 +47,7 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
         animeListAsync.value != null &&
         animeListAsync.value!.isNotEmpty) {
       final items = animeListAsync.value!;
-      final displayItems = items.take(8).toList();
+      final displayItems = items.toList();
       final selectedIndex = _selectedIndex.clamp(0, displayItems.length - 1);
 
       return SizedBox(
@@ -136,8 +136,11 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
             spacing: 8,
             runSpacing: 4,
             children: [
-              const Icon(Icons.wifi_off_rounded,
-                  size: 20, color: ColorPalette.textMuted),
+              const Icon(
+                Icons.wifi_off_rounded,
+                size: 20,
+                color: ColorPalette.textMuted,
+              ),
               const Text(
                 'Unable to load featured shows',
                 style: TextStyle(color: ColorPalette.textMuted),
@@ -145,8 +148,10 @@ class _AnimeHeroSectionState extends ConsumerState<AnimeHeroSection> {
               ),
               TextButton(
                 onPressed: () => ref.refresh(topAnimeSeriesProvider),
-                child: const Text('Retry',
-                    style: TextStyle(color: ColorPalette.primaryGreen)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen),
+                ),
               ),
             ],
           ),

@@ -6,6 +6,7 @@ import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
 import 'package:sparrow/features/anime%20hub/widgets/anime_hero_section.dart';
 import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
 import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
+import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/home%20page/widgets/continue_watching_card.dart';
 import 'package:sparrow/features/home%20page/widgets/horizontal_media_carousel.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';
@@ -37,6 +38,7 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
     _headerController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final responsive = context.responsive;
@@ -48,6 +50,8 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
     final popularTvAsync = ref.watch(popularTvShowsProvider);
     final topRatedTvAsync = ref.watch(topRatedTvShowsProvider);
     final onTheAirTvAsync = ref.watch(onTheAirTvShowsProvider);
+    final discoverHindiTvAsync = ref.watch(hindiTvShowsProvider);
+    final discoverIndianTvAsync = ref.watch(indianTvShowsProvider);
 
     return Scaffold(
       backgroundColor: ColorPalette.backgroundBlack,
@@ -65,222 +69,293 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
             NotificationListener<ScrollNotification>(
               onNotification: _headerController.handleScrollNotification,
               child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.only(
-                top: topPadding + headerHeight + 6,
-                bottom: 110, // Buffer to clear floating bottom nav
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Featured Anime & TV Hero Carousel
-                  AnimeHeroSection(
-                    onWatchNow: (item) => openTvShowDetails(context, item),
-                  ),
-
-                  // Continue Watching Section (Reactive local Hive storage, hidden if empty)
-                  _buildTvContinueWatchingSection(context, responsive),
-
-                  SizedBox(height: responsive.scale(16, min: 12, max: 22)),
-
-                  // 2. Top Anime & Animation Series
-                  DpadRegion(
-                    memoryKey: 'tv/animeSeries',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          leadingIcon: Icons.auto_awesome_rounded,
-                          title: 'Top Anime & Animation',
-                          actionText: 'View All',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'tv',
-                                categoryType: 'genre',
-                                genreId: 16,
-                                title: 'Top Anime & Animation',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPosterCarousel(
-                          asyncValue: animeSeriesAsync,
-                          height: responsive.animePosterHeight,
-                          width: responsive.animePosterWidth,
-                          responsive: responsive,
-                          onRetry: () => ref.refresh(topAnimeSeriesProvider),
-                        ),
-                      ],
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  top: topPadding + headerHeight + 6,
+                  bottom: 110, // Buffer to clear floating bottom nav
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Featured Anime & TV Hero Carousel
+                    AnimeHeroSection(
+                      onWatchNow: (item) => openTvShowDetails(context, item),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    // Continue Watching Section (Reactive local Hive storage, hidden if empty)
+                    _buildTvContinueWatchingSection(context, responsive),
 
-                  // 3. Trending TV Shows Today
-                  DpadRegion(
-                    memoryKey: 'tv/trendingTv',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          overline: 'TOP PICKS TODAY',
-                          title: 'Trending TV Shows',
-                          actionText: 'View All',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'tv',
-                                categoryType: 'trending',
-                                title: 'Trending TV Shows',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPosterCarousel(
-                          asyncValue: trendingTvAsync,
-                          height: responsive.trendingPosterHeight,
-                          width: responsive.trendingPosterWidth,
-                          responsive: responsive,
-                          isTrending: true,
-                          onRetry: () => ref.refresh(trendingTvShowsProvider),
-                        ),
-                      ],
+                    SizedBox(height: responsive.scale(16, min: 12, max: 22)),
+
+                    // 2. Top Anime & Animation Series
+                    DpadRegion(
+                      memoryKey: 'tv/animeSeries',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            leadingIcon: Icons.auto_awesome_rounded,
+                            title: 'Top Anime & Animation',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'genre',
+                                  genreId: 16,
+                                  title: 'Top Anime & Animation',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: animeSeriesAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(topAnimeSeriesProvider),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
-                  // 4. Popular TV Series
-                  DpadRegion(
-                    memoryKey: 'tv/popularTv',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          leadingIcon: Icons.local_fire_department_rounded,
-                          title: 'Popular TV Shows',
-                          tag: 'HOT',
-                          actionText: 'View All',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'tv',
-                                categoryType: 'popular',
-                                title: 'Popular TV Shows',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPosterCarousel(
-                          asyncValue: popularTvAsync,
-                          height: responsive.animePosterHeight,
-                          width: responsive.animePosterWidth,
-                          responsive: responsive,
-                          onRetry: () => ref.refresh(popularTvShowsProvider),
-                        ),
-                      ],
+                    // 3. Trending TV Shows Today
+                    DpadRegion(
+                      memoryKey: 'tv/trendingTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            overline: 'TOP PICKS TODAY',
+                            title: 'Trending TV Shows',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'trending',
+                                  title: 'Trending TV Shows',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: trendingTvAsync,
+                            height: responsive.trendingPosterHeight,
+                            width: responsive.trendingPosterWidth,
+                            responsive: responsive,
+                            isTrending: true,
+                            onRetry: () => ref.refresh(trendingTvShowsProvider),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
-                  // 5. On The Air / Airing Today
-                  DpadRegion(
-                    memoryKey: 'tv/onTheAirTv',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          title: 'Currently Airing Series',
-                          subtitle: 'Catch the latest weekly broadcast episodes',
-                          actionText: 'View All',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'tv',
-                                categoryType: 'on_the_air',
-                                title: 'Currently Airing Series',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPosterCarousel(
-                          asyncValue: onTheAirTvAsync,
-                          height: responsive.animePosterHeight,
-                          width: responsive.animePosterWidth,
-                          responsive: responsive,
-                          onRetry: () => ref.refresh(onTheAirTvShowsProvider),
-                        ),
-                      ],
+                   
+                    
+                    // 4. Popular TV Series
+                    DpadRegion(
+                      memoryKey: 'tv/popularTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            leadingIcon: Icons.local_fire_department_rounded,
+                            title: 'Popular TV Shows',
+                            tag: 'HOT',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'popular',
+                                  title: 'Popular TV Shows',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: popularTvAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(popularTvShowsProvider),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
-                  // 6. Critically Acclaimed TV Shows
-                  DpadRegion(
-                    memoryKey: 'tv/topRatedTv',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          title: 'Critically Acclaimed Shows',
-                          tag: 'TOP RATED',
-                          actionText: 'View All',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'tv',
-                                categoryType: 'top_rated',
-                                title: 'Critically Acclaimed Shows',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildPosterCarousel(
-                          asyncValue: topRatedTvAsync,
-                          height: responsive.animePosterHeight,
-                          width: responsive.animePosterWidth,
-                          responsive: responsive,
-                          onRetry: () => ref.refresh(topRatedTvShowsProvider),
-                        ),
-                      ],
+                    // 5. On The Air / Airing Today
+                    DpadRegion(
+                      memoryKey: 'tv/onTheAirTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Currently Airing Series',
+                            subtitle:
+                                'Catch the latest weekly broadcast episodes',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'on_the_air',
+                                  title: 'Currently Airing Series',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: onTheAirTvAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(onTheAirTvShowsProvider),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // 7. Genre-Based TV Sections (Self-contained to prevent full-page rebuilds)
-                  ..._buildTvGenreSections(context, ref, responsive),
-                ],
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+
+                    // 6. Critically Acclaimed TV Shows
+                    DpadRegion(
+                      memoryKey: 'tv/topRatedTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Critically Acclaimed Shows',
+                            tag: 'TOP RATED',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'top_rated',
+                                  title: 'Critically Acclaimed Shows',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: topRatedTvAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(topRatedTvShowsProvider),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 7. Genre-Based TV Sections (Self-contained to prevent full-page rebuilds)
+                    ..._buildTvGenreSections(context, ref, responsive),
+
+                     //hindi tv shows section
+                    DpadRegion(
+                      memoryKey: 'tv/hindiTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Hindi Web Shows',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'discoverHindiMovies',
+                                  title: 'Hindi Web Shows',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: discoverHindiTvAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(hindiTvShowsProvider),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    //Indian tv shows provider 
+
+                     DpadRegion(
+                      memoryKey: 'tv/indianTv',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Indian tv shows',
+                            actionText: 'View All',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'tv',
+                                  categoryType: 'discoverIndianMovies',
+                                  title: 'Indian tv shows',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildPosterCarousel(
+                            asyncValue: discoverIndianTvAsync,
+                            height: responsive.animePosterHeight,
+                            width: responsive.animePosterWidth,
+                            responsive: responsive,
+                            onRetry: () => ref.refresh(indianTvShowsProvider),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Pinned Frosted Sparrow Header at Top with Scroll Awareness
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ScrollAwareHeader(
-              controller: _headerController,
-              child: const SparrowHeader(subtitle: 'ANIME & TV'),
+            // Pinned Frosted Sparrow Header at Top with Scroll Awareness
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ScrollAwareHeader(
+                controller: _headerController,
+                child: const SparrowHeader(subtitle: 'ANIME & TV'),
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -405,8 +480,11 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
             spacing: 8,
             runSpacing: 4,
             children: [
-              const Icon(Icons.wifi_off_rounded,
-                  size: 18, color: ColorPalette.textMuted),
+              const Icon(
+                Icons.wifi_off_rounded,
+                size: 18,
+                color: ColorPalette.textMuted,
+              ),
               Text(
                 'Unable to load TV shows',
                 style: TextStyle(
@@ -417,8 +495,10 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
               ),
               TextButton(
                 onPressed: onRetry,
-                child: const Text('Retry',
-                    style: TextStyle(color: ColorPalette.primaryGreen)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen),
+                ),
               ),
             ],
           ),
@@ -435,11 +515,12 @@ class _AnimeHubPageState extends ConsumerState<AnimeHubPage> {
     SparrowResponsive responsive,
   ) {
     final genresAsync = ref.watch(tvGenresProvider);
-    const selectedGenreIds = [10759, 18, 35, 80, 9648, 10765];
+    const selectedGenreIds = [99, 10759, 18, 35, 80, 9648, 10765];
 
     final allGenres = genresAsync.value ?? fallbackTvGenres;
-    final genresToShow =
-        allGenres.where((g) => selectedGenreIds.contains(g.id)).toList();
+    final genresToShow = allGenres
+        .where((g) => selectedGenreIds.contains(g.id))
+        .toList();
 
     return genresToShow
         .map((genre) => _TvGenreSection(genre: genre, responsive: responsive))
@@ -452,17 +533,16 @@ class _TvGenreSection extends ConsumerWidget {
   final TmdbGenre genre;
   final SparrowResponsive responsive;
 
-  const _TvGenreSection({
-    required this.genre,
-    required this.responsive,
-  });
+  const _TvGenreSection({required this.genre, required this.responsive});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tvAsync = ref.watch(tvByGenreProvider(genre.id));
 
     Widget content;
-    if (tvAsync.hasValue && tvAsync.value != null && tvAsync.value!.isNotEmpty) {
+    if (tvAsync.hasValue &&
+        tvAsync.value != null &&
+        tvAsync.value!.isNotEmpty) {
       final items = tvAsync.value!;
       content = HorizontalMediaCarousel(
         height: responsive.animePosterHeight,
@@ -504,13 +584,18 @@ class _TvGenreSection extends ConsumerWidget {
             children: [
               Text(
                 'Could not load ${genre.name}',
-                style: const TextStyle(color: ColorPalette.textMuted, fontSize: 12),
+                style: const TextStyle(
+                  color: ColorPalette.textMuted,
+                  fontSize: 12,
+                ),
                 textAlign: TextAlign.center,
               ),
               TextButton(
                 onPressed: () => ref.refresh(tvByGenreProvider(genre.id)),
-                child: const Text('Retry',
-                    style: TextStyle(color: ColorPalette.primaryGreen)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(color: ColorPalette.primaryGreen),
+                ),
               ),
             ],
           ),

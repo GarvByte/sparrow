@@ -17,6 +17,10 @@ class Movieprovider extends AsyncNotifier<List<dynamic>> {
     return _tmdbService.fetchMovies('trending/movie/day?language=en-US');
   }
 
+  Future<List<dynamic>> getTrendingNow2() {
+    return _tmdbService.fetchMovies('trending/movie/day?language=en-US&page=2');
+  }
+
   Future<List<dynamic>> getPopular() {
     return _tmdbService.fetchMovies('movie/popular?language=en-US&page=1');
   }
@@ -28,6 +32,16 @@ class Movieprovider extends AsyncNotifier<List<dynamic>> {
   Future<List<dynamic>> trendingShows() {
     return _tmdbService.fetchMovies('trending/movie/day?language=en-US');
   }
+
+Future<List<dynamic>> discoverHindiMovies() {
+    return _tmdbService.fetchMovies('discover/movie?with_original_language=hi');
+  }
+
+  Future<List<dynamic>> discoverIndianMovies() {
+    return _tmdbService.fetchMovies('discover/movie?with_origin_country=IN');
+  }
+
+  
 }
 
 final movieProviderNotifier =
@@ -35,6 +49,19 @@ final movieProviderNotifier =
 
 final trendingNowProvider = FutureProvider<List<dynamic>>((ref) {
   return ref.read(movieProviderNotifier.notifier).getTrendingNow();
+});
+
+final trendingNow2Provider = FutureProvider<List<dynamic>>((ref) {
+  return ref.read(movieProviderNotifier.notifier).getTrendingNow2();
+});
+
+
+final discoverHindiMoviesProvider = FutureProvider<List<dynamic>>((ref) {
+  return ref.read(movieProviderNotifier.notifier).discoverHindiMovies();
+});
+
+final discoverIndianMoviesProvider = FutureProvider<List<dynamic>>((ref) {
+  return ref.read(movieProviderNotifier.notifier).discoverIndianMovies();
 });
 
 final trendingShowProvider = FutureProvider<List<dynamic>>((ref) {

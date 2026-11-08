@@ -59,6 +59,18 @@ final popularTvShowsProvider = FutureProvider<List<MediaItem>>((ref) async {
   return rawList.map(mapTvJsonToMediaItem).toList();
 });
 
+final hindiTvShowsProvider = FutureProvider<List<MediaItem>>((ref) async {
+  final service = ref.watch(animeTmdbServiceProvider);
+  final rawList = await service.fetchMovies('discover/tv?language=en-US&with_original_language=hi&page=1');
+  return rawList.map(mapTvJsonToMediaItem).toList();
+});
+
+final indianTvShowsProvider = FutureProvider<List<MediaItem>>((ref) async {
+  final service = ref.watch(animeTmdbServiceProvider);
+  final rawList = await service.fetchMovies('discover/tv?language=en-US&with_origin_country=IN&page=1');
+  return rawList.map(mapTvJsonToMediaItem).toList();
+});
+
 /// Provider for Top Rated TV Shows.
 final topRatedTvShowsProvider = FutureProvider<List<MediaItem>>((ref) async {
   final service = ref.watch(animeTmdbServiceProvider);

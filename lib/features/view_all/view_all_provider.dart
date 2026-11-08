@@ -188,6 +188,21 @@ class ViewAllNotifier extends Notifier<ViewAllState> {
           return service.fetchMovies('movie/popular?language=en-US&page=$page');
         }
 
+         case 'discoverIndianMovies':
+        if (arg.isTv) {
+          return service.fetchMovies('discover/tv?language=en-US&with_origin_country=In&page=$page');
+        } else {
+          return service.fetchMovies('discover/movie?language=en-US&with_origin_country=In&page=$page');
+        }
+
+        
+         case 'discoverHindiMovies':
+        if (arg.isTv) {
+          return service.fetchMovies('discover/tv?language=en-US&with_original_language=hi&page=$page');
+        } else {
+          return service.fetchMovies('discover/movie?language=en-US&with_original_language=hi&page=$page');
+        }
+
       case 'top_rated':
         if (arg.isTv) {
           return service.fetchMovies('tv/top_rated?language=en-US&page=$page');

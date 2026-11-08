@@ -38,6 +38,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _headerController.dispose();
     super.dispose();
   }
+
   Widget _buildMediaCarouselSection({
     required AsyncValue<List<dynamic>> asyncValue,
     required double height,
@@ -106,6 +107,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     final trendingNowMovies = ref.watch(trendingNowProvider);
     final popularMovies = ref.watch(popularMoviesProvider);
     final topRatedMovies = ref.watch(topRatedMoviesProvider);
+    final discoverHindiMovies = ref.watch(discoverHindiMoviesProvider);
+    final discoverIndianMovies = ref.watch(discoverIndianMoviesProvider);
 
     return Scaffold(
       backgroundColor: ColorPalette.backgroundBlack,
@@ -123,275 +126,456 @@ class _HomePageState extends ConsumerState<HomePage> {
             NotificationListener<ScrollNotification>(
               onNotification: _headerController.handleScrollNotification,
               child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.only(
-                top: topPadding + headerHeight + 6,
-                bottom: 110, // Buffer to clear floating bottom nav
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Layered Overlapping Featured Hero Carousel (17:16 poster, Riverpod-driven, TV DPAD support)
-                  FeaturedHeroSection(
-                    onWatchNow: (item) => openMovieDetails(context, item),
-                  ),
-
-                  // 2. Continue Watching Section (Reactive local Hive storage, hidden if empty)
-                  _buildContinueWatchingSection(context, responsive),
-
-                  // 3. Trending Now Section
-                  DpadRegion(
-                    memoryKey: 'home/trendingNow',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          overline: 'TOP PICKS TODAY',
-                          title: 'Trending Now',
-                          actionText: "View all",
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'movie',
-                                categoryType: 'trending',
-                                title: 'Trending Movies',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMediaCarouselSection(
-                          asyncValue: trendingNowMovies,
-                          height: responsive.trendingPosterHeight,
-                          onRetry: () => ref.refresh(trendingNowProvider),
-                          carouselBuilder: (data) {
-                            return HorizontalMediaCarousel(
-                              height: responsive.trendingPosterHeight,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                final movie = data[index];
-                                final backdrop =
-                                    movie['backdrop_path'] as String?;
-                                final poster = movie['poster_path'] as String?;
-                                final item = MediaItem(
-                                  id: movie['id'].toString(),
-                                  title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)
-                                      ?.toDouble(),
-                                  ratingCount: movie['vote_count']?.toString(),
-                                  imageUrl: poster != null && poster.isNotEmpty
-                                      ? imageBaseUrl + poster
-                                      : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
-                                  genres: movie['genre'] ?? [],
-                                  isAdult: movie['adult'] as bool? ?? false,
-                                  overview: movie['overview'] as String?,
-                                  releaseDate: movie['release_date'] as String?,
-                                  backdropUrl:
-                                      backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
-                                );
-                                return Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FocusablePosterCard(
-                                    onSelected: () =>
-                                        openMovieDetails(context, item),
-                                    child: PortraitPosterCard(
-                                      item: item,
-                                      width: responsive.trendingPosterWidth,
-                                      trending: true,
-                                      index: index,
-                                      onTap: () =>
-                                          openMovieDetails(context, item),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  top: topPadding + headerHeight + 6,
+                  bottom: 110, // Buffer to clear floating bottom nav
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Layered Overlapping Featured Hero Carousel (17:16 poster, Riverpod-driven, TV DPAD support)
+                    FeaturedHeroSection(
+                      onWatchNow: (item) => openMovieDetails(context, item),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    // 2. Continue Watching Section (Reactive local Hive storage, hidden if empty)
+                    _buildContinueWatchingSection(context, responsive),
 
-                  // 4. Popular Movie Section
-                  DpadRegion(
-                    memoryKey: 'home/popularMovies',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          leadingIcon: Icons.auto_awesome_rounded,
-                          title: 'Popular Movies',
-                          actionText: 'View all',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'movie',
-                                categoryType: 'popular',
-                                title: 'Popular Movies',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMediaCarouselSection(
-                          asyncValue: popularMovies,
-                          height: responsive.animePosterHeight,
-                          onRetry: () => ref.refresh(popularMoviesProvider),
-                          carouselBuilder: (data) {
-                            return HorizontalMediaCarousel(
-                              height: responsive.animePosterHeight,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                final movie = data[index];
-                                final backdrop =
-                                    movie['backdrop_path'] as String?;
-                                final poster = movie['poster_path'] as String?;
-                                final item = MediaItem(
-                                  id: movie['id'].toString(),
-                                  title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)
-                                      ?.toDouble(),
-                                  ratingCount: movie['vote_count']?.toString(),
-                                  imageUrl: poster != null && poster.isNotEmpty
-                                      ? imageBaseUrl + poster
-                                      : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
-                                  genres: movie['genre'] ?? [],
-                                  isAdult: movie['adult'] as bool? ?? false,
-                                  overview: movie['overview'] as String?,
-                                  releaseDate: movie['release_date'] as String?,
-                                  backdropUrl:
-                                      backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
-                                );
-                                return Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: FocusablePosterCard(
-                                    onSelected: () =>
-                                        openMovieDetails(context, item),
-                                    child: PortraitPosterCard(
-                                      item: item,
-                                      width: responsive.animePosterWidth,
-                                      onTap: () =>
+                    // 3. Trending Now Section
+                    DpadRegion(
+                      memoryKey: 'home/trendingNow',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            overline: 'TOP PICKS TODAY',
+                            title: 'Trending Now',
+                            actionText: "View all",
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'movie',
+                                  categoryType: 'trending',
+                                  title: 'Trending Movies',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMediaCarouselSection(
+                            asyncValue: trendingNowMovies,
+                            height: responsive.trendingPosterHeight,
+                            onRetry: () => ref.refresh(trendingNowProvider),
+                            carouselBuilder: (data) {
+                              return HorizontalMediaCarousel(
+                                height: responsive.trendingPosterHeight,
+                                itemCount: data.length,
+                                itemBuilder: (context, index) {
+                                  final movie = data[index];
+                                  final backdrop =
+                                      movie['backdrop_path'] as String?;
+                                  final poster =
+                                      movie['poster_path'] as String?;
+                                  final item = MediaItem(
+                                    id: movie['id'].toString(),
+                                    title: movie['title'] ?? 'Untitled',
+                                    rating: (movie['vote_average'] as num?)
+                                        ?.toDouble(),
+                                    ratingCount: movie['vote_count']
+                                        ?.toString(),
+                                    imageUrl:
+                                        poster != null && poster.isNotEmpty
+                                        ? imageBaseUrl + poster
+                                        : (backdrop != null &&
+                                                  backdrop.isNotEmpty
+                                              ? imageBaseUrl + backdrop
+                                              : ''),
+                                    genres: movie['genre'] ?? [],
+                                    isAdult: movie['adult'] as bool? ?? false,
+                                    overview: movie['overview'] as String?,
+                                    releaseDate:
+                                        movie['release_date'] as String?,
+                                    backdropUrl:
+                                        backdrop != null && backdrop.isNotEmpty
+                                        ? imageBaseUrl2 + backdrop
+                                        : null,
+                                  );
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: FocusablePosterCard(
+                                      onSelected: () =>
                                           openMovieDetails(context, item),
+                                      child: PortraitPosterCard(
+                                        item: item,
+                                        width: responsive.trendingPosterWidth,
+                                        trending: true,
+                                        index: index,
+                                        onTap: () =>
+                                            openMovieDetails(context, item),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
 
-                  // 5. Blockbusters & Classics Section
-                  DpadRegion(
-                    memoryKey: 'home/topRated',
-                    leftEdge: DpadEdgeBehavior.leave,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionHeader(
-                          title: 'Blockbusters & Classics',
-                          actionText: 'View all',
-                          onTrailingTap: () {
-                            openViewAll(
-                              context,
-                              const ViewAllArgs(
-                                mediaType: 'movie',
-                                categoryType: 'top_rated',
-                                title: 'Blockbusters & Classics',
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _buildMediaCarouselSection(
-                          asyncValue: topRatedMovies,
-                          height: responsive.animePosterHeight,
-                          onRetry: () => ref.refresh(topRatedMoviesProvider),
-                          carouselBuilder: (data) {
-                            return HorizontalMediaCarousel(
-                              height: responsive.animePosterHeight,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                final movie = data[index];
-                                final backdrop =
-                                    movie['backdrop_path'] as String?;
-                                final poster = movie['poster_path'] as String?;
-                                final item = MediaItem(
-                                  id: movie['id'].toString(),
-                                  title: movie['title'] ?? 'Untitled',
-                                  rating: (movie['vote_average'] as num?)
-                                      ?.toDouble(),
-                                  ratingCount: movie['vote_count']?.toString(),
-                                  imageUrl: poster != null && poster.isNotEmpty
-                                      ? imageBaseUrl + poster
-                                      : (backdrop != null && backdrop.isNotEmpty
-                                            ? imageBaseUrl + backdrop
-                                            : ''),
-                                  genres: movie['genre'] ?? [],
-                                  isAdult: movie['adult'] as bool? ?? false,
-                                  overview: movie['overview'] as String?,
-                                  releaseDate: movie['release_date'] as String?,
-                                  backdropUrl:
-                                      backdrop != null && backdrop.isNotEmpty
-                                      ? imageBaseUrl2 + backdrop
-                                      : null,
-                                );
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: FocusablePosterCard(
-                                    onSelected: () =>
-                                        openMovieDetails(context, item),
-                                    child: PortraitPosterCard(
-                                      item: item,
-                                      width: responsive.animePosterWidth,
-                                      onTap: () =>
+                    //popular in hindi section
+                    DpadRegion(
+                      memoryKey: 'home/discoverHindiMovies',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            leadingIcon: Icons.auto_awesome_rounded,
+                            title: 'Best in Hindi',
+                            actionText: 'View all',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'movie',
+                                  categoryType: 'discoverHindiMovies',
+                                  title: 'Best in Hindi',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMediaCarouselSection(
+                            asyncValue: discoverHindiMovies,
+                            height: responsive.animePosterHeight,
+                            onRetry: () =>
+                                ref.refresh(discoverHindiMoviesProvider),
+                            carouselBuilder: (data) {
+                              return HorizontalMediaCarousel(
+                                height: responsive.animePosterHeight,
+                                itemCount: data.length,
+                                itemBuilder: (context, index) {
+                                  final movie = data[index];
+                                  final backdrop =
+                                      movie['backdrop_path'] as String?;
+                                  final poster =
+                                      movie['poster_path'] as String?;
+                                  final item = MediaItem(
+                                    id: movie['id'].toString(),
+                                    title: movie['title'] ?? 'Untitled',
+                                    rating: (movie['vote_average'] as num?)
+                                        ?.toDouble(),
+                                    ratingCount: movie['vote_count']
+                                        ?.toString(),
+                                    imageUrl:
+                                        poster != null && poster.isNotEmpty
+                                        ? imageBaseUrl + poster
+                                        : (backdrop != null &&
+                                                  backdrop.isNotEmpty
+                                              ? imageBaseUrl + backdrop
+                                              : ''),
+                                    genres: movie['genre'] ?? [],
+                                    isAdult: movie['adult'] as bool? ?? false,
+                                    overview: movie['overview'] as String?,
+                                    releaseDate:
+                                        movie['release_date'] as String?,
+                                    backdropUrl:
+                                        backdrop != null && backdrop.isNotEmpty
+                                        ? imageBaseUrl2 + backdrop
+                                        : null,
+                                  );
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: FocusablePosterCard(
+                                      onSelected: () =>
                                           openMovieDetails(context, item),
+                                      child: PortraitPosterCard(
+                                        item: item,
+                                        width: responsive.animePosterWidth,
+                                        onTap: () =>
+                                            openMovieDetails(context, item),
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // 6. Genre-Based Movie Sections (Self-contained ConsumerWidgets to prevent full-page rebuilds)
-                  ..._buildGenreSections(context, ref, responsive),
-                ],
+                   
+
+                    // 4. Popular Movie Section
+                    DpadRegion(
+                      memoryKey: 'home/popularMovies',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            leadingIcon: Icons.auto_awesome_rounded,
+                            title: 'Popular Movies',
+                            actionText: 'View all',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'movie',
+                                  categoryType: 'popular',
+                                  title: 'Popular Movies',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMediaCarouselSection(
+                            asyncValue: popularMovies,
+                            height: responsive.animePosterHeight,
+                            onRetry: () => ref.refresh(popularMoviesProvider),
+                            carouselBuilder: (data) {
+                              return HorizontalMediaCarousel(
+                                height: responsive.animePosterHeight,
+                                itemCount: data.length,
+                                itemBuilder: (context, index) {
+                                  final movie = data[index];
+                                  final backdrop =
+                                      movie['backdrop_path'] as String?;
+                                  final poster =
+                                      movie['poster_path'] as String?;
+                                  final item = MediaItem(
+                                    id: movie['id'].toString(),
+                                    title: movie['title'] ?? 'Untitled',
+                                    rating: (movie['vote_average'] as num?)
+                                        ?.toDouble(),
+                                    ratingCount: movie['vote_count']
+                                        ?.toString(),
+                                    imageUrl:
+                                        poster != null && poster.isNotEmpty
+                                        ? imageBaseUrl + poster
+                                        : (backdrop != null &&
+                                                  backdrop.isNotEmpty
+                                              ? imageBaseUrl + backdrop
+                                              : ''),
+                                    genres: movie['genre'] ?? [],
+                                    isAdult: movie['adult'] as bool? ?? false,
+                                    overview: movie['overview'] as String?,
+                                    releaseDate:
+                                        movie['release_date'] as String?,
+                                    backdropUrl:
+                                        backdrop != null && backdrop.isNotEmpty
+                                        ? imageBaseUrl2 + backdrop
+                                        : null,
+                                  );
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: FocusablePosterCard(
+                                      onSelected: () =>
+                                          openMovieDetails(context, item),
+                                      child: PortraitPosterCard(
+                                        item: item,
+                                        width: responsive.animePosterWidth,
+                                        onTap: () =>
+                                            openMovieDetails(context, item),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: responsive.scale(18, min: 12, max: 24)),
+
+                    // 5. Blockbusters & Classics Section
+                    DpadRegion(
+                      memoryKey: 'home/topRated',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Blockbusters & Classics',
+                            actionText: 'View all',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'movie',
+                                  categoryType: 'top_rated',
+                                  title: 'Blockbusters & Classics',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMediaCarouselSection(
+                            asyncValue: topRatedMovies,
+                            height: responsive.animePosterHeight,
+                            onRetry: () => ref.refresh(topRatedMoviesProvider),
+                            carouselBuilder: (data) {
+                              return HorizontalMediaCarousel(
+                                height: responsive.animePosterHeight,
+                                itemCount: data.length,
+                                itemBuilder: (context, index) {
+                                  final movie = data[index];
+                                  final backdrop =
+                                      movie['backdrop_path'] as String?;
+                                  final poster =
+                                      movie['poster_path'] as String?;
+                                  final item = MediaItem(
+                                    id: movie['id'].toString(),
+                                    title: movie['title'] ?? 'Untitled',
+                                    rating: (movie['vote_average'] as num?)
+                                        ?.toDouble(),
+                                    ratingCount: movie['vote_count']
+                                        ?.toString(),
+                                    imageUrl:
+                                        poster != null && poster.isNotEmpty
+                                        ? imageBaseUrl + poster
+                                        : (backdrop != null &&
+                                                  backdrop.isNotEmpty
+                                              ? imageBaseUrl + backdrop
+                                              : ''),
+                                    genres: movie['genre'] ?? [],
+                                    isAdult: movie['adult'] as bool? ?? false,
+                                    overview: movie['overview'] as String?,
+                                    releaseDate:
+                                        movie['release_date'] as String?,
+                                    backdropUrl:
+                                        backdrop != null && backdrop.isNotEmpty
+                                        ? imageBaseUrl2 + backdrop
+                                        : null,
+                                  );
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: FocusablePosterCard(
+                                      onSelected: () =>
+                                          openMovieDetails(context, item),
+                                      child: PortraitPosterCard(
+                                        item: item,
+                                        width: responsive.animePosterWidth,
+                                        onTap: () =>
+                                            openMovieDetails(context, item),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                     DpadRegion(
+                      memoryKey: 'home/discoverIndianMovies',
+                      leftEdge: DpadEdgeBehavior.leave,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SectionHeader(
+                            title: 'Indian Masala and Tadka',
+                            actionText: 'View all',
+                            onTrailingTap: () {
+                              openViewAll(
+                                context,
+                                const ViewAllArgs(
+                                  mediaType: 'movie',
+                                  categoryType: 'discoverIndianMovies',
+                                  title: 'Indian Tadka and Masala',
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMediaCarouselSection(
+                            asyncValue: discoverIndianMovies,
+                            height: responsive.animePosterHeight,
+                            onRetry: () =>
+                                ref.refresh(discoverIndianMoviesProvider),
+                            carouselBuilder: (data) {
+                              return HorizontalMediaCarousel(
+                                height: responsive.animePosterHeight,
+                                itemCount: data.length,
+                                itemBuilder: (context, index) {
+                                  final movie = data[index];
+                                  final backdrop =
+                                      movie['backdrop_path'] as String?;
+                                  final poster =
+                                      movie['poster_path'] as String?;
+                                  final item = MediaItem(
+                                    id: movie['id'].toString(),
+                                    title: movie['title'] ?? 'Untitled',
+                                    rating: (movie['vote_average'] as num?)
+                                        ?.toDouble(),
+                                    ratingCount: movie['vote_count']
+                                        ?.toString(),
+                                    imageUrl:
+                                        poster != null && poster.isNotEmpty
+                                        ? imageBaseUrl + poster
+                                        : (backdrop != null &&
+                                                  backdrop.isNotEmpty
+                                              ? imageBaseUrl + backdrop
+                                              : ''),
+                                    genres: movie['genre'] ?? [],
+                                    isAdult: movie['adult'] as bool? ?? false,
+                                    overview: movie['overview'] as String?,
+                                    releaseDate:
+                                        movie['release_date'] as String?,
+                                    backdropUrl:
+                                        backdrop != null && backdrop.isNotEmpty
+                                        ? imageBaseUrl2 + backdrop
+                                        : null,
+                                  );
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: FocusablePosterCard(
+                                      onSelected: () =>
+                                          openMovieDetails(context, item),
+                                      child: PortraitPosterCard(
+                                        item: item,
+                                        width: responsive.animePosterWidth,
+                                        onTap: () =>
+                                            openMovieDetails(context, item),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 6. Genre-Based Movie Sections (Self-contained ConsumerWidgets to prevent full-page rebuilds)
+                    ..._buildGenreSections(context, ref, responsive),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Pinned Frosted Sparrow Header at Top with Scroll Awareness
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ScrollAwareHeader(
-              controller: _headerController,
-              child: const SparrowHeader(),
+            // Pinned Frosted Sparrow Header at Top with Scroll Awareness
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ScrollAwareHeader(
+                controller: _headerController,
+                child: const SparrowHeader(),
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -459,9 +643,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             episode: entry.episode,
             episodeTitle: entry.episodeTitle,
           )
-        : PlaybackContext.movie(
-            item: entry.toMediaItem(),
-          );
+        : PlaybackContext.movie(item: entry.toMediaItem());
     context.push('/player', extra: playbackContext);
   }
 
@@ -477,6 +659,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       53,
       878,
       27,
+      99
     ]; // Action, Comedy, Thriller, Sci-Fi, Horror
 
     final allGenres = genresAsync.value ?? fallbackMovieGenres;

@@ -18,7 +18,7 @@ class TopTrendingCarousel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final responsive = context.responsive;
     final isTv = responsive.isTvOrDesktop;
-    final trendingAsync = ref.watch(trendingNowProvider);
+    final trendingAsync = ref.watch(trendingNow2Provider);
     final cardWidth = responsive.scale(136, min: 120, max: 160);
     // 2:3 aspect ratio height + text metadata buffer
     final containerHeight = (cardWidth * 1.5) + 52.0;

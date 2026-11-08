@@ -11,7 +11,7 @@ class CuratedTasteNotifier extends AsyncNotifier<List> {
     final tmdbService = ref.read(tmdbServiceProvider);
     // Fetch popular/top rated selection
     final raw = await tmdbService.fetchMovies(
-      'movie/popular?language=en-US&page=2',
+      'discover/movie?language=en-US&with_original_language=hi&page=2',
     );
 
     return raw;
