@@ -1062,7 +1062,10 @@ class _PlayerPageState extends ConsumerState<PlayerPage>
                         Text(
                           errorMessage.contains('connection')
                               ? errorMessage
-                              : 'No valid links were found for this title.',
+                              : (errorMessage == 'Decoding algorithm failed' ||
+                                      errorMessage.contains('Resolver configuration error')
+                                  ? errorMessage
+                                  : 'No valid links were found for this title.'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,

@@ -6,7 +6,6 @@ import 'package:sparrow/features/anime%20hub/providers/anime_tv_providers.dart';
 import 'package:sparrow/features/anime%20hub/widgets/anime_hero_section.dart';
 import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
 import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
-import 'package:sparrow/features/home%20page/providers/movieProvider.dart';
 import 'package:sparrow/features/home%20page/widgets/continue_watching_card.dart';
 import 'package:sparrow/features/home%20page/widgets/horizontal_media_carousel.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';

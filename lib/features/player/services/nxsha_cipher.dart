@@ -3,12 +3,14 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'key_config_manager.dart';
+import 'key_config_models.dart';
 
 /// Faithful Dart port of CryptoJS AES parameter encoding and decoding
 /// based on `nxsha_parametres_encoder.py` and `nxsha_decoded_scraper.py`.
 class NxshaCipher {
-  static const String keyString =
-      'f4488ab4da401203d23baa129fc546153898162524635d6776826d0c867ccaa3';
+  /// Dynamically retrieved key from the centralized local configuration manager.
+  static String get keyString => KeyConfigManager.instance.activeKeyOrFallback;
 
   /// OpenSSL EVP_BytesToKey implementation used by CryptoJS when passing a string passphrase.
   static List<Uint8List> evpBytesToKey(
@@ -36,6 +38,7 @@ class NxshaCipher {
   /// For movies, [season] and [episode] must both be 0.
   /// For TV shows, use the actual selected season and episode numbers.
   /// [provider] is the selected server's scraper value when requesting sources.
+  /// [key] can optionally be provided to enforce transactional key snapshot consistency.
   static String buildPayload({
     required String tmdbId,
     required String imdbId,
@@ -44,6 +47,7 @@ class NxshaCipher {
     required int episode,
     bool exLang = false,
     String? provider,
+    String? key,
   }) {
     final Map<String, dynamic> data = {
       'ex_lang': exLang,
@@ -56,14 +60,18 @@ class NxshaCipher {
       'episode': episode,
     };
 
-    return encodeRequest(data);
+    return encodeRequest(data, key: key);
   }
 
   /// Encrypts an arbitrary data Map into CryptoJS-compatible Base64 string.
-  static String encodeRequest(Map<String, dynamic> data) {
+  static String encodeRequest(Map<String, dynamic> data, {String? key}) {
     if (data.isEmpty) return '';
 
     try {
+      final effectiveKey = (key != null && key.isNotEmpty)
+          ? key
+          : KeyConfigManager.instance.activeKeyOrFallback;
+
       final rnd = Random();
       const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -87,15 +95,15 @@ class NxshaCipher {
       final salt = List<int>.generate(8, (_) => rnd.nextInt(256));
 
       // Derive key and IV using the string key as a passphrase
-      final passphraseBytes = utf8.encode(keyString);
+      final passphraseBytes = utf8.encode(effectiveKey);
       final keyIv = evpBytesToKey(passphraseBytes, salt, 32, 16);
-      final key = keyIv[0];
+      final encKey = keyIv[0];
       final iv = keyIv[1];
 
       // Encrypt using AES-CBC with PKCS7 padding
       final encrypter = encrypt.Encrypter(
         encrypt.AES(
-          encrypt.Key(key),
+          encrypt.Key(encKey),
           mode: encrypt.AESMode.cbc,
           padding: 'PKCS7',
         ),
@@ -125,10 +133,15 @@ class NxshaCipher {
   }
 
   /// Decrypts a CryptoJS-compatible Base64 ciphertext into plain text JSON string.
-  static String decryptCryptoJs(String ciphertextB64) {
+  /// Throws [CryptoDecodingException] when cryptographic decryption or format validation fails.
+  static String decryptCryptoJs(String ciphertextB64, {String? key}) {
     if (ciphertextB64.trim().isEmpty) {
       throw const FormatException('Ciphertext cannot be empty.');
     }
+
+    final effectiveKey = (key != null && key.isNotEmpty)
+        ? key
+        : KeyConfigManager.instance.activeKeyOrFallback;
 
     // Restore standard base64 characters from URL-safe characters and add padding
     String b64 = ciphertextB64.replaceAll('-', '+').replaceAll('_', '/');
@@ -136,39 +149,51 @@ class NxshaCipher {
       b64 += '=';
     }
 
-    final Uint8List raw = base64Decode(b64);
+    final Uint8List raw;
+    try {
+      raw = base64Decode(b64);
+    } catch (e) {
+      throw CryptoDecodingException('Invalid Base64 payload', e);
+    }
 
     if (raw.length < 16) {
-      throw const FormatException('Invalid ciphertext length.');
+      throw const CryptoDecodingException('Invalid ciphertext length.');
     }
 
     final prefix = utf8.decode(raw.sublist(0, 8), allowMalformed: true);
     if (!prefix.startsWith('Salted__')) {
-      throw const FormatException("Invalid format: Missing 'Salted__' prefix.");
+      throw const CryptoDecodingException("Invalid format: Missing 'Salted__' prefix.");
     }
 
     final salt = raw.sublist(8, 16);
     final ciphertext = raw.sublist(16);
 
     // Treat the key as a string passphrase (matching CryptoJS behavior)
-    final passphraseBytes = utf8.encode(keyString);
+    final passphraseBytes = utf8.encode(effectiveKey);
     final keyIv = evpBytesToKey(passphraseBytes, salt, 32, 16);
-    final key = keyIv[0];
+    final encKey = keyIv[0];
     final iv = keyIv[1];
 
     final encrypter = encrypt.Encrypter(
       encrypt.AES(
-        encrypt.Key(key),
+        encrypt.Key(encKey),
         mode: encrypt.AESMode.cbc,
         padding: 'PKCS7',
       ),
     );
 
-    final decryptedBytes = encrypter.decryptBytes(
-      encrypt.Encrypted(ciphertext),
-      iv: encrypt.IV(iv),
-    );
+    try {
+      final decryptedBytes = encrypter.decryptBytes(
+        encrypt.Encrypted(ciphertext),
+        iv: encrypt.IV(iv),
+      );
 
-    return utf8.decode(decryptedBytes);
+      return utf8.decode(decryptedBytes);
+    } catch (e) {
+      throw CryptoDecodingException(
+        'Failed to decrypt ciphertext with active key',
+        e,
+      );
+    }
   }
 }

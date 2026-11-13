@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:sparrow/features/continue_watching/data/continue_watching_item.dart';
 import 'package:sparrow/features/continue_watching/providers/continue_watching_provider.dart';
 import 'package:sparrow/features/player/models/playback_context.dart';
+import 'package:sparrow/features/player/services/key_config_manager.dart';
+import 'package:sparrow/features/player/services/key_config_models.dart';
 import 'package:sparrow/navigation/dpad_navigation.dart';
 import 'package:sparrow/shared/media_item.dart';
 import 'package:sparrow/shared/navigation/movie_navigation.dart';
@@ -561,6 +563,14 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                     // 6. Genre-Based Movie Sections (Self-contained ConsumerWidgets to prevent full-page rebuilds)
                     ..._buildGenreSections(context, ref, responsive),
+
+                    // Force refresh control after all sections end (in the center, D-pad navigable)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: _HomeKeyRefreshButton(responsive: responsive),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -753,6 +763,123 @@ class _HomeGenreSection extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _HomeKeyRefreshButton extends StatefulWidget {
+  final SparrowResponsive responsive;
+
+  const _HomeKeyRefreshButton({required this.responsive});
+
+  @override
+  State<_HomeKeyRefreshButton> createState() => _HomeKeyRefreshButtonState();
+}
+
+class _HomeKeyRefreshButtonState extends State<_HomeKeyRefreshButton> {
+  bool _isRefreshing = false;
+
+  Future<void> _handleRefresh() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+
+    try {
+      final result = await KeyConfigManager.instance.forceRefresh();
+      if (!mounted) return;
+
+      final String message;
+      switch (result) {
+        case KeyRefreshResult.updated:
+          final version = KeyConfigManager.instance.activeConfig?.version;
+          message = version != null
+              ? 'Encryption key updated to version $version'
+              : 'Encryption key updated successfully';
+          break;
+        case KeyRefreshResult.noChange:
+          message = 'Encryption keys are up to date';
+          break;
+        case KeyRefreshResult.failed:
+          message = 'Failed to refresh encryption keys. Please check connection.';
+          break;
+      }
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: ColorPalette.surfaceContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: ColorPalette.ghostBorder, width: 0.5),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Failed to refresh encryption keys',
+              style: TextStyle(color: Colors.white, fontSize: 13),
+            ),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: ColorPalette.surfaceContainer,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonSize = widget.responsive.scale(38, min: 34, max: 42);
+
+    return DpadRegion(
+      memoryKey: 'home/key_refresh',
+      child: TvFocusable(
+        onSelect: _handleRefresh,
+        borderRadius: BorderRadius.circular(buttonSize / 2),
+        child: InkWell(
+          onTap: _handleRefresh,
+          borderRadius: BorderRadius.circular(buttonSize / 2),
+          child: Container(
+            width: buttonSize,
+            height: buttonSize,
+            decoration: BoxDecoration(
+              color: ColorPalette.surfaceContainer.withValues(alpha: 0.6),
+              shape: BoxShape.circle,
+              border: Border.all(color: ColorPalette.ghostBorder, width: 0.8),
+            ),
+            child: Center(
+              child: _isRefreshing
+                  ? SizedBox(
+                      width: buttonSize * 0.45,
+                      height: buttonSize * 0.45,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        color: ColorPalette.primaryGreen,
+                      ),
+                    )
+                  : Icon(
+                      Icons.refresh_rounded,
+                      size: (buttonSize * 0.52).clamp(16.0, 22.0),
+                      color: ColorPalette.fontWhite,
+                    ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

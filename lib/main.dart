@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparrow/navigation/dpad_shortcut.dart';
 import 'features/continue_watching/data/continue_watching_storage.dart';
+import 'features/player/services/key_config_manager.dart';
 import 'features/player/services/stream_cache_service.dart';
 import 'features/watchlist/data/watchlist_storage.dart';
 import 'navigation/app_router.dart';
@@ -26,6 +27,7 @@ void main() async {
   await WatchlistStorage.init();
   await ContinueWatchingStorage.init();
   await StreamCacheService.init();
+  await KeyConfigManager.instance.init();
 
   // Conservative image cache limits (35 MB max, 60 images) to prevent LMK kills on 1-2 GB Fire TV devices
   PaintingBinding.instance.imageCache.maximumSizeBytes = 35 * 1024 * 1024;

@@ -6,6 +6,7 @@ import '../models/playback_context.dart';
 import '../models/resolved_source.dart';
 import '../models/server_item.dart';
 import '../repositories/stream_repository.dart';
+import '../services/key_config_models.dart';
 
 final streamRepositoryProvider = Provider<StreamRepository>((ref) {
   return StreamRepository();
@@ -196,8 +197,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     } catch (e) {
       if (_disposed || _currentSessionId != sessionId) return;
       debugPrint('StreamResolutionNotifier: getServers error: $e');
-      final msg =
-          _isNetworkError(e) ? 'Check your connection' : 'No valid links were found for this title.';
+      final msg = _classifyError(e);
       state = state.copyWith(
         isLoadingServers: false,
         isResolvingFirstSource: false,
@@ -234,6 +234,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
 
     // Attempt first playable server first
     bool foundFirstSource = false;
+    bool hadDecodingFailure = false;
     for (final index in playableIndices) {
       if (_disposed || _currentSessionId != sessionId) return;
       final server = serverList[index];
@@ -280,6 +281,10 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
         }
       } catch (e) {
         if (_disposed || _currentSessionId != sessionId) return;
+        if (e is CryptoDecodingException ||
+            e.toString().contains('Decoding algorithm failed')) {
+          hadDecodingFailure = true;
+        }
         _updateServerStatus(index, ServerResolutionStatus.failed,
             errorMessage: e.toString(), sessionId: sessionId);
       }
@@ -288,7 +293,9 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     if (!foundFirstSource && !_disposed && _currentSessionId == sessionId) {
       state = state.copyWith(
         isResolvingFirstSource: false,
-        errorMessage: 'No valid links were found for this title.',
+        errorMessage: hadDecodingFailure
+            ? 'Decoding algorithm failed'
+            : 'No valid links were found for this title.',
       );
     }
   }
@@ -437,8 +444,7 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
       debugPrint('StreamResolutionNotifier: selectServer failed: $e');
       _updateServerStatus(serverIndex, ServerResolutionStatus.failed,
           errorMessage: e.toString(), sessionId: sessionId);
-      final msg =
-          _isNetworkError(e) ? 'Check your connection' : 'No valid links were found for this title.';
+      final msg = _classifyError(e);
       state = state.copyWith(
         errorMessage: msg,
       );
@@ -486,6 +492,22 @@ class StreamResolutionNotifier extends Notifier<StreamResolutionState> {
     );
 
     onSourceReady(chosen, currentPosition);
+  }
+
+  String _classifyError(Object error) {
+    if (error is CryptoDecodingException ||
+        error.toString().contains('Decoding algorithm failed') ||
+        error.toString().contains('CryptoDecodingException')) {
+      return 'Decoding algorithm failed';
+    }
+    if (error is KeyConfigException ||
+        error.toString().contains('Resolver configuration error')) {
+      return 'Resolver configuration error: Unable to load encryption key.';
+    }
+    if (_isNetworkError(error)) {
+      return 'Check your connection';
+    }
+    return 'No valid links were found for this title.';
   }
 
   bool _isNetworkError(Object error) {

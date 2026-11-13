@@ -4,7 +4,6 @@ import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparrow/features/tv_show_details/data/tv_season_model.dart';
-import 'package:sparrow/shared/api.dart';
 import 'package:sparrow/shared/genre_ids.dart';
 
 class TmdbService {

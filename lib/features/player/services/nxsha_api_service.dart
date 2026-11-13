@@ -5,14 +5,21 @@ import 'package:http/http.dart' as http;
 import '../models/playback_context.dart';
 import '../models/resolved_source.dart';
 import '../models/server_item.dart';
+import 'key_config_manager.dart';
+import 'key_config_models.dart';
 import 'nxsha_cipher.dart';
 
 /// Service responsible for communicating with `nxsha.space` APIs:
 /// fetching the server list and resolving streaming sources for providers.
 class NxshaApiService {
   final http.Client _client;
+  final KeyConfigManager _keyConfigManager;
 
-  NxshaApiService({http.Client? client}) : _client = client ?? http.Client();
+  NxshaApiService({
+    http.Client? client,
+    KeyConfigManager? keyConfigManager,
+  })  : _client = client ?? http.Client(),
+        _keyConfigManager = keyConfigManager ?? KeyConfigManager.instance;
 
   static const String _baseUrl = 'https://nxsha.space/api';
   static const String _referer = 'https://nxsha.space/';
@@ -26,9 +33,48 @@ class NxshaApiService {
       };
 
   /// Fetches the server list for a given [PlaybackContext].
+  /// On cryptographic decoding failure, automatically attempts a single key refresh & retry.
   Future<List<ServerItem>> fetchServers(
     PlaybackContext context, {
     Duration timeout = const Duration(seconds: 12),
+    bool isRetry = false,
+  }) async {
+    final KeyConfig configSnapshot;
+    try {
+      configSnapshot = _keyConfigManager.acquireConfig();
+    } catch (_) {
+      rethrow;
+    }
+
+    try {
+      return await _executeFetchServers(
+        context,
+        configSnapshot,
+        timeout: timeout,
+      );
+    } on CryptoDecodingException {
+      if (!isRetry) {
+        debugPrint(
+          'NxshaApiService: Crypto decoding failed on fetchServers. Attempting key recovery...',
+        );
+        final refreshResult = await _keyConfigManager.forceRefresh();
+        if (refreshResult == KeyRefreshResult.updated) {
+          debugPrint(
+            'NxshaApiService: Key rotated after failure. Retrying fetchServers once...',
+          );
+          return await fetchServers(context, timeout: timeout, isRetry: true);
+        }
+      }
+      throw const CryptoDecodingException('Decoding algorithm failed');
+    } finally {
+      _keyConfigManager.releaseConfig(configSnapshot);
+    }
+  }
+
+  Future<List<ServerItem>> _executeFetchServers(
+    PlaybackContext context,
+    KeyConfig configSnapshot, {
+    required Duration timeout,
   }) async {
     final qValue = NxshaCipher.buildPayload(
       tmdbId: context.tmdbId,
@@ -37,6 +83,7 @@ class NxshaApiService {
       season: context.season,
       episode: context.episode,
       exLang: false,
+      key: configSnapshot.key,
     );
 
     if (qValue.isEmpty) {
@@ -79,9 +126,15 @@ class NxshaApiService {
 
     final String decryptedJsonStr;
     try {
-      decryptedJsonStr = NxshaCipher.decryptCryptoJs(responseHash);
+      decryptedJsonStr = NxshaCipher.decryptCryptoJs(
+        responseHash,
+        key: configSnapshot.key,
+      );
     } catch (e) {
-      throw FormatException(
+      if (e is CryptoDecodingException) {
+        rethrow;
+      }
+      throw CryptoDecodingException(
         'Failed to decrypt server list hash (hashLen=${responseHash.length}): $e',
       );
     }
@@ -120,16 +173,62 @@ class NxshaApiService {
   }
 
   /// Fetches and resolves stream source URLs for a specific provider/scraper.
+  /// On cryptographic decoding failure, automatically attempts a single key refresh & retry.
   Future<List<ResolvedSource>> fetchSources(
     PlaybackContext context,
     String provider, {
     Duration timeout = const Duration(seconds: 12),
+    bool isRetry = false,
   }) async {
     final cleanProvider = provider.trim();
     if (cleanProvider.isEmpty) {
       throw ArgumentError('Provider scraper cannot be empty.');
     }
 
+    final KeyConfig configSnapshot;
+    try {
+      configSnapshot = _keyConfigManager.acquireConfig();
+    } catch (_) {
+      rethrow;
+    }
+
+    try {
+      return await _executeFetchSources(
+        context,
+        cleanProvider,
+        configSnapshot,
+        timeout: timeout,
+      );
+    } on CryptoDecodingException {
+      if (!isRetry) {
+        debugPrint(
+          'NxshaApiService: Crypto decoding failed on fetchSources for $cleanProvider. Attempting key recovery...',
+        );
+        final refreshResult = await _keyConfigManager.forceRefresh();
+        if (refreshResult == KeyRefreshResult.updated) {
+          debugPrint(
+            'NxshaApiService: Key rotated after failure. Retrying fetchSources once...',
+          );
+          return await fetchSources(
+            context,
+            cleanProvider,
+            timeout: timeout,
+            isRetry: true,
+          );
+        }
+      }
+      throw const CryptoDecodingException('Decoding algorithm failed');
+    } finally {
+      _keyConfigManager.releaseConfig(configSnapshot);
+    }
+  }
+
+  Future<List<ResolvedSource>> _executeFetchSources(
+    PlaybackContext context,
+    String cleanProvider,
+    KeyConfig configSnapshot, {
+    required Duration timeout,
+  }) async {
     final qValue = NxshaCipher.buildPayload(
       tmdbId: context.tmdbId,
       imdbId: context.imdbId,
@@ -138,6 +237,7 @@ class NxshaApiService {
       episode: context.episode,
       exLang: false,
       provider: cleanProvider,
+      key: configSnapshot.key,
     );
 
     if (qValue.isEmpty) {
@@ -180,18 +280,17 @@ class NxshaApiService {
       );
     }
 
-    final hashPreview = responseHash.length > 20
-        ? '${responseHash.substring(0, 10)}...${responseHash.substring(responseHash.length - 10)}'
-        : responseHash;
-    debugPrint(
-      'NxshaApiService: Sources response for $cleanProvider: hashLen=${responseHash.length}, preview=$hashPreview',
-    );
-
     final String decryptedJsonStr;
     try {
-      decryptedJsonStr = NxshaCipher.decryptCryptoJs(responseHash);
+      decryptedJsonStr = NxshaCipher.decryptCryptoJs(
+        responseHash,
+        key: configSnapshot.key,
+      );
     } catch (e) {
-      throw FormatException(
+      if (e is CryptoDecodingException) {
+        rethrow;
+      }
+      throw CryptoDecodingException(
         'Failed to decrypt sources hash for $cleanProvider (hashLen=${responseHash.length}): $e',
       );
     }
